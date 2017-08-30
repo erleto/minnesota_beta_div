@@ -1,0 +1,14 @@
+x for forest status, use global forest cover change 2001-2014 data produced by hansen et al. http://glad.umd.edu/gladmaps/globalmap.php#
+	x calculate % forest loss per unit
+	- could compare forest loss with upland grassland (or whichever class included clearcuts)
+	x forest loss also includes burnt areas, could this be removed with land_fire_3 class that represent burnt areas?
+x for determining forested BBA points, use dominant land cover class @ 50m
+x use human footprint index to determine impact of humans
+	x check what correlation is with forest loss
+	x also, check how well human influence PCA correlates with human footprint index
+	x check correlation between road amount and human footprint. If not strong then could include in model
+- When analysing the impact of human influence on betra diversity, do we need to take into account the mean distance between points within each unit as a covariate?
+	- If the distance is very small then beta diversity might be small as well
+	- On the other hand, the sampling design should ensure that points are not too close to each other.
+	- However, there is a continuum of nearest neighbour distances ranging from under 1m to several km.
+-----------

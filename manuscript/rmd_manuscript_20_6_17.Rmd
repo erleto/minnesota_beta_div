@@ -1,0 +1,319 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+# Title: Does human land-use lead to biotic homogenisation of forest bird communities in northern USA?  
+#### Authors: Eric Le Tortorec, Matti Häkkilä, Edmund Zlonis, Gerald Niemi, Mikko Mönkkönen  
+#### Date: `r Sys.Date()`  
+
+```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = normalizePath('/Users/Eric/Dropbox/Eric/Work/JKL/Theses/Matti_Hakkila/paper_4/'))
+```
+
+```{r load_packages, echo = FALSE, message = FALSE, warning = FALSE}
+library(adephylo)
+library(ape)
+library(car)
+library(cluster)
+library(dplyr)
+library(ggplot2)
+library(gstat)
+library(knitr)
+library(lattice)
+library(maptools)
+library(nlme)
+library(pander)
+library(printr)
+library(psych)
+library(raster)
+library(readxl)
+library(reshape2)
+library(rgdal)
+library(rgeos)
+library(spdep)
+library(tidyr)
+```
+```{r set_pander_options, echo = FALSE, message = FALSE, warning = FALSE}
+panderOptions('table.split.table', 100)
+panderOptions('table.style', 'rmarkdown')
+panderOptions('digits', 4)
+panderOptions('keep.trailing.zeros', TRUE)
+panderOptions('missing', '-')
+panderOptions('table.alignment.rownames', 'left')
+panderOptions('table.alignment.default', 'left')
+panderOptions('table.emphasize.rownames', TRUE)
+```
+```{r define_functions, echo = FALSE}
+figRef <- local({
+    tag <- numeric()
+    created <- logical()
+    used <- logical()
+    function(label, caption, prefix = options('figcap.prefix'), 
+        sep = options('figcap.sep'), prefix.highlight = options('figcap.prefix.highlight')) {
+        i <- which(names(tag) == label)
+        if (length(i) == 0) {
+            i <- length(tag) + 1
+            tag <<- c(tag, i)
+            names(tag)[length(tag)] <<- label
+            used <<- c(used, FALSE)
+            names(used)[length(used)] <<- label
+            created <<- c(created, FALSE)
+            names(created)[length(created)] <<- label
+        }
+        if (!missing(caption)) {
+            created[label] <<- TRUE
+            paste0(prefix.highlight, prefix, ' ', i, sep, prefix.highlight, 
+                ' ', caption)
+        } else {
+            used[label] <<- TRUE
+            paste(prefix, tag[label])
+        }
+    }
+})
+options(figcap.prefix = 'Figure', figcap.sep = ':', figcap.prefix.highlight = '**')
+
+tabRef <- local({
+    tag <- numeric()
+    created <- logical()
+    used <- logical()
+    function(label, caption, prefix = options('tabcap.prefix'), 
+        sep = options('tabcap.sep'), prefix.highlight = options('tabcap.prefix.highlight')) {
+        i <- which(names(tag) == label)
+        if (length(i) == 0) {
+            i <- length(tag) + 1
+            tag <<- c(tag, i)
+            names(tag)[length(tag)] <<- label
+            used <<- c(used, FALSE)
+            names(used)[length(used)] <<- label
+            created <<- c(created, FALSE)
+            names(created)[length(created)] <<- label
+        }
+        if (!missing(caption)) {
+            created[label] <<- TRUE
+            paste0(prefix.highlight, prefix, ' ', i, sep, prefix.highlight, 
+                ' ', caption)
+        } else {
+            used[label] <<- TRUE
+            paste(prefix, tag[label])
+        }
+    }
+})
+options(tabcap.prefix = 'Table', tabcap.sep = ':', tabcap.prefix.highlight = '**')
+
+summary_fun <- function(x,...){
+  c(min = min(x, ...), 
+    median = median(x, ...), 
+    mean = mean(x, ...), 
+    max = max(x,...), 
+    sd = sd(x, ...), 
+    n = length(x))
+}
+```
+
+```{r load_data, echo = FALSE}
+attach('./results/units_merged_beta.rda')
+attach('./results/tax_model_summary.rda')
+attach('./results/func_model_summary.rda')
+attach('./results/phyl_model_summary.rda')
+attach('./results/min_points_radius.rda')
+attach('./results/tax_model_vif.rda')
+attach('./results/func_model_vif.rda')
+attach('./results/phyl_model_vif.rda')
+```
+## Introduction  
+* We are facing a biodiversity crisis
+* Alpha, beta and gamma diversities are decreasing
+* What the loss of beta diversity tells us
+  
+* What is biotic homogenistation - the anthropogenic blender
+* Biotic homogenisation is a pressing worldwide problem
+* How biotic homogenisation can be measured
+* Impacts of anthropogenic and natural processes on biotic homogenisation
+  
+* Taxonomic homogenisation has been studied a fair bit
+* Phylogenetic and functional homogenisation have recieved less attention
+* Why studying phylogenetic and functional homogenisation is important
+  
+* The precise mechanisms causing biotic homogenisation are still unclear
+* Species introductions and extinctions lead to biotic homogenisation of communities but 
+  
+* What we did
+* How this helps us understand the link between human impact and biotic homogenisation better
+* Hypotheses:
+    1. Increased human footprint and forest loss lead to decreased beta diversity between units
+    2. Increased npp and habitat diversity increase beta diversity between units
+    3. Taxonomic beta diversity shows a stronger response to human influence than functional or phylogenetic diversity
+  
+----
+  
+## Methods  
+* Outline of Minnesota Breeding Bird Atlas (BBA)  
+  
+* Outline of study design (units)  
+
+* Selection of BBA points  
+The land class classification of BBA points was based on the dominant land class within a `r count_radius`m buffer around the BBA point.The land classes were determined from classified satellite images.Bird observations from each BBA point were restricted to `r count_radius`m, which was determined to be the maximum distance within which birds could reliably be identified. We only selected points that were at least twice this distance from each other (`r 2 * count_radius`m) in order to avoid duplicate counts of bird observations.
+In our final analyses we only selected units with at least `r min_points` forested BBA points, which we determined to be the minimum number of communities to reliably estimate beta diversity.
+  
+* Calculation of beta diversities  
+Beta diversity was calcualted as total species diversity per unit divided by the mean alpha diversity per unit. This unitless measure reflects the number of individual BBA points with no overlapping species needed to achieve the before- mentioned aplha and gamma diversities.
+  
+* Calculation of landscape metrics  
+    * Human footprint
+    * Forest loss
+    * Habitat diversity
+    * Net primary production
+  
+* Statistical models  
+We chose the explanatory variables so that the variance inflation factors (VIF) were under 3 (Zuur et al. 2007).
+All analyses wer performed with `r R.Version()$version.string`.  
+  
+----
+  
+## Results  
+### Summary statistics  
+```{r summary_stats, echo = FALSE, results = 'asis', fig.align = 'center'}
+response_variables <- units_merged_beta@data[c('forest_spp_richness', 
+  'tax_beta_div', 'func_beta_div', 'phyl_beta_div')]
+set.caption(tabRef('response_summary', 'Summary statistics of forest bird species richness and response variables per unit'))
+summary_table <- as.data.frame(sapply(response_variables, summary_fun))
+colnames(summary_table) <- c('Species richness', 'Taxonomic \u03b2', 'Functional \u03b2', 'Phylogenetic \u03b2')
+rownames(summary_table) <- c('Min', 'Median', 'Mean', 'Max', 'SD', 'n')
+pander::pander(summary_table)
+```
+  
+The range of taxonomic beta diversity values (`r tabRef("response_summary")`) was a lot larger than that of functional and phylogenetic beta diversity, reflecting the more limited set of ecological functions and phylogenetic backgrounds in comparison to the number of species present.  
+
+```{r pairplots, echo = FALSE, fig.align = 'center', fig.cap = figRef('pairplots', 'Distributions of, and correlations between response variables and forest species richness in units'), fig.height = 10, fig.width = 10}
+psych::pairs.panels(units_merged_beta@data[c('forest_spp_richness', 'tax_beta_div', 'func_beta_div', 'phyl_beta_div')], hist.col = NULL)
+```
+  
+`r figRef("pairplots")` shows that none of the response variables was strongly correlated with species richness, although taxonomic beta diversity showed a weak positive correlation with unit-wide species richness up to about 70 species, after which the relation levelled off. All three beta diversity measures were at least moderately positivley correlated with each other. The correlation between functional and phylogenetic beta diversity was fairly strong, suggesting that these two aspects of biodiversity are fairly strongly linked with each other in this data set. All three beta diversity measures increased strongly with the number of BBA points per unit, which can be seen in the results of individual response variables.  
+
+### 1. Taxonomic beta diversity  
+```{r tax_beta_div, echo = FALSE, results = 'asis'}
+set.caption(tabRef('tax_model_summary', 'Summary of linear model explaining taxonomic beta diversity'))
+tax_model_coef <- as.data.frame(tax_model_summary$coefficients)
+colnames(tax_model_coef)[4] <- 'p value'
+rownames(tax_model_coef) <- c('Intercept', 'Human footprint', 'Forest loss', 'Net primary production', 'Habitat diversity', 'Mean temperature', 'Number forested points')
+pander::pander(tax_model_coef)
+
+tax_range <- round(max(units_merged_beta$tax_beta_div) - min(units_merged_beta$tax_beta_div), digits = 3)
+
+min_hdiv <- round(min(units_merged_beta$habitat_div), digits = 2)
+max_hdiv <- round(max(units_merged_beta$habitat_div), digits = 2)
+hdiv_range <- round(max(units_merged_beta$habitat_div) - min(units_merged_beta$habitat_div), digits = 2)
+tax_hdiv_change <- round(tax_model_coef['Habitat diversity', 'Estimate'] * hdiv_range, digits = 2)
+tax_hdiv_perc <- round((tax_hdiv_change / tax_range) * 100, digits = 2)
+```
+
+Taxonomic beta diversity was not impacted by human impact (human footprint and forest loss), nor by net primary production or mean temperature. The only variable clearly influencing taxonomic beta diversity was habitat diversity, which had a strong positive impact. Along the range of habitat diversity (`r paste(min_hdiv, ' - ', max_hdiv)`), functional beta diversity increased by `r tax_hdiv_change`, which is `r tax_hdiv_perc`% of the range of taxonomic beta values in our data.
+
+$~$
+
+### 2. Functional beta diversity  
+```{r func_beta_div, echo = FALSE, results = 'asis'}
+set.caption(tabRef('func_model_summary', 'Summary of generalised linear model explaining functional beta diversity'))
+func_model_coef <- as.data.frame(func_model_summary$coefficients)
+colnames(func_model_coef)[4] <- 'p value'
+rownames(func_model_coef) <- c('Intercept', 'Human footprint', 'Forest loss', 'Net primary production', 'Habitat diversity', 'Mean temperature', 'Number forested points')
+pander::pander(func_model_coef)
+
+func_range <- round(max(units_merged_beta$func_beta_div) - min(units_merged_beta$func_beta_div), digits = 2)
+
+min_hfp <- round(min(units_merged_beta$human_footprint), digits = 2)
+max_hfp <- round(max(units_merged_beta$human_footprint), digits = 2)
+hfp_range <- round(max(units_merged_beta$human_footprint) - min(units_merged_beta$human_footprint), digits = 2)
+func_hfp_change <- round(func_model_coef['Human footprint', 'Estimate'] * hfp_range, digits = 2)
+func_hfp_perc <- round((func_hfp_change / func_range) * 100, digits = 2)
+
+min_npp <- round(min(units_merged_beta$net_prim_prod), digits = 2)
+max_npp <- round(max(units_merged_beta$net_prim_prod), digits = 2)
+npp_range <- round(max(units_merged_beta$net_prim_prod) - min(units_merged_beta$net_prim_prod), digits = 2)
+func_npp_change <- round(func_model_coef['Net primary production', 'Estimate'] * npp_range, digits = 2)
+func_npp_perc <- round((func_npp_change / func_range) * 100, digits = 2)
+
+min_temp <- round(min(units_merged_beta$mean_temp), digits = 2)
+max_temp <- round(max(units_merged_beta$mean_temp), digits = 2)
+temp_range <- round(max(units_merged_beta$mean_temp) - min(units_merged_beta$mean_temp), digits = 2)
+func_temp_change <- round(func_model_coef['Mean temperature', 'Estimate'] * temp_range, digits = 2)
+func_temp_perc <- round((func_temp_change / func_range) * 100, digits = 2)
+```
+
+On the other hand, functional beta diversity was impacted by human influence. Human footprint had a positive impact on functional beta diversity, even when natural variation caused by habitat diversity, net primary production (npp) and mean annual temperature were taken into account. Along the unitless gradient of human footprint in our data, ranging from `r min_hfp` (very small human footprint) to `r max_hfp` (relatively large human footprint), functional beta diversity increased by `r func_hfp_change`, which is `r func_hfp_perc`% of the range of functional beta values in our data. Forest loss did not appear to influence functional beta diversity. Net primary production had a negative impact on functional beta diversity. Along the range of npp values (`r paste(min_npp, ' - ', max_npp)` kg C / Ha / year) functional beta diversity decreased by `r abs(func_npp_change)` units (`r func_npp_perc`%). Similarly, mean annual temperature had a negative impact, decreasing functional beta diversity by `r abs(func_temp_change)` units (`r func_temp_perc`%) along the temperature gradient ranging from `r paste(min_temp, ' - ', max_temp)`°C.
+
+$~$
+
+### 3. Phylogenetic beta diversity  
+```{r phyl_beta_div, echo = FALSE, results = 'asis'}
+set.caption(tabRef('phyl_model_summary', 'Summary of spatial error model explaining phylogenetic beta diversity'))
+phyl_model_coef <- as.data.frame(phyl_model_summary$Coef)
+colnames(phyl_model_coef)[4] <- 'p value'
+rownames(phyl_model_coef) <- c('Intercept', 'Human footprint', 'Forest loss', 'Net primary production', 'Habitat diversity', 'Mean temperature', 'Number forested points')
+#phyl_model_coef$'Est. Transf.' <- exp(phyl_model_coef$Estimate)
+#phyl_model_coef <- dplyr::select(phyl_model_coef, 1, 5, 2, 3, 4)
+pander::pander(phyl_model_coef)
+
+phyl_range <- round(max(units_merged_beta$phyl_beta_div) - min(units_merged_beta$phyl_beta_div), digits = 3)
+
+phyl_npp_perc <- 100 - round(exp(phyl_model_coef['Net primary production', 'Estimate'] * npp_range) * 100, digits = 2)
+phyl_npp_change <- round((phyl_npp_perc / 100) * phyl_range, digits = 3)
+
+phyl_temp_perc <- 100 - round(exp(phyl_model_coef['Mean temperature', 'Estimate'] * temp_range) * 100, digits = 2)
+phyl_temp_change <- round((phyl_temp_perc / 100) * phyl_range, digits = 3)
+```
+
+Phylogenetic beta diversity showed a similar pattern to that of functional diversity, although human influence did not impact it. As with functional beta diversity, npp had a negative impact on phylogenetic beta diversity, although here the biological impacts were a fair bit stronger. Along the range of npp values (`r paste(min_npp, ' - ', max_npp)` kg C / Ha / year) in our data phylogenetic beta diversity decreased by `r abs(phyl_npp_change)` units (-`r phyl_npp_perc`%). Mean annual temperature also had a negative impact, decreasing phylogenetic beta diversity by `r abs(phyl_temp_change)` units (-`r phyl_temp_perc`%) along the range of temperature values ranging from `r paste(min_temp, ' - ', max_temp)`°C.
+  
+----
+  
+## Discussion  
+Human influence...
+  
+----
+  
+## Conclusion  
+  
+----
+  
+## Appdendix  
+1. Variance inflation factors from models  
+  
+a) Taxonomic beta diversity  
+```{r tax_vif, echo = FALSE, results = 'asis'}
+pander::pander(tax_model_vif)
+```
+
+$~$
+
+b) Functional beta diversity  
+```{r func_vif, echo = FALSE, results = 'asis'}
+pander::pander(func_model_vif)
+```
+
+$~$
+
+c) Phylogenetic beta diversity  
+```{r phyl_vif, echo = FALSE, results = 'asis'}
+pander::pander(phyl_model_vif)
+```
+
+$~$
+
+2. Spatial distribution of explanatory variables  
+![](../figures/explanatory_spatial.png)
+
+$~$
+
+3. List of used R packages and their versions  
+```{r list_packages, echo = FALSE, comment = NA, results = 'asis'}
+for (package in sort(.packages())) {
+  #print(paste(package, packageVersion(package), sep = ' '))
+  message(package, ' ', packageVersion(package))
+  #cat(paste(package, ' ', packageVersion(package), '\n'))
+}
+```

@@ -1,0 +1,17 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.html
+*.doc
+*.docx
+*.qgs
+*.qgs~
+*.pdf
+*.ppt
+*.pptx
+
+
+/data
+/figures
+/results

@@ -1,0 +1,116 @@
+---
+title: "R Notebook"
+output:
+  html_document: default
+  html_notebook: default
+---
+Forest species richness
+```{r, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 2, fig.height = 2}
+ggplot(data = units_merged_beta_subset_fort, 
+  aes_string(x = 'long', y = 'lat', fill = 'forest_spp_richness', group = 'group')) + 
+  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
+  geom_polygon(color = 'black', size = .05) + 
+  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Forest species \nrichness') + 
+  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = 'black') + 
+  coord_equal() + 
+  theme_void()
+```
+
+Taxonomic beta diversity
+```{r, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 2, fig.height = 2}
+ggplot(data = units_merged_beta_subset_fort, 
+  aes_string(x = 'long', y = 'lat', fill = 'tax_beta_div', group = 'group')) + 
+  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
+  geom_polygon(color = 'black', size = .05) + 
+  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Taxonomic \nbeta diversity') + 
+  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = 'black') + 
+  coord_equal() + theme_void()
+```
+
+Functional beta diversity
+```{r, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 2, fig.height = 2}
+ggplot(data = units_merged_beta_subset_fort, 
+  aes_string(x = 'long', y = 'lat', fill = 'func_beta_div', group = 'group')) + 
+  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
+  geom_polygon(color = 'black', size = .05) + 
+  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Functional \nbeta diversity') + 
+  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = 'black') + 
+  coord_equal() + theme_void()
+```
+
+Phylogenetic beta diversity
+```{r, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 2, fig.height = 2}
+ggplot(data = units_merged_beta_subset_fort, 
+  aes_string(x = 'long', y = 'lat', fill = 'phyl_beta_div', group = 'group')) + 
+  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
+  geom_polygon(color = 'black', size = .05) + 
+  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Phylogenetic \nbeta diversity') + 
+  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = 'black') + 
+  coord_equal() + theme_void()
+```
+
+Forest loss
+```{r, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 2, fig.height = 2}
+ggplot(data = units_merged_fort, #units_merged_beta_subset_fort
+  aes_string(x = 'long', y = 'lat', fill = 'forest_loss', group = 'group')) + 
+  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
+  geom_polygon(color = 'black', size = .05) + 
+  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Forest \nloss') + 
+  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = 'black') + 
+  coord_equal() + theme_void()
+```
+
+Human footprint
+```{r, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 2, fig.height = 2}
+ggplot(data = units_merged_fort, 
+  aes_string(x = 'long', y = 'lat', fill = 'human_footprint', group = 'group')) + 
+  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
+  geom_polygon(color = 'black', size = .05) + 
+  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Human \nfootprint') + 
+  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = 'black') + 
+  coord_equal() + theme_void()
+```
+
+Habitat diversity
+```{r, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 2, fig.height = 2}
+ggplot(data = units_merged_fort, 
+  aes_string(x = 'long', y = 'lat', fill = 'habitat_div', group = 'group')) + 
+  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
+  geom_polygon(color = 'black', size = .05) + 
+  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Habitat \ndiversity') + 
+  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = 'black') + 
+  coord_equal() + theme_void()
+```
+
+Net primary production
+```{r, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 2, fig.height = 2}
+ggplot(data = units_merged_fort, 
+  aes_string(x = 'long', y = 'lat', fill = 'net_prim_prod', group = 'group')) + 
+  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
+  geom_polygon(color = 'black', size = .05) + 
+  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Net primary \nproduction') + 
+  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = 'black') + 
+  coord_equal() + theme_void()
+```
+
+Forest point frequency
+```{r, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 2, fig.height = 2}
+ggplot(data = units_merged_fort, 
+  aes_string(x = 'long', y = 'lat', fill = 'forest_point_freq', group = 'group')) + 
+  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
+  geom_polygon(color = 'black', size = .05) + 
+  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Forest point \nfrequency') + 
+  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = 'black') + 
+  coord_equal() + theme_void()
+```
+
+Mean temperature
+```{r, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 2, fig.height = 2}
+ggplot(data = units_merged_fort, 
+  aes_string(x = 'long', y = 'lat', fill = 'mean_temp', group = 'group')) + 
+  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
+  geom_polygon(color = 'black', size = .05) + 
+  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Mean \ntemperature') + 
+  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = 'black') + 
+  coord_equal() + theme_void()
+```

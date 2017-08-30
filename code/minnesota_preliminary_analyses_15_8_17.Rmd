@@ -1,0 +1,1601 @@
+---
+title: "Preliminary analyses for Minnesota beta diversity"
+output:
+  html_document: default
+  html_notebook: default
+  pdf_document: default
+---
+
+Description: Code for preparing and performing preliminary analysis on Minnesota 
+beta diversity  
+Author: Eric Le Tortorec  
+Date: `r Sys.Date()`  
+R version: `r R.Version()$version.string`  
+
+##Table of contents
+[Load necessary packages](#load_necessary_packages)  
+[Define functions](#define_functions)  
+[Set values](#set_values)  
+[Prepare landscape data](#prepare_landscape_data)  
+* [Join unit-level data](#join_unit_data)  
+* [Load other data](#load_other_data)  
+* [Process and calculate human footprint index](#human_footprint)  
+* [Process and calculate forest loss](#forest_loss)  
+* [Process and calculate mean net primary productivity](#npp)
+* [Calculate habitat diversity](#habitat_div)  
+[Calculate BBA points per unit](#calcualte_points_per_unit)  
+[Select columns and standardise their names](#standardise_col_names)  
+[Prepare bird data](#prepare_bird_data)  
+[Calculate beta diversity](#calculate_beta_div)  
+[Data exploration](#data_exploration)  
+[Analyse taxonomic beta diversity](#analyse_tax_div)  
+* [Check taxonomic beta residuals](#check_tax_res)  
+[Analyse functional beta diversity](#analyse_func_div)  
+* [Check functional beta residuals](#check_func_res)  
+[Analyse phylogenetic beta diversity](#analyse_phyl_div)  
+* [Check phylogenetic beta residuals](#check_phyl_res)
+
+```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
+# set global chunk options
+knitr::opts_knit$set(root.dir = normalizePath('/Users/Eric/Dropbox/Eric/Work/JKL/Theses/Matti_Hakkila/paper_4/'))
+```
+
+##Load necessary packages {#load_necessary_packages}
+```{r, message = FALSE, warning = FALSE}
+#install.packages(c('knitr', 'rgdal', 'gstat', 'raster', 'maptools', 'spdep', 'nlme', 'reshape2', 'tidyverse', 'maptools', 'rgeos', 'psych', 'lattice', 'car', 'cluster', 'ape', 'adephylo', 'DBI'))
+library(reshape2)
+library(tidyverse)
+#library(dplyr)
+#library(tidyr)
+#library(readxl)
+#library(ggplot2)
+library(maptools)
+library(rgeos)
+library(rgdal)
+library(raster)
+library(gstat)
+library(spdep)
+library(psych)
+library(lattice)
+library(car)
+library(cluster)
+library(ape)
+library(adephylo)
+library(nlme)
+```
+
+## Define functions {#define_functions}
+```{r, message = FALSE, warning = FALSE}
+# Print pair plots. Requires dataframe.
+panel.hist <- function(x, ...)
+{
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(usr[1:2], 0, 1.5) )
+  h <- hist(x, plot = FALSE)
+  breaks <- h$breaks; nB <- length(breaks)
+  y <- h$counts; y <- y/max(y)
+  rect(breaks[-nB], 0, breaks[-1], y, col = "cyan", ...)
+}
+panel.cor <- function(x, y, digits=2, prefix = "", cex.cor, ...)
+{
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  r <- cor(x, y, method = "pearson")
+  txt <- format(c(r, 0.123456789), digits = digits)[1]
+  txt <- paste(prefix, txt, sep = "")
+  if (missing(cex.cor)) cex.cor <- 0.8 / strwidth(txt)
+  text(0.5, 0.5, txt, cex = 1.5)
+}
+
+# Moran plot. Requires SpatialPolygonsDataFrame, column name, and 
+# number of neighbours.
+moran_plot_func <- function(df, col_name) {
+  response_var <- df@data[, deparse(substitute(col_name))]
+  spat_nb <- spdep::poly2nb(df, row.names = df$unit)
+  spat_listw <- spdep::nb2listw(spat_nb, zero.policy = TRUE)
+  df$response <- scale(response_var)  %>% as.vector()
+  spdep::moran.plot(df$response, spat_listw, zero.policy = TRUE, 
+    xlab = 'Residuals', ylab = 'Spatially lagged residuals')
+}
+
+# Plot raw variable values on map. Requires SpatialPolygonsDataFrame, and 
+# column name.
+plot_variable_map <- function(df, col_name) {
+  ggplot(data = df, aes_string(x = 'long', y = 'lat', fill = col_name, group = 'group')) + 
+  geom_polygon(color = "white", size = .05) + 
+  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = col_name) + 
+  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = "black") + 
+  coord_equal() + theme_void()
+}
+
+# Prepare data and then plot local Moran's I values on a map. Requires 
+# SpatialPolygonsDataFrame, column name, and number of neighbours.
+plot_lisa_map <- function(df, col_name) {
+  response_var <- df@data[, deparse(substitute(col_name))]
+  spat_nb <- spdep::poly2nb(df, row.names = df$unit)
+  spat_listw <- spdep::nb2listw(spat_nb, zero.policy = TRUE)
+  lmoran <- localmoran(response_var, spat_listw)
+  df$response <- scale(response_var)  %>% as.vector()
+  df$response_lag <- lag.listw(spat_listw, df$response)
+  df$quad_sig <- NA
+  df$quad_sig[(df$response >= 0 & df$response_lag >= 0) & (lmoran[, 5] <= 0.05)] <- "high-high"
+  df$quad_sig[(df$response <= 0 & df$response_lag <= 0) & (lmoran[, 5] <= 0.05)] <- "low-low"
+  df$quad_sig[(df$response >= 0 & df$response_lag <= 0) & (lmoran[, 5] <= 0.05)] <- "high-low"
+  df$quad_sig[(df$response <= 0 & df$response_lag >= 0) & (lmoran[, 5] <= 0.05)] <- "low-high"
+  df$quad_sig[(lmoran[, 5] >= 0.05)] <- "non_sign"
+  df$quad_sig <- as.factor(df$quad_sig)
+  df$id <- rownames(df@data)
+  left_join(fortify(df, region = "id"), df@data) %>% 
+  ggplot(aes(long, lat, group = group, fill = quad_sig)) + 
+  geom_polygon(color = "white", size = .05) + 
+  scale_fill_brewer(palette = "Set1", name = "Local Moran's I", 
+    breaks = c("high-high", "low-low", "non_sign"), 
+    labels = c('High- high', 'Low- low', 'Non-significant')) + 
+  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = "black") + 
+  coord_equal() + theme_void()
+}
+
+# Plot multiple figures in one frame. Requires plot objects.
+multiplot <- function(..., plotlist=NULL, file, cols = 1, layout = NULL) {
+  require(grid)
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  numPlots = length(plots)
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots / cols)),
+                    ncol = cols, nrow = ceiling(numPlots / cols))
+  }
+ if (numPlots == 1) {
+    print(plots[[1]])
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+```
+
+##Set values {#set_values}
+```{r}
+# Set minimum number of forested unique BBA points per unit
+################
+min_points <- 3
+################
+# Set radius within which to select bird observations and landscape data
+# (options are 50 or 100)
+################
+count_radius <- 100
+################
+save(min_points, count_radius, file = './results/min_points_radius.rda')
+```
+
+##Prepare landscape data {#prepare_landscape_data}
+###Join unit-level data {#join_unit_data}
+We prepare the vector data by joining all unit- level data together
+```{r, results = 'hide'}
+# Read the different unit- level shapefiles
+units <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Units.shp', 'Units')
+units_road_density <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Units_RoadDensity.shp', 'Units_RoadDensity')
+units_census <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Units_Census.shp', 'Units_Census')
+units_eco_subsection <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Units_EcoSubsection.shp', 'Units_EcoSubsection')
+units_forest_status <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Units_ForestStatus.shp', 'Units_ForestStatus')
+units_land_fire <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Units_Landfire.shp', 'Units_Landfire')
+units_prism <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Units_PRISM.shp', 'Units_PRISM')
+units_forest_loss <- readOGR('./data/forest_loss_3_2017/Units_ForestLoss.shp', 'Units_ForestLoss')
+units_forest_loss$allV1 <- units_forest_loss$allV1 * 100
+
+# Join attributes of unit- level shapefiles
+units_merged <- merge(units_forest_loss@data, units_road_density@data, by = 'unit')
+units_merged <- merge(units_merged, units_census@data, by = 'unit')
+units_merged <- merge(units_merged, units_eco_subsection@data, by = 'unit')
+units_merged <- merge(units_merged, units_forest_status@data, by = 'unit')
+units_merged <- merge(units_merged, units_land_fire@data, by = 'unit')
+units_merged <- merge(units_merged, units_prism@data, by = 'unit')
+units_merged$Dens_Minor <- as.numeric(units_merged$Dens_Minor)
+```
+
+###Load other data {#load_other_data}
+```{r, results = 'hide', message = FALSE, warning = FALSE}
+mnn_bba_points <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/bird_data/MNBBA_Surveys_DominantHabitat_Final.shp', 'MNBBA_Surveys_DominantHabitat_Final')
+mnn_bba_points$Date <- as.Date(mnn_bba_points$Date , "%Y/%m/%d")
+minnesota <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Minnesota_Outline.shp', 'Minnesota_Outline')
+land_fire_3 <- raster('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/landfire/landfire3.tif')
+#aaa <- raster('./data/minnesota_bird_data/mnbba_homogenization_gisfiles_8_2015/landcover/landfire.tif')
+```
+
+###Process and calculate human footprint index {#human_footprint}
+We continue by looking into calculating an index describing the intensity of 
+the human footprint.
+
+Then we read, clip and reproject the human footprint data so that average values 
+per unit can be calculated. The first part of the code below reads, clips and 
+reprojects the human footprint data. For some reason raster::projectRaster 
+cannot reproject between WGS84 and UTM zone 15, even if the raster has been 
+clipped to the spatial limits of zone 15. Thus, the clipped raster is saved as 
+a geotiff, and reprojected with gdal in the terminal.
+```{r, eval = FALSE}
+human_footprint_orig <- raster('./data/last_of_the_wild/human_footprint_2/hfp_n_amer/dblbnd.adf')
+crs(human_footprint_orig) <- CRS("+init=epsg:4326")
+
+minnesota_extent <- as(extent(minnesota), 'SpatialPolygons')
+crs(minnesota_extent) <- crs(minnesota)
+
+minnesota_extent_wgs84 <- spTransform(minnesota_extent, CRS = CRS('+init=epsg:4326'))
+human_footprint_minnesota <- crop(human_footprint_orig, minnesota_extent_wgs84)
+
+writeRaster(human_footprint_minnesota, filename = './Data/last_of_the_wild/human_footprint_2/human_footprint_minnesota.tif', overwrite =T)
+###gdalwarp -s_srs '+init=epsg:4326' -t_srs '+init=epsg:26915' human_footprint_minnesota.tif human_footprint_utm15n.tif
+```
+
+We then read the reprojected data and calculate the average human footprint 
+value per unit, and merge it to the unit- level data
+```{r, eval = FALSE}
+human_footprint <- raster('./data/last_of_the_wild/human_footprint_2/human_footprint_utm15n.tif')
+units <- units[order(units$unit, decreasing = FALSE), ]
+
+units_hfp <- extract(human_footprint, units, fun = mean, na.rm = T)
+units_hfp <- data.frame(unit = seq(1, 617, 1), human_footprint = units_hfp)
+write.csv(units_hfp, './data/last_of_the_wild/human_footprint_2/units_hfp.csv', 
+  row.names = FALSE)
+```
+```{r}
+# Join human footprint data to units_merged
+units_hfp <- read.csv('./data/last_of_the_wild/human_footprint_2/units_hfp.csv')
+units_merged <- merge(units_merged, units_hfp, by = 'unit')
+```
+
+###Process and calculate forest loss {#forest_loss}
+In addition to the index describing human land use we want to study if forest 
+loss has an impact on beta diversity. We have forest loss data from Minnesota, 
+which is derived from Hansen et al. 2013 *. The data has proportion 
+forest loss between 2001-2014 per unit. Note that forest fires are also 
+included! Ed said that data separating the two types of forest loss 
+might be available in 6 months to 1 year, but this is too long. The forest loss 
+data has previously been joined to the unit- level data.  
+
+*Hansen MC, Potapov PV, Moore R, Hancher M, Turubanova SA, Tyukavina A, et 
+al. High-Resolution Global Maps of 21st-Century Forest Cover Change. Science. 
+2013 Nov 15;342(6160):850–3. 
+
+###Process and calculate mean net primary productivity {#npp}
+The code underneath is written in python, utilising Google Earth Engine. It 
+selects and calculates mean net primary productivity per unit. The NPP estimates 
+are based on satellite data from the Modis programme, and are available at 1km 
+resolution. A detailed description of the data can be found [here](https://explorer.earthengine.google.com/#detail/MODIS%2F055%2FMOD17A3)
+```{python, eval = FALSE}
+# Check python version, and path of python executable
+import sys
+print(sys.version)
+print(sys.executable)
+
+# Import and load necessary libraries
+import ee as ee
+ee.Initialize()
+#import ee.mapclient
+import pandas as pd
+
+# Print earth engine version (this code works with ee version 0.1.80)
+print ee.__version__
+
+#Load datasets
+minnesota = ee.FeatureCollection('ft:1fRY18cjsHzDgGiJiS2nnpUU3v9JPDc2HNaR7Xk8').filterMetadata('Name', 'equals', 'Minnesota')
+modis = ee.ImageCollection('MODIS/055/MOD17A3')
+units = ee.FeatureCollection('ft:1gdhQYMZe31QgEbrmHArQUECKdVssmvR2tqhM03_i')
+
+# Print band names in Modis data
+print('Band names in Modis data:', ee.Image(modis.first()).bandNames().getInfo())
+
+# Select NPP band from Modis data, and clip with Minnesota shape
+npp = modis.select('Npp')
+def clipped(img):
+    return img.clip(minnesota)
+npp_minnesota = npp.map(clipped)
+
+# Select only a certain year from the data
+#year_map = npp_minnesota.filter(ee.Filter.calendarRange(2012, 2012, 'year'));
+
+# Calculate mean npp across all years in the collection (2000-2014)
+mean_npp_minnesota = npp_minnesota.reduce(ee.Reducer.mean())
+
+# Reproject mean npp. This is not necessary, but is here for reference
+#mean_npp_minnesota_utm15 = ee.Image(mean_npp_minnesota).reproject('EPSG:26915', None, 1000)
+#print(mean_npp_minnesota_utm15.projection().nominalScale().getInfo());
+#print(mean_npp_minnesota_utm15.projection().crs().getInfo());
+
+# Calculate bounds of the state of Minnesota, used for saving the image
+#minnesota_bounds = minnesota.geometry().bounds().getInfo()['coordinates'][0][0:4]
+#
+# We have two options for downloading mean NPP in Minnesota. We can either 
+# save it to the Google drive, or create a download link. The Google 
+# drive option seems to work more consistently, and includes nodata 
+# pixels (as opposed to setting them to zero).
+# 1. Save to Google drive
+#task_config = {'description':'mean_npp_minnesota', 
+#               'scale':1000, 
+#               'crs':'EPSG:26915', 
+#               'region': minnesota_bounds}
+#task = ee.batch.Export.image(ee.Image(mean_npp_minnesota), 'mean_npp_minnesota', task_config)
+#task.start()
+#
+# 2. Create download link
+#path_config = {'description':'mean_npp_minnesota', 
+#    'scale': 100,
+#    'crs': 'EPSG:26915', 
+#    'region': minnesota_bounds}
+#path = ee.Image(mean_npp_minnesota).getDownloadUrl(path_config)
+#print path
+
+# Calculate mean npp per unit
+mean_npp_unit = mean_npp_minnesota.reduceRegions(units, ee.Reducer.mean(), 1000)
+
+# Once again we have two options for downloading the ready data. 
+# There is not so much difference between the two options.
+# 1. Save to Google drive
+#task_config = {'description': 'Mean_npp_per_unit', 
+#                'fileFormat': 'csv'}
+#task = ee.batch.Export.table(mean_npp_unit, 'mean_npp_unit', task_config)
+#task.start()
+#
+# 2. Create download link
+path = mean_npp_unit.getDownloadURL('csv')
+
+# Read data 
+df = pd.read_csv(path)
+df.rename(columns={'system:index': 'unit', 'mean': 'npp'}, inplace=True)
+df[[0, 2]].to_csv('../data/npp/mean_npp_unit.csv')
+```
+```{r}
+npp <- read.csv('./data/npp/mean_npp_unit.csv')
+units_merged$net_prim_prod <- npp$npp
+```
+
+###Calculate habitat diversity {#habitat_div}
+```{r, eval = FALSE}
+land_fire_3_classes <- data.frame(class = c(2:51))
+for (unit in as.vector(units$unit)) {
+  #print(unit)
+  unit_cropped <- crop(land_fire_3, units[units$unit == unit, ])
+  unit_freq <- raster::freq(unit_cropped)
+  land_fire_3_classes <- merge(land_fire_3_classes, unit_freq, by.x = 'class', by.y = 'value', all.x = TRUE)
+  colnames(land_fire_3_classes)[ncol(land_fire_3_classes)] <- unit
+}
+
+land_fire_3_classes$class <- paste0('landfire_', land_fire_3_classes$class) 
+rownames(land_fire_3_classes) <- land_fire_3_classes$class
+land_fire_3_classes$class <- NULL
+#land_fire_3_classes <- as.data.frame(t(land_fire_3_classes))
+#land_fire_3_classes$unit <- rownames(land_fire_3_classes)
+#land_fire_3_classes <- land_fire_3_classes[, colSums(land_fire_3_classes, na.rm = TRUE) > 0]
+land_fire_3_classes[is.na(land_fire_3_classes)] <- 0
+#land_fire_3_classes <- dplyr::select(land_fire_3_classes, unit, landfire_2:landfire_51)
+write.csv(land_fire_3_classes, './data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/landfire/land_fire_3_classes_unit.csv', row.names = FALSE)
+```
+```{r}
+land_fire_3_classes <- read.csv('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/landfire/land_fire_3_classes_unit.csv')
+
+source('./Code/Rao.r')
+funct_matrix <- matrix(data = 0, nrow = nrow(land_fire_3_classes), 
+  ncol = nrow(land_fire_3_classes))
+phylo_matrix <- matrix(data = 0, nrow = nrow(land_fire_3_classes), 
+  ncol = nrow(land_fire_3_classes))
+habitat_div <- Rao(sample = land_fire_3_classes, dfunc = funct_matrix, 
+  dphyl = phylo_matrix, weight = FALSE, Jost = TRUE, structure = NULL)
+#units_habitat_div <- data.frame(unit = units$unit, habitat_div = habitat_div$TD$Alpha)
+units_merged$habitat_div <- habitat_div$TD$Alpha
+```
+
+##Calculate BBA points per unit {#calcualte_points_per_unit}
+Later on we will need to determine how many forested BBA points there are per 
+unit. There are three ways of doing this:
+
+* Reclassify the forest status raster into two classes: forest and non-forest
+* Reclassify the land_fire_3 raster into the same to classes
+* Reclassify the land cover class of each point (this information is included 
+in the BBA data) in the same two classes.
+
+The reclassifications for the last two approaches are such that forests are:
+
+* Lowland Deciduous Forest
+* Northern Hardwoods
+* Pine Forest
+* Boreal Deciduous
+* Oak Forest
+* Parkland Deciduous Forest
+* Boreal Coniferous
+* Lowland Coniferous Forest
+* Rural Developed Forest
+* Urban Developed Forest
+* Pine-Oak Barrens
+* Oak Savannah
+
+Before continuing any further let's calculate the minimum distance between BBA 
+points (2 * the count radius), and specify which column to use from the data.
+```{r}
+####
+min_dist <- 2 * count_radius
+reclass_col <- paste0('Reclass3_', substr(count_radius, 1, 1))
+####
+```
+
+Even though reclassifying the dominant land cover class of the BBA points yields 
+the least points, we will use it since it has been measured directly in the 
+field. We reclassify the `r reclass_col`- column from mnna_bba_points (dominant 
+landcover type within `r count_radius`m of the BBA point data, using the reclass3 
+classification). This will be used later on to calculate the number of forested 
+BBA points per unit.
+```{r}
+mnn_bba_points$forest_bba <- unlist(mnn_bba_points@data[reclass_col])
+levels(mnn_bba_points$forest_bba) <- list('1' = c("Boreal Coniferous", 
+  "Boreal Coniferous_10m", "Boreal Deciduous", "Boreal Deciduous_10m", 
+  "Lowland Coniferous Forest", "Lowland Coniferous Forest_10m", 
+  "Lowland Deciduous Forest", "Lowland Deciduous Forest_10m", 
+  "Northern Hardwoods", "Northern Hardwoods_10m", "Oak Forest", 
+  "Oak Forest_10m", "Oak Savannah", "Parkland Deciduous Forest_10m", 
+  "Pine Forest", "Pine Forest_10m", "Pine-Oak Barrens", "Pine-Oak Barrens_10m", 
+  "Rural Developed Forest_10m", "Urban Developed Forest", 
+  "Urban Developed Forest_10m"), '0' = c("Boreal Lowland Grassland", 
+  "Boreal Shrub Swamp", "Cropland", "Developed-High Intensity", 
+  "Developed-Low Intensity", "Developed-Medium Intensity", "Lowland Herbaceous", 
+  "Open Water", "Quarries-Strip Mines-Gravel Pits", "Shrub Swamp", 
+  "Upland Grassland", "Upland Native Grassland", "Upland Shrub"))
+mnn_bba_points$forest_bba <- as.numeric(as.character(mnn_bba_points$forest_bba))
+```
+
+We then continue by calculating how many unique BBA points fall within each 
+unit. Let's count if there are points with duplicated coordinates.
+```{r, results = 'hold'}
+coord_counts <- plyr::count(mnn_bba_points@data, c('x', 'y'))
+table(coord_counts$freq)
+coord_counts_dupl <- coord_counts[coord_counts$freq > 1, ]
+```
+
+We can see that the vast majority of points have uniqe coordinates, a few have 
+one duplicate, and one is present three times!  
+
+Let's continue by inspecting nearest neghbour distances for points with unique 
+coordinates.
+```{r, results = 'hold', fig.show = 'hold'}
+# Select unique points based on coordinates, also sort by date
+mnn_bba_points_unique <- mnn_bba_points[order(mnn_bba_points$x, 
+  mnn_bba_points$y, mnn_bba_points$Date), ]
+mnn_bba_points_unique <- mnn_bba_points_unique[which(!duplicated(mnn_bba_points_unique@data[c('x', 'y')], fromLast = FALSE)), ]
+
+# Calculate distances between points
+point_dist_unique <- as.data.frame(pointDistance(mnn_bba_points_unique, lonlat = FALSE))
+colnames(point_dist_unique) <- mnn_bba_points_unique$ID
+rownames(point_dist_unique) <- mnn_bba_points_unique$ID
+
+# Calculate minimum distances, but leave zeros out, since they are present in 
+# every row and column
+point_dist_nn <- sapply(point_dist_unique, FUN = function(x) {min(x[x > 0])})
+point_dist_nn <- sort(point_dist_nn)
+summary(point_dist_nn)
+hist(point_dist_nn, breaks = 20, main = 'Frequencies of nearest neighbour 
+  distances between points', 
+  xlab = 'Nearest neighbour distance (m)')
+hist(point_dist_nn[1:1000], breaks = 20, main = 'Frequencies of nearest 
+  neighbour distances between points', xlab = 'Nearest neighbour distance (m)')
+```
+
+It's a bit hard to determine a cut-off point since there is a contimuum of 
+nearest neighbour values from `r min(point_dist_nn)`m all the way to `r max(point_dist_nn)`m. 
+If we look at the smallest distances we can see that there is a small spike at 
+the very smallest values (around 10-20m). However, there is a steady stream of 
+small frequencies up to 200m. This is a bit odd considering that we would expect 
+a smallish frequency of very small distances (points that have been counted 
+twice), a gap, and then clearly larger distances between independent points 
+(~250m, according to the sampling protocol).
+
+Since we are using bird counts within a `r count_radius`m radius, as well as using dominant 
+land cover within `r count_radius`m, we will subset the points so we only include points that 
+are at least `r min_dist`m away from each other. We will include the earlier observation 
+from each point pair, and randomy select a point if the dates are the same.
+```{r}
+# Select points located under min_dist from each other
+point_dist_nn_over <- data.frame(distance = point_dist_nn[point_dist_nn > min_dist])
+point_dist_nn_over$ID <- as.integer(rownames(point_dist_nn_over))
+point_dist_nn_under <- data.frame(distance = point_dist_nn[point_dist_nn < min_dist])
+point_dist_nn_under$ID <- as.integer(rownames(point_dist_nn_under))
+point_dist_nn_under <- dplyr::left_join(point_dist_nn_under, 
+  mnn_bba_points_unique@data[c('ID', 'Date')], by = 'ID')
+point_dist_nn_under <- dplyr::arrange(point_dist_nn_under, distance, Date)
+
+point_dist_nn_under_duplc_dis_date <- point_dist_nn_under[duplicated(point_dist_nn_under[c('distance', 'Date')]) 
+  | duplicated(point_dist_nn_under[c('distance', 'Date')], fromLast = TRUE), ]
+point_dist_nn_under_duplc_dis <- point_dist_nn_under[!(point_dist_nn_under$ID %in% 
+    point_dist_nn_under_duplc_dis_date$ID), ]
+point_dist_nn_under_unique_dis <- point_dist_nn_under_duplc_dis[!duplicated(point_dist_nn_under_duplc_dis$distance, 
+  fromLast = FALSE), ]
+
+set.seed(7)
+point_dist_nn_under_ID <- sapply(unique(point_dist_nn_under_duplc_dis_date$distance), 
+  function(x) sample(point_dist_nn_under_duplc_dis_date$ID[point_dist_nn_under_duplc_dis_date$distance == x], 1))
+point_dist_nn_under_ID <- c(point_dist_nn_under_ID, point_dist_nn_under_unique_dis$ID)
+  
+mnn_bba_points_unique_under <- mnn_bba_points_unique[mnn_bba_points_unique$ID %in% 
+    point_dist_nn_under_ID, ]
+mnn_bba_points_unique_over <- mnn_bba_points_unique[mnn_bba_points_unique$ID %in% 
+    point_dist_nn_over$ID, ]
+
+mnn_bba_points_unique_subset <- spRbind(mnn_bba_points_unique_over, mnn_bba_points_unique_under)
+```
+
+There are a total of `r length(mnn_bba_points_unique_subset)` unique BBA points 
+located at least `r min_dist`m from each other, out of a total of `r length(mnn_bba_points)` 
+BBA points in the data. Of the unique BBA points there are a total of `r sum(mnn_bba_points_unique_subset$forest_bba)` forested BBA points.
+
+Let's then calculate the number of forested BBA points per unit.
+```{r, results = 'hold', fig.show = 'hold'}
+# Select forest BBA points
+mnn_bba_points_forest <- mnn_bba_points_unique_subset[mnn_bba_points_unique_subset$forest_bba == 1, ]
+
+# Calculate the number of BBA points in forested pixels within each unit
+units_forest_points <- over(mnn_bba_points_forest, units)
+units_forest_points_count <- data.frame(table(units_forest_points$unit))
+colnames(units_forest_points_count) <- c('unit', 'forest_point_freq')
+units_forest_points_count$unit <- as.numeric(as.character(units_forest_points_count$unit))
+
+units_merged <- merge(units_merged, units_forest_points_count, by = 'unit', all.x = TRUE)
+units_merged$forest_point_freq[is.na(units_merged$forest_point_freq)] <- 0
+
+# Summarise how many unique forested BBA points there are per unit
+forest_point_freq <- as.data.frame(table(units_merged$forest_point_freq))
+colnames(forest_point_freq) <- c('forested points per unit', 'freq')
+print.data.frame(forest_point_freq)
+hist(units_merged$forest_point_freq, breaks = 15, xlim = c(0, 15), xlab = 'Number 
+of forested BBA points', main = 'Forested BBA points per unit')
+```
+
+From the following table we can see how many units are available if a minimum 
+number of forested BBA points is set.
+```{r, echo = FALSE}
+data.frame('Min_forested_BBA_points_per_unit' = c(1, 2, 3, 4, 5), 
+  'No_of_units' = c(nrow(units_merged[units_merged$forest_point_freq >= 1, ]), 
+    nrow(units_merged[units_merged$forest_point_freq >= 2, ]), 
+    nrow(units_merged[units_merged$forest_point_freq >= 3, ]), 
+    nrow(units_merged[units_merged$forest_point_freq >= 4, ]),
+    nrow(units_merged[units_merged$forest_point_freq >= 5, ])))
+```
+
+##Select columns and standardise their names {#standardise_col_names}
+```{r}
+units_merged <- dplyr::select(units_merged, unit, 'forest_loss' = allV1, 
+  'other_roads' = Dens_Other, 'mean_prec' = precMN, 'mean_temp' = tempMN, 
+  'eco_subsection' = SUBSECNAME, human_footprint, net_prim_prod, 
+  forest_point_freq, habitat_div)
+units_merged <- merge(units, units_merged, by = 'unit')
+```
+
+##Prepare bird data {#prepare_bird_data}
+Before doing anything else, we subset the data by setting a minumum number of 
+forested BBA points per unit.
+```{r}
+units_merged_subset <- units_merged[units_merged$forest_point_freq >= min_points, ]
+```
+
+```{r, fig.width = 3, fig.height = 3, message = FALSE}
+ggplot() + 
+  geom_polygon(data = minnesota, aes(x = long, y = lat, group = group), fill = NA, color = 'black') + 
+  geom_polygon(data = units_merged_subset, aes(x = long, y = lat, group = group), fill = 'lightgray', color = 'black') + 
+  theme_void() + 
+  coord_fixed()
+```
+
+We can see that units with forested BBA points are very much concentrated in the 
+northern parts of the state:
+
+Let's continue by loading the bird data and printing all unique bird species in 
+the data.
+```{r}
+bird_data_whole <- readxl::read_excel('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/bird_data/Homogenization_All_BirdData.xlsx')
+bird_data_whole$common = gsub('N. Rough-winged Swallow', 'Northern Rough-winged Swallow', bird_data_whole$common, fixed = TRUE)
+sort(unique(bird_data_whole$common))
+```
+
+We filter the bird data so that we only include forested BBA points with unique 
+coordinates located in units with a minimum of `r min_points` forested BBA points, and 
+leave out all unidentified species.
+```{r}
+# Replace dashes and spaces with underscores, apostrophes with nothing, and convert all to lower case
+bird_data_whole$common <- gsub('-', "_", bird_data_whole$common, fixed = TRUE)
+bird_data_whole$common <- gsub(' ', "_", bird_data_whole$common, fixed = TRUE)
+bird_data_whole$common <- gsub("'", "", bird_data_whole$common, fixed = TRUE)
+bird_data_whole$common <- tolower(bird_data_whole$common)
+
+# Identify common units between the subsetted units data and the bird data (not 
+# all of the units are included in the bird data, unit 617 is missing)
+common_units <- dplyr::inner_join(data.frame(unit = units_merged_subset$unit), data.frame(unit = unique(bird_data_whole$unit)), by = 'unit')
+unique_coord_id_forest <- mnn_bba_points_forest@data$ID
+#colnames(bird_data_whole)
+count_column <- paste0('Sum_Inside', count_radius, 'm')
+bird_points_species <- dplyr::select_(bird_data_whole, 'ID', 'unit', 'common', count_column) %>% 
+  dplyr::filter(ID %in% unique_coord_id_forest) %>% 
+  dplyr::filter(unit %in% common_units$unit) %>% 
+  dplyr::filter(!grepl('unidentified', common)) %>% 
+  dplyr::arrange(ID, common)
+```
+
+We then calculate overall species richness for all units, and for units with at 
+least `r min_points` forested BBA points.
+```{r}
+unique_coord_id <- mnn_bba_points_unique_subset$ID
+spp_richness_unit <- dplyr::select_(bird_data_whole, 'ID', 'unit', 'common', count_column) %>% 
+  dplyr::filter(ID %in% unique_coord_id) %>% 
+  dplyr::filter(!grepl('unidentified', common)) %>% 
+  dplyr::filter_(paste(count_column, '>',  '0')) %>% 
+  dplyr::group_by(unit) %>% 
+  dplyr::summarise(spp_richness = n())
+units_merged <- merge(units_merged, spp_richness_unit, by = 'unit', all.x = TRUE)
+units_merged$spp_richness[is.na(units_merged$spp_richness)] <- 0
+
+forest_spp_richness_unit <- dplyr::select_(bird_data_whole, 'ID', 'unit', 'common', count_column) %>% 
+  dplyr::filter(ID %in% unique_coord_id_forest) %>% 
+  dplyr::filter(unit %in% common_units$unit) %>% 
+  dplyr::filter(!grepl('unidentified', common)) %>% 
+  dplyr::filter_(paste(count_column, '>',  '0')) %>% 
+  dplyr::group_by(unit) %>% 
+  dplyr::summarise(forest_spp_richness = n())
+units_merged <- merge(units_merged, forest_spp_richness_unit, by = 'unit', all.x = TRUE)
+units_merged$forest_spp_richness[is.na(units_merged$forest_spp_richness)] <- 0
+```
+Here we clean and join the functional data before calculating functional 
+distances between species. The functional data is from the paper of Belmaker et 
+al. *, and contains information on diet, foraging, activity time, and body mass. 
+The data can be downloaded [here](http://www.esapubs.org/archive/ecol/E095/178/).
+
+*Wilman H, Belmaker J, Simpson J, de la Rosa C, Rivadeneira MM, Jetz W. 
+EltonTraits 1.0: Species-level foraging attributes of the world’s birds and 
+mammals. Ecology. 2014;95(7):2027–2027. 
+
+Let's clean the functional data.
+```{r}
+# Data munging
+bird_func_data <- read.table('./data/functional_data/BirdFuncDat.txt', sep = '\t', 
+  header = TRUE, fill = TRUE, quote = "", fileEncoding = 'Windows-1252')
+bird_func_data <- bird_func_data[-(c(10204:10205)), ]
+bird_func_data$ForStrat.Source <- gsub('"', '', bird_func_data$ForStrat.Source, fixed = TRUE)
+
+# Some rows (210 to be exact) have been split in a very strange way. We identify 
+# the split rows (2 rows per original row), cut them from the dataframe, join 
+# them together to yield intact rows, and join them back to the dataframe.
+
+# Identify split rows, and cut them from the dataframe
+split_rows <- as.integer(rownames(bird_func_data[bird_func_data$SpecID == '"', ]))
+split_rows <- as.character(sort(c(split_rows, split_rows - 1)))
+split_rows_df <- bird_func_data[rownames(bird_func_data) %in% split_rows, ]
+split_rows_df$group <- rep(1:(nrow(split_rows_df) / 2), each = 2)
+bird_func_data <- bird_func_data[!(rownames(bird_func_data) %in% split_rows), ]
+rownames(bird_func_data) <- bird_func_data$SpecID
+
+# Join split rows together
+no_cols <- ncol(bird_func_data)
+joined_rows <- character()
+for (group in unique(split_rows_df$group)) {
+  split_rows_sel <- split_rows_df[split_rows_df$group == group, ]
+  first_row <- as.vector(t(split_rows_sel)[1:32, 1])
+  second_row <- as.vector(t(split_rows_sel)[2:no_cols, 2])
+  joined_row <- c(first_row, second_row)[1:no_cols]
+  joined_rows <- rbind(joined_rows, joined_row)
+}
+
+# Join intact rows to rest of functional data
+joined_rows <- as.data.frame(joined_rows, row.names = joined_rows[, 1])
+joined_rows <- as.data.frame(joined_rows, row.names = rep(1:210, 1))
+colnames(joined_rows) <- colnames(bird_func_data)
+###rownames(bird_func_data) <- bird_func_data$SpecID
+bird_func_data <- rbind(bird_func_data, joined_rows)
+```
+
+Then we select species included in the Minnesota bird data.
+```{r}
+# Unify species names between MNN data and functional data
+bird_func_data$English <- gsub('Blue-grey Gnatcatcher', 'Blue-gray Gnatcatcher', bird_func_data$English, fixed = TRUE)
+bird_func_data$English <- gsub('American Treecreeper', 'Brown Creeper', bird_func_data$English, fixed = TRUE)
+bird_func_data$English <- gsub('Clay-coloured Sparrow', 'Clay-colored Sparrow', bird_func_data$English, fixed = TRUE)
+bird_func_data$English <- gsub('Eastern Wood-pewee', 'Eastern Wood-Pewee', bird_func_data$English, fixed = TRUE)
+bird_func_data$English <- gsub('Common Starling', 'European Starling', bird_func_data$English, fixed = TRUE)
+bird_func_data$English <- gsub('Grey Catbird', 'Gray Catbird', bird_func_data$English, fixed = TRUE)
+bird_func_data$English <- gsub('Grey Jay', 'Gray Jay', bird_func_data$English, fixed = TRUE)
+bird_func_data$English <- gsub('Grey-cheeked Thrush', 'Gray-cheeked Thrush', bird_func_data$English, fixed = TRUE)
+bird_func_data$English <- gsub('Yellow-rumped Warbler', 'Myrtle Warbler', bird_func_data$English, fixed = TRUE)
+bird_func_data$English <- gsub('Common Pheasant', 'Ring-necked Pheasant', bird_func_data$English, fixed = TRUE)
+bird_func_data$English <- gsub('Rock Pigeon', 'Rock Dove', bird_func_data$English, fixed = TRUE)
+bird_func_data$English <- gsub('Common Snipe', "Wilson's Snipe", bird_func_data$English, fixed = TRUE)
+bird_func_data$English <- gsub('Sand Martin', "Bank Swallow", bird_func_data$English, fixed = TRUE)
+bird_func_data$English[bird_func_data$Scientific == 'Pica pica'] <- 'Eurasian Magpie'
+# Replace dashes and spaces with underscores, apostrophes with nothing, and convert all to lower case
+bird_func_data$English <- gsub('-', "_", bird_func_data$English, fixed = TRUE)
+bird_func_data$English <- gsub(' ', "_", bird_func_data$English, fixed = TRUE)
+bird_func_data$English <- gsub("'", "", bird_func_data$English, fixed = TRUE)
+bird_func_data$English <- tolower(bird_func_data$English)
+# Replace spaces in the scientific name- column with underscores
+bird_func_data$Scientific <- gsub(' ', "_", bird_func_data$Scientific, fixed = TRUE)
+
+bird_names <- dplyr::select(bird_data_whole, ID, unit, common) %>% 
+  dplyr::filter(ID %in% unique_coord_id_forest) %>% 
+  dplyr::filter(unit %in% common_units$unit) %>% 
+  dplyr::filter(!grepl('unidentified', common)) %>% 
+  dplyr::distinct(common) %>% 
+  dplyr::arrange(common)
+bird_func_data_subset <- dplyr::left_join(bird_names, bird_func_data, 
+  by = c('common' = 'English'))
+```
+
+Then we calculate functional distances between bird species. This will be used 
+later on to calculate functional beta diversity.
+```{r, message = FALSE, warning = FALSE}
+trait_matrix <- dplyr::select(bird_func_data_subset, Diet.Inv:Diet.PlantO, 
+  ForStrat.watbelowsurf:PelagicSpecialist, Nocturnal, BodyMass.Value)
+trait_matrix <- as.data.frame(lapply(trait_matrix, as.numeric))
+#trait_matrix <- dplyr::select(bird_func_data_subset, Diet.Inv:Diet.5Cat, 
+#  ForStrat.watbelowsurf:PelagicSpecialist, Nocturnal, BodyMass.Value)
+#trait_matrix[c(1:10, 12:21)] <- lapply(trait_matrix[c(1:10, 12:21)], as.numeric)
+trait_matrix <- apply(trait_matrix, 2, FUN = function(x) {x / max(x)})
+rownames(trait_matrix) <- bird_func_data_subset$common
+trait_distance <- as.matrix(daisy(trait_matrix, metric = "euclidean"))
+trait_distance <- trait_distance / max(trait_distance)
+```
+
+We then calculate phylogenetic distances between species. The phylogenetic data 
+is from the [BirdTree](http://birdtree.org/) database, which accompanies the 
+study by Jetz et al. *. We read the census tree created using the 50% majority 
+rule, and calculate phylogenetic distances with the adephylo- package.
+
+*Jetz W, Thomas GH, Joy JB, Hartmann K, Mooers AO. The global diversity of birds 
+in space and time. Nature. 2012 Oct 31;491(7424):444–8. 
+```{r, message = FALSE}
+consensus_tree <- ape::read.tree("./data/phylogenetic_data/MajRuleConsesnsus.tre")
+#consensus_tree <- read.tree("./data/phylogenetic_data/StrictConsesnsus.tre")
+phylo_species_latin <- data.frame(Scientific = consensus_tree$tip.label, stringsAsFactors = FALSE)
+phylo_species_latin <- dplyr::left_join(phylo_species_latin, bird_func_data[c('English', 'Scientific')])
+consensus_tree$tip.label <- phylo_species_latin$English
+#phylo_distance <- ape::cophenetic.phylo(consensus_tree)
+phylo_distance <- as.matrix(adephylo::distTips(consensus_tree, method = 'patristic'))
+phylo_distance <- phylo_distance / max(phylo_distance)
+```
+
+##Calculate beta diversity {#calculate_beta_div}
+Next we calculate beta diversity from the BBA points with the Rao quadratic 
+entropy index. The Jost correction is used to correct lower than expected beta 
+diversity values. We us the the Rao function, written by Francesco Bello et al. *  
+
+We write a loop to calculate beta diversity between forested BBA points within 
+each unit that contains at least `r min_points` forested BBA points. We 
+calculate mean additive beta per unit (gamma minus mean alpha).
+
+*De Bello F, Lavergne S, Meynard CN, Lepš J, Thuiller W. The partitioning of 
+diversity: showing Theseus a way out of the labyrinth: Theseus and the 
+partitioning of diversity. Journal of Vegetation Science. 2010;21(5):992–1000.
+```{r, message = FALSE}
+source('./Code/Rao.r')
+
+tax_beta_unit_list <- vector("list", base::nrow(common_units))
+func_beta_unit_list <- vector("list", base::nrow(common_units))
+phyl_beta_unit_list <- vector("list", base::nrow(common_units))
+#spp_unit_list <- vector("list", base::nrow(common_units))
+
+tax_mean_alpha_unit_list <- vector("list", base::nrow(common_units))
+tax_gamma_unit_list <- vector("list", base::nrow(common_units))
+
+counter <- 0
+for (unit in as.vector(common_units$unit)) {
+  counter <- counter + 1
+  bird_unit <- bird_points_species[bird_points_species$unit == unit, ]
+  bird_unit_wide <- dplyr::select(bird_unit, -unit) %>% 
+    tidyr::spread_('ID', count_column)
+  bird_unit_wide[is.na(bird_unit_wide)] <- 0
+  bird_unit_wide <- as.data.frame(bird_unit_wide)
+  bird_names <- bird_unit_wide$common
+  rownames(bird_unit_wide) <- bird_names
+  bird_unit_wide <- bird_unit_wide[2:ncol(bird_unit_wide)]
+  bird_unit_wide <- bird_unit_wide[colSums(bird_unit_wide) > 0]
+  funct_matrix <- trait_distance[rownames(trait_distance) %in% bird_names, 
+    colnames(trait_distance) %in% bird_names]
+  phylo_matrix <- phylo_distance[rownames(phylo_distance) %in% bird_names, 
+    colnames(phylo_distance) %in% bird_names]
+  bird_div <- Rao(sample = bird_unit_wide, dfunc = funct_matrix, 
+    dphyl = phylo_matrix, weight = FALSE, Jost = TRUE, structure = NULL)
+  #########
+  tax_beta_unit_list[[counter]] <- bird_div$TD$Beta_add
+  func_beta_unit_list[[counter]] <- bird_div$FD$Beta_add
+  phyl_beta_unit_list[[counter]] <- bird_div$PD$Beta_add
+  #spp_unit_list[[counter]] <- sum(bird_div$TD$Richness_per_plot)
+  tax_mean_alpha_unit_list[[counter]] <- bird_div$TD$Mean_Alpha
+  tax_gamma_unit_list[[counter]] <- bird_div$TD$Gamma
+  #########
+}
+
+units_beta <- data.frame(unit = common_units$unit, tax_beta_div = unlist(tax_beta_unit_list), 
+  func_beta_div = unlist(func_beta_unit_list), phyl_beta_div = unlist(phyl_beta_unit_list))
+units_merged_beta <- merge(units_merged, units_beta, by = 'unit')
+units_merged_beta <- units_merged_beta[!is.na(units_merged_beta$tax_beta_div) | 
+    !is.na(units_merged_beta$func_beta_div) | !is.na(units_merged_beta$phyl_beta_div), ]
+```
+
+Summarise response variables
+```{r, echo = FALSE}
+summary(units_merged_beta@data[c('forest_spp_richness', 'tax_beta_div', 'func_beta_div', 'phyl_beta_div')])
+```
+
+In order to further understand forest diversity in the whole study area we also 
+calculate taxonomic, functional and phylogenetic diversity using all units with 
+more than `r min_points` forested BBA points (not one unit at a time as before).
+```{r, message = FALSE}
+bird_points_species_wide <- dplyr::select(bird_points_species, -unit) %>% 
+    tidyr::spread_('ID', count_column) %>% as.data.frame()
+bird_points_species_wide[is.na(bird_points_species_wide)] <- 0
+rownames(bird_points_species_wide) <- bird_points_species_wide$common
+bird_points_species_wide$common <- NULL
+phylo_distance_subset <- phylo_distance[rownames(phylo_distance) %in% 
+    rownames(bird_points_species_wide), colnames(phylo_distance) %in% 
+    rownames(bird_points_species_wide)]
+bird_div_all <- Rao(sample = bird_points_species_wide, dfunc = trait_distance, 
+  dphyl = phylo_distance_subset, weight = FALSE, Jost = FALSE, structure = NULL)
+
+whole_area_div_summary <- data.frame(
+  alpha_div = c(bird_div_all$TD$Mean_Alpha, bird_div_all$FD$Mean_Alpha, bird_div_all$PD$Mean_Alpha), 
+  beta_add_div = c(bird_div_all$TD$Beta_add, bird_div_all$FD$Beta_add, bird_div_all$PD$Beta_add), 
+  gamma_div = c(bird_div_all$TD$Gamma, bird_div_all$FD$Gamma, bird_div_all$PD$Gamma), 
+  effective_units = c(bird_div_all$TD$Gamma / bird_div_all$TD$Mean_Alpha, bird_div_all$FD$Gamma / bird_div_all$FD$Mean_Alpha, bird_div_all$PD$Gamma / bird_div_all$PD$Mean_Alpha))
+rownames(whole_area_div_summary) <- c('Taxonomic', 'Functional', 'Phylogenetic')
+whole_area_div_summary
+```
+
+##Data exploration {#data_exploration}
+Before starting the analyses we do some data exploration to make sure we don't 
+have outliers, colinearity etc. These explanatory analyses are from Zuur et. al 
+2010 *  
+
+*Zuur AF, Ieno EN, Elphick CS. A protocol for data exploration to avoid common 
+statistical problems: Data exploration. Methods in Ecology and Evolution. 2010 
+Mar;1(1):3–14. 
+
+```{r}
+# Define explanatory variables
+explanatory_variables <- dplyr::select(units_merged_beta@data, unit, 
+  human_footprint, forest_loss, other_roads, mean_temp, mean_prec, 
+  net_prim_prod, forest_point_freq, habitat_div, eco_subsection)
+```
+
+###1. Outliers
+```{r, fig.width = 10, fig.height = 10}
+explanatory_variables_long <- dplyr::select(explanatory_variables, -unit, -eco_subsection) %>% 
+  tidyr::gather()
+
+ggplot(explanatory_variables_long, aes(factor(0),value)) +
+  geom_boxplot() +  facet_wrap(~key, scales = "free", ncol = 4) + 
+  theme(axis.text.x = element_blank(), axis.title.x = element_blank(), 
+    axis.title.y = element_blank())
+```
+
+```{r}
+# Print units with highest forest loss values
+dplyr::select(units_merged_beta@data, unit, forest_loss) %>% 
+  dplyr::arrange(desc(forest_loss)) %>% head(n = 10)
+```
+We can see that there is one potential outlier in the forest loss variable. This 
+is from unit number 38. Looking at the forest loss layer shows that the unit in 
+question is right at the centre of the 2011 Pagami Creek fire, which covered 
+almost half of the area of the unit (and a fifth of unit 38). In addition, units 
+12 and 559, located northeast from Pagami creek seems to be covered by a forest 
+fire, most probably the 2007 Ham Lake fire. We should consider leaving these out.
+
+```{r}
+# Print units with highest forest point frequency values
+dplyr::select(units_merged_beta@data, unit, forest_point_freq) %>% 
+  dplyr::arrange(desc(forest_point_freq)) %>% head(n = 10)
+```
+Unit 115 has a lot more forested BBA points than others, but this is taken into 
+account in the model.
+
+```{r}
+# Print units with highest other road density values
+dplyr::select(units_merged_beta@data, unit, other_roads) %>% 
+  dplyr::arrange(desc(other_roads)) %>% head(n = 10)
+```
+This is a slightly trickier situation. The two highest values are from two units 
+that are situated in Minneapolis (there are units with much higher values but 
+they have been filtered out previously). We would leave these two units out 
+because they are heavily urbanised, but they also have at least `r min_points` 
+forested BBA points. Since we do not have any clear reason to drop them we 
+probably just keep them.
+
+###2. Check reponse variables for excess of zeros
+####Taxonomic beta diversity
+```{r}
+hist(units_merged_beta$tax_beta_div, main = 'Distribution of taxonomic beta values', 
+  xlab = 'Mean taxonomic beta per unit')
+```
+
+We shouldn't have problems here. Zeros don't dominate the data, and the 
+taxonomic beta diversity values are more or less normally distributed.
+
+####Functional beta diversity
+```{r}
+hist(units_merged_beta$func_beta_div, main = 'Distribution of functional beta values', 
+  xlab = 'Mean functional beta per unit')
+```
+
+####Phylogenetic beta diversity
+```{r}
+hist(units_merged_beta$phyl_beta_div, main = 'Distribution of phylogenetic beta values', 
+  xlab = 'Mean phylogenetic beta per unit')
+```
+
+###3. Colinearity of explanatory variables
+```{r, fig.show = 'hold', results = 'hold', fig.width = 10, fig.height = 10}
+# Pair plots of explanatory variables
+pairs(as.data.frame(dplyr::select(explanatory_variables, -unit, -eco_subsection)), 
+  cex.labels = 1.2, font.labels = 1.6, diag.panel = panel.hist, upper.panel = panel.cor)
+
+#source('./code/HighstatLib.r')
+#explanatory_variable_vifs <- corvif(dplyr::select(explanatory_variables, -unit))
+```
+
+We can see that there is a strongish correlation between a few of the variables.
+
+###4. Relationships between response and explanatory variables
+####Taxonomic beta diversity
+```{r}
+# Explanatory variables in vector format
+x <- as.vector(as.matrix(dplyr::select(explanatory_variables, -unit, -eco_subsection)))
+# Response variable in vector format, repeat once for each explanatory variable
+y <- rep(units_merged_beta$tax_beta_div, length(names(explanatory_variables)))
+# Explanatory variable ID's as factors
+x_id <- factor(rep(names(dplyr::select(explanatory_variables, -unit, -eco_subsection)), 
+  each = length(units_merged_beta$tax_beta_div)))
+
+# Plot y vs x, and use a loess smoother to give some idea of the relation
+lattice::xyplot(y ~ x | x_id, col = 1,
+  strip = function(bg = 'white', ...) strip.default(bg = 'white', ...),
+  scales = list(alternating = T,
+                x = list(relation = "free"),
+                y = list(relation = "same")),
+  xlab = "Explanatory variables",
+  par.strip.text = list(cex = 0.8),
+  ylab = "Mean taxonmic beta diversity per unit",
+  panel = function(x, y, subscripts, ...){
+    panel.grid(h = -1, v = 2)
+    panel.points(x, y, col = 1, pch = 16)
+    panel.loess(x, y, col = 1, lwd = 2)
+    })
+```
+
+There are two interesting relations. First, the outlier in forest loss really 
+sticks out. Also, there is a very clear pattern of increasing mean taxonomic 
+beta diversity per unit with an increasing number of forested BBA points per 
+unit.
+
+####Functional beta diversity
+```{r}
+# Explanatory variables in vector format
+x <- as.vector(as.matrix(dplyr::select(explanatory_variables, -unit, -eco_subsection)))
+# Response variable in vector format, repeat once for each explanatory variable
+y <- rep(units_merged_beta$func_beta_div, length(names(explanatory_variables)))
+# Explanatory variable ID's as factors
+x_id <- factor(rep(names(dplyr::select(explanatory_variables, -unit, -eco_subsection)), 
+  each = length(units_merged_beta$func_beta_div)))
+
+# Plot y vs x, and use a loess smoother to give some idea of the relation
+lattice::xyplot(y ~ x | x_id, col = 1,
+  strip = function(bg = 'white', ...) strip.default(bg = 'white', ...),
+  scales = list(alternating = T,
+                x = list(relation = "free"),
+                y = list(relation = "same")),
+  xlab = "Explanatory variables",
+  par.strip.text = list(cex = 0.8),
+  ylab = "Mean functional beta diversity per unit",
+  panel = function(x, y, subscripts, ...){
+    panel.grid(h = -1, v = 2)
+    panel.points(x, y, col = 1, pch = 16)
+    panel.loess(x, y, col = 1, lwd = 2)
+    })
+```
+
+####Phylogenetic beta diversity
+```{r}
+# Explanatory variables in vector format
+x <- as.vector(as.matrix(dplyr::select(explanatory_variables, -unit, -eco_subsection)))
+# Response variable in vector format, repeat once for each explanatory variable
+y <- rep(units_merged_beta$phyl_beta_div, length(names(explanatory_variables)))
+# Explanatory variable ID's as factors
+x_id <- factor(rep(names(dplyr::select(explanatory_variables, -unit, -eco_subsection)), 
+  each = length(units_merged_beta$phyl_beta_div)))
+
+# Plot y vs x, and use a loess smoother to give some idea of the relation
+lattice::xyplot(y ~ x | x_id, col = 1,
+  strip = function(bg = 'white', ...) strip.default(bg = 'white', ...),
+  scales = list(alternating = T,
+                x = list(relation = "free"),
+                y = list(relation = "same")),
+  xlab = "Explanatory variables",
+  par.strip.text = list(cex = 0.8),
+  ylab = "Mean phylogenetic beta diversity per unit",
+  panel = function(x, y, subscripts, ...){
+    panel.grid(h = -1, v = 2)
+    panel.points(x, y, col = 1, pch = 16)
+    panel.loess(x, y, col = 1, lwd = 2)
+    })
+```
+
+###5. Spatial distribution of variables
+```{r, message = FALSE, warning = FALSE}
+response_variables <- c('id', 'unit', 
+  'tax_beta_div', 'func_beta_div', 'phyl_beta_div', 'forest_spp_richness')
+units_merged_beta$id <- rownames(units_merged_beta@data)
+units_merged_beta_fort <- fortify(units_merged_beta[response_variables], region = 'unit')
+units_merged_beta_fort <- left_join(units_merged_beta_fort, 
+  units_merged_beta@data[response_variables])
+units_merged_nb <- poly2nb(units_merged_beta)
+units_merged_lw <- nb2listw(units_merged_nb, zero.policy = TRUE)
+```
+
+####Taxonomic beta diversity
+```{r, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
+# Test for spatial autocorrelation
+moran.test(units_merged_beta$tax_beta_div, listw = units_merged_lw, 
+  alternative = 'two.sided', zero.policy = TRUE)
+moran.mc(units_merged_beta$tax_beta_div, units_merged_lw, 999, 
+  zero.policy = TRUE)
+
+#plot(variogram(tax_beta_div ~ 1, locations = coordinates(units_merged_beta_subset), 
+#  data = units_merged_beta_subset, cloud = FALSE), type = "b")
+
+# Plot beta diversity and local Moran's I values on map
+multiplot(plot_variable_map(units_merged_beta_fort, 'tax_beta_div'), 
+  plot_lisa_map(units_merged_beta, tax_beta_div), cols = 2)
+```
+
+Taxonomic beta diversity values appear to be spatially autocorrelated.
+
+####Functional beta diversity
+```{r, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
+# Test for spatial autocorrelation
+moran.test(units_merged_beta$func_beta_div, listw = units_merged_lw, 
+  alternative = 'two.sided', zero.policy = TRUE)
+moran.mc(units_merged_beta$func_beta_div, units_merged_lw, 999, 
+  zero.policy = TRUE)
+
+# Plot beta diversity and local Moran's I values on map
+multiplot(plot_variable_map(units_merged_beta_fort, 'func_beta_div'), 
+  plot_lisa_map(units_merged_beta, func_beta_div), cols = 2)
+```
+
+####Phylogenetic beta diversity
+```{r, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
+# Test for spatial autocorrelation
+moran.test(units_merged_beta$phyl_beta_div, listw = units_merged_lw, 
+  alternative = 'two.sided', zero.policy = TRUE)
+moran.mc(units_merged_beta$phyl_beta_div, units_merged_lw, 999, 
+  zero.policy = TRUE)
+
+# Plot beta diversity and local Moran's I values on map
+multiplot(plot_variable_map(units_merged_beta_fort, 'phyl_beta_div'), 
+  plot_lisa_map(units_merged_beta, phyl_beta_div), cols = 2)
+```
+
+####Forest species richness
+```{r, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
+# Test for spatial autocorrelation
+moran.test(units_merged_beta$forest_spp_richness, listw = units_merged_lw, 
+  alternative = 'two.sided', zero.policy = TRUE)
+moran.mc(units_merged_beta$forest_spp_richness, units_merged_lw, 999, 
+  zero.policy = TRUE)
+
+# Plot forest species richness and local Moran's I values on map
+multiplot(plot_variable_map(units_merged_beta_fort, 'forest_spp_richness'), 
+  plot_lisa_map(units_merged_beta, forest_spp_richness), cols = 2)
+```
+
+####Explanatory variables
+```{r, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 8, fig.height = 16}
+# Plot beta diversity and local Moran's I values on map
+units_merged$id <- rownames(units_merged@data)
+units_merged_fort <- fortify(units_merged, region = 'unit')
+units_merged_fort <- left_join(units_merged_fort, units_merged@data)
+
+multiplot(plot_variable_map(units_merged_fort, 'human_footprint'), 
+  plot_variable_map(units_merged_fort, 'forest_loss'), 
+  plot_variable_map(units_merged_fort, 'net_prim_prod'), 
+  plot_variable_map(units_merged_fort, 'habitat_div'), 
+  plot_variable_map(units_merged_fort, 'forest_point_freq'), 
+  plot_variable_map(units_merged_fort, 'spp_richness'), 
+  plot_variable_map(units_merged_fort, 'other_roads'), 
+  plot_variable_map(units_merged_fort, 'mean_prec'), 
+  plot_variable_map(units_merged_fort, 'mean_temp'), 
+  plot_lisa_map(units_merged, human_footprint), 
+  plot_lisa_map(units_merged, forest_loss), 
+  plot_lisa_map(units_merged, net_prim_prod), 
+  plot_lisa_map(units_merged, habitat_div), 
+  plot_lisa_map(units_merged, forest_point_freq), 
+  plot_lisa_map(units_merged, spp_richness), 
+  plot_lisa_map(units_merged, other_roads), 
+  plot_lisa_map(units_merged, mean_prec), 
+  plot_lisa_map(units_merged, mean_temp), 
+  cols = 2)
+```
+
+##Analyse taxonomic beta diversity {#analyse_tax_div}
+Let's drop the four units clearly impacted by forest fires. Since beta diversity 
+values are calculated within units we can just drop them, instead of having to 
+recalculate diversity measures.
+```{r}
+units_merged_beta_subset <- units_merged_beta[!(units_merged_beta$unit %in% 
+    c(39, 12, 38, 559)), ]
+units_merged_subset_nb <- poly2nb(units_merged_beta_subset)
+units_merged_subset_lw <- nb2listw(units_merged_subset_nb, zero.policy = TRUE)
+```
+
+We now have a total of `r length(unique(units_merged_beta_subset$unit))` 
+units to work with.
+
+We then continue by starting to construct a model where the response variable is 
+mean taxonomic beta diversity per unit, and the explanatory variables are, for 
+example, human footprint, forest loss etc. We also take the number of forest 
+points per unit into account as a covariate.
+
+```{r, results = 'hold', message = FALSE}
+tax_model_variables <- dplyr::inner_join(units_merged_beta_subset@data[c('unit', 
+  'tax_beta_div')], explanatory_variables)
+#tax_model_variables$x <- coordinates(units_merged_beta_subset)[, 1]
+#tax_model_variables$y <- coordinates(units_merged_beta_subset)[, 2]
+f_tax_model <- formula(tax_beta_div ~ 
+    human_footprint + 
+    forest_loss + 
+    net_prim_prod + 
+    habitat_div + 
+    mean_temp + 
+    #mean_prec + 
+    #other_roads + 
+    #x + 
+    #y + 
+    forest_point_freq)
+tax_model <- lm(f_tax_model, data = tax_model_variables)
+units_merged_beta_subset$tax_div_resid <- residuals(tax_model)
+
+tax_model_summary <- summary(tax_model)
+tax_model_vif <- car::vif(tax_model)
+save(tax_model_summary, file = './results/tax_model_summary.rda')
+save(tax_model_vif, file = './results/tax_model_vif.rda')
+tax_model_summary
+tax_model_vif
+```
+
+###Check taxonomic beta residuals {#check_tax_res}
+####1. Homogeneity of residuals
+```{r}
+# Get standardised predicted and residual values
+tax_standardised_pred <- (predict(tax_model) - mean(predict(tax_model))) / sd(predict(tax_model))
+tax_standardised_resid <- (resid(tax_model) - mean(resid(tax_model))) / sd(resid(tax_model))
+# Create standardised residuals plot
+plot(tax_standardised_pred, tax_standardised_resid, main = "Standardised Taxonomic Residuals Plot", xlab = "Standardised Predicted Values", ylab = "Standardised Residuals")
+abline(0,0)
+```
+
+####2. Normality of residuals
+```{r, fig.show = 'hold'}
+# Histogram of standardised residuals
+hist(tax_standardised_resid, freq = FALSE, main = 'Histogram of taxonomic residuals', xlab = 'Residuals')
+curve(dnorm, add = TRUE)
+
+# Probability- probability plot of standardised residuals
+tax_prob_dist <- pnorm(tax_standardised_resid)
+plot(ppoints(length(tax_standardised_resid)), sort(tax_prob_dist), main = "PP Plot", xlab = "Observed Probability", ylab = "Expected Probability")
+abline(0, 1)
+```
+
+####3. Independence of residuals
+```{r, results = 'hold', fig.show = 'hold'}
+# Test for spatial autocorrelation
+moran.test(units_merged_beta_subset$tax_div_resid, listw = units_merged_subset_lw, 
+  alternative = 'two.sided', zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$tax_div_resid, units_merged_subset_lw, 
+  alternative = 'greater', 999, zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$tax_div_resid, units_merged_subset_lw, 
+  alternative = 'less', 999, zero.policy = TRUE)
+
+# Plot variogram
+plot(variogram(tax_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
+  data = units_merged_beta_subset, cloud = FALSE), type = "b")
+
+# Print Moran plot, which shows standardised values on the x- axis, along with 
+# the average of their neighboring values (also referred to as lagging values) 
+# on the y- axis. The slope of the regression line is an estimation of the 
+# global Moran's I. The scatter plot is divided into quadrants so that the top 
+# left quadrant has low observed and high lagged values, top right has high- 
+# high values, bottom left has low- low values, and bottom right has high- low 
+# values. Influential observations are marked in the plot.
+moran_plot_func(units_merged_beta_subset, tax_div_resid)
+```
+
+Let's print a map to show local differences in residual values.
+```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
+# Plot residual values on map
+units_merged_beta_subset$id <- rownames(units_merged_beta_subset@data)
+units_merged_beta_subset_fort <- fortify(units_merged_beta_subset, region = 'unit')
+units_merged_beta_subset_fort <- left_join(units_merged_beta_subset_fort, 
+  units_merged_beta_subset@data)
+
+multiplot(plot_variable_map(units_merged_beta_subset_fort, 'tax_div_resid'), 
+  plot_lisa_map(units_merged_beta_subset, tax_div_resid), cols = 2)
+```
+
+Oh no! We have clear spatial autocorrelation in the residuals of the model 
+explaining taxonomic beta diversity. Let's analyse taxonomic beta diversity 
+with a spatial regression model
+    
+Within the second spatial regression models we have a two options:  
+  a) Spatial lag models, where the spatial autocorrelation is assumed to arise 
+  from the influence of neighbouring points.  
+  b) Spatial error models, where spatial autocorrelation is assumed to arise 
+  from an unmeasured variable.
+    
+Due to the structure of our data (units of ~ 20 * 20km) we will assume that 
+neighbouring units are two far away to have an impact so we will go with the 
+error model.
+```{r}
+f_tax_model <- formula(tax_beta_div ~ 
+    human_footprint + 
+    forest_loss + 
+    net_prim_prod + 
+    habitat_div + 
+    mean_temp + 
+    #mean_prec + 
+    #other_roads + 
+    #x + 
+    #y + 
+    forest_point_freq)
+
+tax_model <- lm(f_tax_model, data = tax_model_variables)
+tax_model_err <- spdep::errorsarlm(f_tax_model, data = tax_model_variables, listw = units_merged_subset_lw, 
+  etype = 'error', tol.solve = 1.0e-30, zero.policy = TRUE)
+tax_model_spatial <- tax_model_err
+
+units_merged_beta_subset$tax_div_resid <- residuals(tax_model_spatial)
+tax_model_summary <- summary(tax_model_spatial)
+# VIFs are not available for sarlm models so we use the VIFs from the OLS model
+tax_model_vif <- car::vif(tax_model)
+save(tax_model_summary, file = './results/tax_model_summary.rda')
+save(tax_model_vif, file = './results/tax_model_vif.rda')
+tax_model_summary
+tax_model_vif
+```
+```{r}
+# Get standardised predicted and residual values
+tax_standardised_pred <- (predict(tax_model_spatial) - mean(predict(tax_model_spatial))) / sd(predict(tax_model_spatial))
+tax_standardised_resid <- (resid(tax_model_spatial) - mean(resid(tax_model_spatial))) / sd(resid(tax_model_spatial))
+# Create standardised residuals plot
+plot(tax_standardised_pred, tax_standardised_resid, main = "Standardised 
+  taxonomic residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
+abline(0,0)
+
+# Histogram of standardised residuals
+hist(tax_standardised_resid, freq = FALSE, main = 'Histogram of taxonomic 
+  model residuals', xlab = 'Residuals')
+curve(dnorm, add = TRUE)
+
+# Probability- probability plot of standardised residuals
+tax_prob_dist <- pnorm(tax_standardised_resid)
+plot(ppoints(length(tax_standardised_resid)), sort(tax_prob_dist), main = "PP Plot", 
+  xlab = "Observed Probability", ylab = "Expected Probability")
+abline(0,1)
+```
+```{r}
+# Test for spatial autocorrelation
+moran.test(units_merged_beta_subset$tax_div_resid, listw = units_merged_subset_lw, 
+  alternative = 'two.sided', zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$tax_div_resid, units_merged_subset_lw, 
+  alternative = 'greater', 999, zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$tax_div_resid, units_merged_subset_lw, 
+  alternative = 'less', 999, zero.policy = TRUE)
+
+# Plot variogram
+plot(variogram(tax_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
+  data = units_merged_beta_subset, cloud = FALSE), type = "b")
+
+# Print Moran plot
+moran_plot_func(units_merged_beta_subset, tax_div_resid)
+
+max(tax_model_variables$net_prim_prod) - min(tax_model_variables$net_prim_prod)
+```
+
+Let's print a map to show local differences in residual values.
+```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
+# Plot residual values on map
+units_merged_beta_subset$id <- rownames(units_merged_beta_subset@data)
+units_merged_beta_subset_fort <- fortify(units_merged_beta_subset, region = 'unit')
+units_merged_beta_subset_fort <- left_join(units_merged_beta_subset_fort, 
+  units_merged_beta_subset@data)
+
+multiplot(plot_variable_map(units_merged_beta_subset_fort, 'tax_div_resid'), 
+  plot_lisa_map(units_merged_beta_subset, tax_div_resid), cols = 2)
+```
+
+##Analyse functional beta diversity {#analyse_func_div}
+```{r, results = 'hold', message = FALSE}
+func_model_variables <- dplyr::inner_join(units_merged_beta_subset@data[c('unit', 
+  'func_beta_div')], explanatory_variables)
+#func_model_variables <- merge(units_merged_beta_subset[c('unit', 
+#  'func_beta_div')], explanatory_variables)
+func_model_variables$x <- coordinates(units_merged_beta_subset)[, 1]
+func_model_variables$y <- coordinates(units_merged_beta_subset)[, 2]
+f_func_model <- formula(func_beta_div ~ 
+    human_footprint + 
+    forest_loss + 
+    net_prim_prod + 
+    habitat_div +     
+    mean_temp + 
+    #mean_prec + 
+    #other_roads + 
+    #x + 
+    #y + 
+    forest_point_freq)
+#func_model <- lm(f_func_model, data = func_model_variables)
+func_model <- glm(f_func_model, family = Gamma(link = "identity"), 
+  data = func_model_variables)
+units_merged_beta_subset$func_div_resid <- residuals(func_model)
+
+func_model_summary <- summary(func_model)
+func_model_vif <- car::vif(func_model)
+save(func_model_summary, file = './results/func_model_summary.rda')
+save(func_model_vif, file = './results/func_model_vif.rda')
+func_model_summary
+func_model_vif
+```
+
+###Check functional beta residuals {#check_func_res}
+####1. Homogeneity of residuals
+```{r}
+# Get standardised predicted and residual values
+func_standardised_pred <- (predict(func_model) - mean(predict(func_model))) / sd(predict(func_model))
+func_standardised_resid <- (resid(func_model) - mean(resid(func_model))) / sd(resid(func_model))
+# Create standardised residuals plot
+plot(func_standardised_pred, func_standardised_resid, main = "Standardised functional residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
+abline(0,0)
+```
+
+####2. Normality of residuals
+```{r, fig.show = 'hold'}
+# Histogram of standardised residuals
+hist(func_standardised_resid, freq = FALSE, main = 'Histogram of functional model residuals', xlab = 'Residuals')
+curve(dnorm, add = TRUE)
+
+# Probability- probability plot of standardised residuals
+func_prob_dist <- pnorm(func_standardised_resid)
+plot(ppoints(length(func_standardised_resid)), sort(func_prob_dist), main = "PP Plot", xlab = "Observed Probability", ylab = "Expected Probability")
+abline(0,1)
+```
+
+####3. Independence of residuals
+```{r, results = 'hold', fig.show = 'hold'}
+# Test for spatial autocorrelation
+moran.test(units_merged_beta_subset$func_div_resid, listw = units_merged_subset_lw, 
+  alternative = 'two.sided', zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$func_div_resid, units_merged_subset_lw, 
+  alternative = 'greater', 999, zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$func_div_resid, units_merged_subset_lw, 
+  alternative = 'less', 999, zero.policy = TRUE)
+
+# Plot variogram
+plot(variogram(func_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
+  data = units_merged_beta_subset, cloud = FALSE), type = "b")
+
+# Print Moran plot
+moran_plot_func(units_merged_beta_subset, func_div_resid)
+```
+
+Let's print a map to show local differences in residual values.
+```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
+# Plot residual values on map
+units_merged_beta_subset$id <- rownames(units_merged_beta_subset@data)
+units_merged_beta_subset_fort <- fortify(units_merged_beta_subset, region = 'unit')
+units_merged_beta_subset_fort <- left_join(units_merged_beta_subset_fort, 
+  units_merged_beta_subset@data)
+
+multiplot(plot_variable_map(units_merged_beta_subset_fort, 'func_div_resid'), 
+  plot_lisa_map(units_merged_beta_subset, func_div_resid), cols = 2)
+```
+
+##Analyse phylogenetic beta diversity {#analyse_phyl_div}
+We construct a GLM with a Gamma distribution. More information can be found 
+[here](http://seananderson.ca/2014/04/08/gamma-glms.html)
+```{r, results = 'hold', message = FALSE}
+phyl_model_variables <- dplyr::inner_join(units_merged_beta_subset@data[c('unit', 
+  'phyl_beta_div')], explanatory_variables)
+
+phyl_model_variables$x <- coordinates(units_merged_beta_subset)[, 1]
+phyl_model_variables$y <- coordinates(units_merged_beta_subset)[, 2]
+f_phyl_model <- formula(phyl_beta_div ~ 
+    human_footprint + 
+    forest_loss + 
+    net_prim_prod + 
+    habitat_div +     
+    mean_temp + 
+    #mean_prec + 
+    #other_roads + 
+    #x + 
+    #y + 
+    forest_point_freq)
+
+#phyl_model <- lm(f_phyl_model, data = phyl_model_variables)
+#phyl_model <- glm(f_phyl_model, family = Gamma(link = "inverse"), data = phyl_model_variables)
+phyl_model <- glm(f_phyl_model, family = Gamma(link = "identity"), data = phyl_model_variables)
+#phyl_model <- glm(f_phyl_model, family = Gamma(link = "log"), data = phyl_model_variables)
+
+units_merged_beta_subset$phyl_div_resid <- residuals(phyl_model)
+phyl_model_summary <- summary(phyl_model)
+phyl_model_vif <- car::vif(phyl_model)
+save(phyl_model_summary, file = './results/phyl_model_summary.rda')
+save(phyl_model_vif, file = './results/phyl_model_vif.rda')
+phyl_model_summary
+phyl_model_vif
+```
+
+###Check phylogenetic beta residuals {#check_phyl_res}
+####1. Homogeneity of residuals
+```{r}
+# Get standardised predicted and residual values
+phyl_standardised_pred <- (predict(phyl_model) - mean(predict(phyl_model))) / sd(predict(phyl_model))
+phyl_standardised_resid <- (resid(phyl_model) - mean(resid(phyl_model))) / sd(resid(phyl_model))
+# Create standardised residuals plot
+plot(phyl_standardised_pred, phyl_standardised_resid, main = "Standardised 
+  phylogenetic residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
+abline(0,0)
+```
+
+####2. Normality of residuals
+```{r, fig.show = 'hold'}
+# Histogram of standardised residuals
+hist(phyl_standardised_resid, freq = FALSE, main = 'Histogram of phylogenetic 
+  model residuals', xlab = 'Residuals')
+curve(dnorm, add = TRUE)
+
+# Probability- probability plot of standardised residuals
+phyl_prob_dist <- pnorm(phyl_standardised_resid)
+plot(ppoints(length(phyl_standardised_resid)), sort(phyl_prob_dist), main = "PP Plot", 
+  xlab = "Observed Probability", ylab = "Expected Probability")
+abline(0,1)
+```
+
+####3. Independence of residuals
+```{r, results = 'hold', fig.show = 'hold'}
+# Test for spatial autocorrelation
+moran.test(units_merged_beta_subset$phyl_div_resid, listw = units_merged_subset_lw, 
+  alternative = 'two.sided', zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$phyl_div_resid, units_merged_subset_lw, 
+  alternative = 'greater', 999, zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$phyl_div_resid, units_merged_subset_lw, 
+  alternative = 'less', 999, zero.policy = TRUE)
+
+# Plot variogram
+plot(variogram(phyl_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
+  data = units_merged_beta_subset, cloud = FALSE), type = "b")
+
+# Print Moran plot
+moran_plot_func(units_merged_beta_subset, phyl_div_resid)
+```
+
+~~Oh no! We have clear spatial autocorrelation in the residuals of the model~~
+~~explaining phylogenetic beta diversity. We have two main options:~~
+~~1) We can take the spatial structure into account in the covariance structure of~~
+~~the model~~
+~~2) We can analyse phylogenetic beta diversity with a spatial regression model~~
+
+~~A quick check of option 1 shows that it does not seem to remove the spatial~~
+~~autocorrelation of the residuals so we will go with option 2. Within the second~~
+~~option we have a further two options:~~
+~~a) Spatial lag models, where the spatial autocorrelation is assumed to arise~~
+~~from the influence of neighbouring points.~~
+~~b) Spatial error models, where spatial autocorrelation is assumed to arise~~
+~~from an unmeasured variable.~~
+
+~~Due to the structure of our data (units of ~ 20 * 20km) we will assume that~~
+~~neighbouring units are two far away to have an impact so we will go with the~~
+~~error model. Note that we are not able to construct a GLM with spatial~~
+~~regression so we natural log- transform the independent variable to get normally~~
+~~distributed residuals. Note that the regression coefficients need to be back-~~
+~~transformed (e^beta = percent change in the response variable)~~
+```{r, eval = FALSE}
+f_phyl_model <- formula(log(phyl_beta_div) ~ 
+    human_footprint + 
+    forest_loss + 
+    net_prim_prod + 
+    habitat_div +     
+    mean_temp + 
+    #mean_prec + 
+    #other_roads + 
+    #x + 
+    #y + 
+    forest_point_freq)
+phyl_model <- lm(f_phyl_model, data = phyl_model_variables)
+phyl_model_err <- spdep::errorsarlm(f_phyl_model, data = phyl_model_variables, listw = units_merged_subset_lw, 
+  etype = 'error', tol.solve = 1.0e-30, zero.policy = TRUE)
+phyl_model_spatial <- phyl_model_err
+
+units_merged_beta_subset$phyl_div_resid <- residuals(phyl_model_spatial)
+phyl_model_summary <- summary(phyl_model_spatial)
+# VIFs are not available for sarlm models so we use the VIFs from the OLS model
+phyl_model_vif <- car::vif(phyl_model)
+save(phyl_model_summary, file = './results/phyl_model_summary.rda')
+save(phyl_model_vif, file = './results/phyl_model_vif.rda')
+phyl_model_summary
+phyl_model_vif
+
+# Show by how much phylogenetic diversity will change (%) with a one unit increase
+# in the explanatory variable
+lapply(phyl_model_summary$coefficients, exp)
+```
+```{r, eval = FALSE}
+# Get standardised predicted and residual values
+phyl_standardised_pred <- (predict(phyl_model_spatial) - mean(predict(phyl_model_spatial))) / sd(predict(phyl_model_spatial))
+phyl_standardised_resid <- (resid(phyl_model_spatial) - mean(resid(phyl_model_spatial))) / sd(resid(phyl_model_spatial))
+# Create standardised residuals plot
+plot(phyl_standardised_pred, phyl_standardised_resid, main = "Standardised 
+  phylogenetic residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
+abline(0,0)
+
+# Histogram of standardised residuals
+hist(phyl_standardised_resid, freq = FALSE, main = 'Histogram of phylogenetic 
+  model residuals', xlab = 'Residuals')
+curve(dnorm, add = TRUE)
+
+# Probability- probability plot of standardised residuals
+phyl_prob_dist <- pnorm(phyl_standardised_resid)
+plot(ppoints(length(phyl_standardised_resid)), sort(phyl_prob_dist), main = "PP Plot", 
+  xlab = "Observed Probability", ylab = "Expected Probability")
+abline(0,1)
+```
+```{r, eval = FALSE}
+# Test for spatial autocorrelation
+moran.test(units_merged_beta_subset$phyl_div_resid, listw = units_merged_subset_lw, 
+  alternative = 'two.sided', zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$phyl_div_resid, units_merged_subset_lw, 
+  alternative = 'greater', 999, zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$phyl_div_resid, units_merged_subset_lw, 
+  alternative = 'less', 999, zero.policy = TRUE)
+
+# Plot variogram
+plot(variogram(phyl_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
+  data = units_merged_beta_subset, cloud = FALSE), type = "b")
+
+# Print Moran plot
+moran_plot_func(units_merged_beta_subset, phyl_div_resid)
+
+max(phyl_model_variables$net_prim_prod) - min(phyl_model_variables$net_prim_prod)
+```
+
+~~Let's print a map to show local differences in residual values.~~
+```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4, eval = FALSE}
+# Plot residual values on map
+units_merged_beta_subset$id <- rownames(units_merged_beta_subset@data)
+units_merged_beta_subset_fort <- fortify(units_merged_beta_subset, region = 'unit')
+units_merged_beta_subset_fort <- left_join(units_merged_beta_subset_fort, 
+  units_merged_beta_subset@data)
+
+multiplot(plot_variable_map(units_merged_beta_subset_fort, 'phyl_div_resid'), 
+  plot_lisa_map(units_merged_beta_subset, phyl_div_resid), cols = 2)
+```
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE}
+response_summary <- summary(units_merged_beta_subset@data[c('forest_spp_richness', 'tax_beta_div', 'func_beta_div', 'phyl_beta_div')])
+save(response_summary, file = './results/response_summary.rda')
+response_summary
+save(units_merged_beta_subset, file = './results/units_merged_beta_subset.rda')
+
+#response_variables <- c('id', 'unit', 
+#  'tax_beta_div', 'func_beta_div', 'phyl_beta_div', 'forest_spp_richness')
+units_merged_beta_subset_fort <- fortify(units_merged_beta_subset, region = 'unit')
+units_merged_beta_subset_fort <- left_join(units_merged_beta_subset_fort, 
+  units_merged_beta_subset@data)
+```
