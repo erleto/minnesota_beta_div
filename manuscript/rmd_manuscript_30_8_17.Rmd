@@ -5,7 +5,9 @@ date: "`r format(Sys.time(), '%d-%m-%Y')`"
 output:
   word_document:
     toc: TRUE
-    toc_depth: 3
+    toc_depth: 4
+    fig_width: 8
+    fig_height: 8
 ---
 
 ```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
@@ -115,7 +117,7 @@ summary_fun <- function(x,...){
 }
 ```
 
-```{r load_data, echo = FALSE, message = FALSE, warning = FALSE}
+```{r load_data, echo = FALSE, message = FALSE, warning = FALSE, results = 'hide'}
 attach('./results/units_merged_beta_subset.rda')
 attach('./results/units_merged_fort.rda')
 attach('./results/units_merged_beta_subset_fort.rda')
@@ -195,18 +197,16 @@ pander::pander(summary_table)
   
 The range of taxonomic beta diversity values (`r tabRef("response_summary")`) was a lot larger than that of functional and phylogenetic beta diversity, reflecting the more limited set of ecological functions and phylogenetic backgrounds in comparison to the number of species present.  
 
-```{r pairplots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRef('pairplots', 'Distributions of, and correlations between alpha, beta, and gamma diversities within units'), fig.height = 8, fig.width = 8}
-psych::pairs.panels(units_merged_beta_subset@data[c(
-  'tax_alpha_div', 'tax_beta_div', 'tax_gamma_div', 
-  'func_alpha_div', 'func_beta_div', 'func_gamma_div', 
-  'phyl_alpha_div', 'phyl_beta_div', 'phyl_gamma_div')], hist.col = NULL)
+```{r pairplots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRef('pairplots', 'Distributions and correlations between forest species richness, taxonomic, functional, and phylogenetic beta diversity within units')}
+psych::pairs.panels(units_merged_beta_subset@data[c('forest_spp_richness', 
+  'tax_beta_div', 'func_beta_div', 'phyl_beta_div')], hist.col = NULL)
 ```
   
 `r figRef("pairplots")` shows that none of the response variables was strongly correlated with species richness, although taxonomic beta diversity showed a weak positive correlation with unit-wide species richness up to about 70 species, after which the relation levelled off. Species richness was actually very weakly negatively associated with functional and phylogenetic beta diversity. As the figure shows, these beta diversity indicators are invariably low when species richness is high, and vary widely in units with low species richness. In summary, variation in local bird community composition is not strongly linked with regional (unit level) species richness. 
   
 All three beta diversity measures were at least moderately positively correlated with each other. The correlation between functional and phylogenetic beta diversity was fairly strong, suggesting that these two aspects of biodiversity are fairly strongly linked with each other in this data set. All three beta diversity measures increased strongly with the number of BBA points per unit, which can be seen in the results of individual response variables.  
 
-##1. Taxonomic beta diversity  
+##Taxonomic beta diversity  
 ```{r tax_beta_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
 set.caption(tabRef('tax_model_summary', 'Summary of spatial error model explaining taxonomic beta diversity'))
 tax_model_coef <- as.data.frame(tax_model_summary$Coef)
@@ -227,7 +227,7 @@ tax_hdiv_perc <- round((tax_hdiv_change / tax_range) * 100, digits = 2)
 
 Taxonomic beta diversity was not impacted by human impact (human footprint and forest loss), nor by net primary production or mean temperature. The only variable clearly influencing taxonomic beta diversity was habitat diversity, which had a strong positive impact. Along the range of habitat diversity (`r paste(min_hdiv, ' - ', max_hdiv)`), taxonomic beta diversity increased by `r tax_hdiv_change` units, which is `r tax_hdiv_perc`% of the range of taxonomic beta values in our data.
   
-##2. Functional beta diversity  
+##Functional beta diversity  
 ```{r func_beta_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
 set.caption(tabRef('func_model_summary', 'Summary of generalised linear model explaining functional beta diversity'))
 func_model_coef <- as.data.frame(func_model_summary$coefficients)
@@ -262,7 +262,7 @@ func_temp_perc <- round((func_temp_change / func_range) * 100, digits = 2)
   
 On the other hand, functional beta diversity was impacted by human influence. Human footprint had a positive impact on functional beta diversity, even when natural variation caused by habitat diversity, net primary production (npp) and mean annual temperature were taken into account. Along the unitless gradient of human footprint in our data, ranging from `r min_hfp` (very small human footprint) to `r max_hfp` (relatively large human footprint), functional beta diversity increased by `r func_hfp_change`, which is `r func_hfp_perc`% of the range of functional beta values in our data. Forest loss did not appear to influence functional beta diversity. Net primary production had a negative impact on functional beta diversity. Along the range of npp values (`r paste(min_npp, ' - ', max_npp)` kg C / Ha / year) functional beta diversity decreased by `r abs(func_npp_change)` units (`r func_npp_perc`%). Similarly, mean annual temperature had a negative impact, decreasing functional beta diversity by `r abs(func_temp_change)` units (`r func_temp_perc`%) along the temperature gradient ranging from `r paste(min_temp, ' - ', max_temp)`°C.
   
-##3. Phylogenetic beta diversity  
+##Phylogenetic beta diversity  
 ```{r phyl_beta_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
 set.caption(tabRef('phyl_model_summary', 'Summary of generalised linear model explaining phylogenetic beta diversity'))
 phyl_model_coef <- as.data.frame(phyl_model_summary$coefficients)
@@ -310,6 +310,27 @@ Functional beta-diversity was a positive function of human footprint index even 
 ----
   
 #Appdendix  
+
+##1. Correlations between diversity measures
+  
+###a) Taxonomic diversity components
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+psych::pairs.panels(units_merged_beta_subset@data[c(
+  'tax_alpha_div', 'tax_beta_div', 'tax_gamma_div')], hist.col = NULL)
+```
+  
+###b) Functional diversity components
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+psych::pairs.panels(units_merged_beta_subset@data[c(
+  'func_alpha_div', 'func_beta_div', 'func_gamma_div')], hist.col = NULL)
+```
+  
+###c) Phylogenetic diversity components
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+psych::pairs.panels(units_merged_beta_subset@data[c(
+  'phyl_alpha_div', 'phyl_beta_div', 'phyl_gamma_div')], hist.col = NULL)
+```
+  
 ##1. Variance inflation factors from models  
   
 ###a) Taxonomic beta diversity  
