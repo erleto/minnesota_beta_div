@@ -960,18 +960,16 @@ hist(units_merged_beta$phyl_beta_div, main = 'Distribution of phylogenetic beta 
 ##3. Colinearity of explanatory variables
 Let's start by having a look at how correlated the human footprint variable is 
 with variables describing human impact in Minnesota:
-```{r, fig.show = 'hold', results = 'hold', fig.width = 10, fig.height = 10}
+```{r, fig.show = 'hold', results = 'asis', fig.width = 10, fig.height = 10}
 # Pair plots of human footprint and other variables explaining human impact
 units_merged_human_impact_subset <- dplyr::filter(units_merged_human_impact, unit %in% common_units$unit) %>% dplyr::select(-unit)
-
-pairs(units_merged_human_impact_subset, cex.labels = 1.2, font.labels = 1.6, diag.panel = panel.hist, upper.panel = panel.cor)
+psych::pairs.panels(units_merged_human_impact_subset, hist.col = NULL)
 ```
 
 
 ```{r, fig.show = 'hold', results = 'hold', fig.width = 10, fig.height = 10}
 # Pair plots of explanatory variables
-pairs(as.data.frame(dplyr::select(explanatory_variables, -unit, -eco_subsection)), 
-  cex.labels = 1.2, font.labels = 1.6, diag.panel = panel.hist, upper.panel = panel.cor)
+psych::pairs.panels(as.data.frame(dplyr::select(explanatory_variables, -unit, -eco_subsection)), hist.col = NULL)
 ```
 
 We can see that there is a strongish correlation between a few of the variables.
