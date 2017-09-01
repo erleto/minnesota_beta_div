@@ -80,6 +80,34 @@ figRef <- local({
 })
 options(figcap.prefix = 'Figure', figcap.sep = ':', figcap.prefix.highlight = '**')
 
+figRefApp <- local({
+    tag <- numeric()
+    created <- logical()
+    used <- logical()
+    function(label, caption, prefix = options('figcap.prefix'), 
+        sep = options('figcap.sep'), prefix.highlight = options('figcap.prefix.highlight')) {
+        i <- which(names(tag) == label)
+        if (length(i) == 0) {
+            i <- length(tag) + 1
+            tag <<- c(tag, i)
+            names(tag)[length(tag)] <<- label
+            used <<- c(used, FALSE)
+            names(used)[length(used)] <<- label
+            created <<- c(created, FALSE)
+            names(created)[length(created)] <<- label
+        }
+        if (!missing(caption)) {
+            created[label] <<- TRUE
+            paste0(prefix.highlight, prefix, ' ', i, sep, prefix.highlight, 
+                ' ', caption)
+        } else {
+            used[label] <<- TRUE
+            paste(prefix, tag[label])
+        }
+    }
+})
+options(figcap.prefix = 'Figure A', figcap.sep = ':', figcap.prefix.highlight = '**')
+
 tabRef <- local({
     tag <- numeric()
     created <- logical()
@@ -108,6 +136,34 @@ tabRef <- local({
 })
 options(tabcap.prefix = 'Table', tabcap.sep = ':', tabcap.prefix.highlight = '**')
 
+tabRefApp <- local({
+    tag <- numeric()
+    created <- logical()
+    used <- logical()
+    function(label, caption, prefix = options('tabcap.prefix'), 
+        sep = options('tabcap.sep'), prefix.highlight = options('tabcap.prefix.highlight')) {
+        i <- which(names(tag) == label)
+        if (length(i) == 0) {
+            i <- length(tag) + 1
+            tag <<- c(tag, i)
+            names(tag)[length(tag)] <<- label
+            used <<- c(used, FALSE)
+            names(used)[length(used)] <<- label
+            created <<- c(created, FALSE)
+            names(created)[length(created)] <<- label
+        }
+        if (!missing(caption)) {
+            created[label] <<- TRUE
+            paste0(prefix.highlight, prefix, ' ', i, sep, prefix.highlight, 
+                ' ', caption)
+        } else {
+            used[label] <<- TRUE
+            paste(prefix, tag[label])
+        }
+    }
+})
+options(tabcap.prefix = 'Table A', tabcap.sep = ':', tabcap.prefix.highlight = '**')
+
 summary_fun <- function(x,...){
   c(min = min(x, ...), 
     median = median(x, ...), 
@@ -129,18 +185,22 @@ mytheme <- theme(axis.text = element_text(colour = 'black', size = 14),
 ```
 
 ```{r load_data, echo = FALSE, message = FALSE, warning = FALSE, results = 'hide'}
-attach('./results/units_merged_beta_subset.rda')
 attach('./results/units_merged_fort.rda')
+attach('./results/units_merged_beta_subset.rda')
 attach('./results/units_merged_beta_subset_fort.rda')
+attach('./results/min_points_radius.rda')
+attach('./results/units_merged_human_impact_subset.rda')
 attach('./results/tax_model_summary.rda')
 attach('./results/func_model_summary.rda')
 attach('./results/phyl_model_summary.rda')
-attach('./results/min_points_radius.rda')
 attach('./results/tax_model_vif.rda')
 attach('./results/func_model_vif.rda')
 attach('./results/phyl_model_vif.rda')
-
 minnesota <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Minnesota_Outline.shp', 'Minnesota_Outline')
+```
+
+```{r set_variables, echo = FALSE, message = FALSE, warning = FALSE, results = 'hide'}
+expl_names <- c('Intercept', 'Human footprint', 'Forest loss', 'Net primary production', 'Habitat diversity', 'Mean temperature', 'Number forested points')
 ```
 <br>
 
@@ -208,7 +268,7 @@ pander::pander(summary_table)
   
 The range of taxonomic beta diversity values (`r tabRef("response_summary")`) was a lot larger than that of functional and phylogenetic beta diversity, reflecting the more limited set of ecological functions and phylogenetic backgrounds in comparison to the number of species present.  
 
-```{r div_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRef('div_plots', 'Correlations between forest species richness, taxonomic, functional, and phylogenetic beta diversity, and their distributions')}
+```{r div_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRef('div_plots', 'Distributions of forest species richness, taxonomic, functional, and phylogenetic beta diversity, and Pearson correlations between diversity measures')}
 psych::pairs.panels(units_merged_beta_subset@data[c('forest_spp_richness', 
   'tax_beta_div', 'func_beta_div', 'phyl_beta_div')], hist.col = NULL)
 ```
@@ -222,7 +282,7 @@ All three beta diversity measures were at least moderately positively correlated
 set.caption(tabRef('tax_model_summary', 'Summary of spatial error model explaining taxonomic beta diversity'))
 tax_model_coef <- as.data.frame(tax_model_summary$Coef)
 colnames(tax_model_coef)[4] <- 'p value'
-rownames(tax_model_coef) <- c('Intercept', 'Human footprint', 'Forest loss', 'Net primary production', 'Habitat diversity', 'Mean temperature', 'Number forested points')
+rownames(tax_model_coef) <- expl_names
 pander::pander(tax_model_coef)
 
 tax_range <- round(max(units_merged_beta_subset$tax_beta_div) - 
@@ -243,7 +303,7 @@ Taxonomic beta diversity was not impacted by human impact (human footprint and f
 set.caption(tabRef('func_model_summary', 'Summary of generalised linear model explaining functional beta diversity'))
 func_model_coef <- as.data.frame(func_model_summary$coefficients)
 colnames(func_model_coef)[4] <- 'p value'
-rownames(func_model_coef) <- c('Intercept', 'Human footprint', 'Forest loss', 'Net primary production', 'Habitat diversity', 'Mean temperature', 'Number forested points')
+rownames(func_model_coef) <- expl_names
 pander::pander(func_model_coef)
 
 func_range <- round(max(units_merged_beta_subset$func_beta_div) - 
@@ -278,7 +338,7 @@ On the other hand, functional beta diversity was impacted by human influence. Hu
 set.caption(tabRef('phyl_model_summary', 'Summary of generalised linear model explaining phylogenetic beta diversity'))
 phyl_model_coef <- as.data.frame(phyl_model_summary$coefficients)
 colnames(phyl_model_coef)[4] <- 'p value'
-rownames(phyl_model_coef) <- c('Intercept', 'Human footprint', 'Forest loss', 'Net primary production', 'Habitat diversity', 'Mean temperature', 'Number forested points')
+rownames(phyl_model_coef) <- expl_names
 #phyl_model_coef$'Est. Transf.' <- exp(phyl_model_coef$Estimate)
 #phyl_model_coef <- dplyr::select(phyl_model_coef, 1, 5, 2, 3, 4)
 pander::pander(phyl_model_coef)
@@ -324,50 +384,47 @@ Functional beta-diversity was a positive function of human footprint index even 
 <br>
 
 #Appdendix  
-##1. Correlations between human footprint and human influence components in Minnesota data
+##1. Correlations between human footprint and human influence variables in Minnesota data
+```{r hfp_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('hfp_plots', "Distributions of human footprint and other variables describing human influence, and Spearman's rank correlations between variables")}
+psych::pairs.panels(units_merged_human_impact_subset, hist.col = NULL, method = 'spearman')
+```
   
 ##2. Correlations between explanatory variables and their distributions
-```{r explanatory_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRef('explanatory_plots', 'Correlations between explanatory variables, and their distributions')}
+```{r explanatory_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('explanatory_plots', "Distributions of explanatory variables, and Spearman's rank correlations between variables")}
 psych::pairs.panels(units_merged_beta_subset@data[c('human_footprint', 
-  'forest_loss', 'habitat_div', 'net_prim_prod', 'mean_temp', 'forest_point_freq')], hist.col = NULL)
+  'forest_loss', 'habitat_div', 'net_prim_prod', 'mean_temp', 'forest_point_freq')], 
+  hist.col = NULL, method = 'spearman')
 ```
+  
 ##2. Correlations between diversity measures
 ###a) Taxonomic diversity components
-```{r, echo = FALSE, message = FALSE, warning = FALSE}
+```{r tax_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('tax_plots', "Distributions of taxonomic diversity measures, and Pearson correlations between variables")}
 psych::pairs.panels(units_merged_beta_subset@data[c(
   'tax_alpha_div', 'tax_beta_div', 'tax_gamma_div')], hist.col = NULL)
 ```
   
 ###b) Functional diversity components
-```{r, echo = FALSE, message = FALSE, warning = FALSE}
+```{r func_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('func_plots', "Distributions of functional diversity measures, and Pearson correlations between variables")}
 psych::pairs.panels(units_merged_beta_subset@data[c(
   'func_alpha_div', 'func_beta_div', 'func_gamma_div')], hist.col = NULL)
 ```
   
 ###c) Phylogenetic diversity components
-```{r, echo = FALSE, message = FALSE, warning = FALSE}
+```{r phyl_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('phyl_plots', "Distributions of phylogenetic diversity measures, and Pearson correlations between variables")}
 psych::pairs.panels(units_merged_beta_subset@data[c(
   'phyl_alpha_div', 'phyl_beta_div', 'phyl_gamma_div')], hist.col = NULL)
 ```
   
 ##3. Variance inflation factors from models  
-###a) Taxonomic beta diversity  
-```{r tax_vif, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
-pander::pander(tax_model_vif)
-```
-  
-###b) Functional beta diversity  
-```{r func_vif, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
-pander::pander(func_model_vif)
-```
-  
-###c) Phylogenetic beta diversity  
-```{r phyl_vif, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
-pander::pander(phyl_model_vif)
+```{r vif, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
+set.caption(tabRefApp('vif', 'Variance inflation factors of explanatory variables in models explaining taxonomic, functional, and phylogenetic beta diversity'))
+vif_table <- as.data.frame(rbind(t(tax_model_vif), t(func_model_vif), t(phyl_model_vif)))
+rownames(vif_table) <- c('Taxonomic', 'Functional', 'Phylogenetic')
+pander::pander(vif_table)
 ```
   
 ##4. Histogram of number of forest BBA points per unit
-```{r, echo = FALSE, message = FALSE, warning = FALSE}
+```{r for_point_hist, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('for_point_hist', 'Histrogram of the number of forested BBA points per unit')}
 ggplot(units_merged_beta_subset@data, aes(x = forest_point_freq)) + 
   geom_histogram(binwidth = 1,  fill = "grey", colour = "black") + 
   xlab('Number of forested points') + 
@@ -379,7 +436,7 @@ ggplot(units_merged_beta_subset@data, aes(x = forest_point_freq)) +
   
 ##5. Spatial distribution of explanatory variables  
 ###a) Human footprint  
-```{r, echo = FALSE, message = FALSE, warning = FALSE}
+```{r hfp_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('hfp_plot', 'Map showing the spatial distribution of human footprint values in the state of Minnesota')}
 ggplot(data = units_merged_fort, 
   aes_string(x = 'long', y = 'lat', fill = 'human_footprint', group = 'group')) + 
   geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
@@ -390,7 +447,7 @@ ggplot(data = units_merged_fort,
 ```
   
 ###b) Forest loss  
-```{r, echo = FALSE, message = FALSE, warning = FALSE}
+```{r for_loss_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('for_loss_plot', 'Map showing the spatial distribution of forest loss values in the state of Minnesota')}
 ggplot(data = units_merged_fort, #units_merged_beta_subset_fort
   aes_string(x = 'long', y = 'lat', fill = 'forest_loss', group = 'group')) + 
   geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
@@ -401,7 +458,7 @@ ggplot(data = units_merged_fort, #units_merged_beta_subset_fort
 ```
   
 ###c) Habitat diversity  
-```{r, echo = FALSE, message = FALSE, warning = FALSE}
+```{r hab_div_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('hab_div_plot', 'Map showing the spatial distribution of habitat diversity values in the state of Minnesota')}
 ggplot(data = units_merged_fort, 
   aes_string(x = 'long', y = 'lat', fill = 'habitat_div', group = 'group')) + 
   geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
@@ -412,7 +469,7 @@ ggplot(data = units_merged_fort,
 ```
   
 ###d) Net primary production  
-```{r, echo = FALSE, message = FALSE, warning = FALSE}
+```{r npp_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('npp_plot', 'Map showing the spatial distribution of net primary productivity values in the state of Minnesota')}
 ggplot(data = units_merged_fort, 
   aes_string(x = 'long', y = 'lat', fill = 'net_prim_prod', group = 'group')) + 
   geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
@@ -423,7 +480,7 @@ ggplot(data = units_merged_fort,
 ```
    
 ###e) Mean temperature  
-```{r, echo = FALSE, message = FALSE, warning = FALSE}
+```{r mean_temp_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('mean_temp_plot', 'Map showing the spatial distribution of mean temperature values in the state of Minnesota')}
 ggplot(data = units_merged_fort, 
   aes_string(x = 'long', y = 'lat', fill = 'mean_temp', group = 'group')) + 
   geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
@@ -434,7 +491,7 @@ ggplot(data = units_merged_fort,
 ```
   
 ###f) Number of forested points  
-```{r, echo = FALSE, message = FALSE, warning = FALSE}
+```{r for_points_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('for_points_plot', 'Map showing the spatial distribution of the number of forested BBA points per unit in the state of Minnesota')}
 ggplot(data = units_merged_fort, 
   aes_string(x = 'long', y = 'lat', fill = 'forest_point_freq', group = 'group')) + 
   geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
