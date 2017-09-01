@@ -6,8 +6,9 @@ output:
   word_document:
     toc: TRUE
     toc_depth: 4
-    fig_width: 8
-    fig_height: 8
+    fig_width: 6
+    fig_height: 6
+    reference_docx: manuscript_style.docx
 ---
 
 ```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
@@ -141,6 +142,8 @@ attach('./results/phyl_model_vif.rda')
 
 minnesota <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Minnesota_Outline.shp', 'Minnesota_Outline')
 ```
+<br>
+
 #Introduction  
 * We are facing a biodiversity crisis
 * Alpha, beta and gamma diversities are decreasing
@@ -164,9 +167,8 @@ minnesota <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_
     1. Increased human footprint and forest loss lead to decreased beta diversity between units
     2. Increased NPP and habitat diversity increase beta diversity between units
     3. Taxonomic beta diversity shows a stronger response to human influence than functional or phylogenetic diversity
-  
-----
-  
+<br>
+
 #Methods  
 * Outline of Minnesota Breeding Bird Atlas (BBA)  
   
@@ -189,9 +191,8 @@ Beta diversity was calcualted as total species diversity per unit minus the mean
 We chose the explanatory variables so that the variance inflation factors (VIF) were under 3 (Zuur et al. 2007).
 All analyses wer performed with `r R.Version()$version.string`.  
 * Spatial autocorrelation
-  
-----
-  
+<br>
+
 #Results  
 ##Summary statistics  
 ```{r summary_stats, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
@@ -303,26 +304,29 @@ phyl_temp_change <- round((phyl_temp_perc / 100) * phyl_range, digits = 3)
 ```
   
 Phylogenetic beta diversity showed a similar pattern to that of functional diversity. Along the gradient of human footprint in our data phylogenetic beta diversity increased by `r phyl_hfp_change`, which is `r phyl_hfp_perc`% of the range of values in our data. Interestingly, forest loss showed the opposite impact to human footprint, increasing phylogenetic beta diversity by `r phyl_floss_perc`% (`r phyl_floss_change` units) along the range of forest loss in our study landscape (`r paste(min_floss, ' - ', max_floss)`%). As with functional beta diversity, npp had a negative impact on phylogenetic beta diversity, although here the biological impacts were a fair bit weaker. Along the range of npp values phylogenetic beta diversity decreased by `r abs(phyl_npp_change)` units (-`r phyl_npp_perc`%). Mean annual temperature also had a negative impact, decreasing phylogenetic beta diversity by `r abs(phyl_temp_change)` units (-`r phyl_temp_perc`%) along the range of temperature values.
-  
-----
-  
+<br>
+
 #Discussion  
+
+* Summarry of results
+
+* Why did human footprint have a positive impact?
+
+
 Overall, species richness is not a driver of beta-diversity as species rich units (landscapes) do not foster more local variation in bird community composition. Moreover, beta-diversity indices were not positive functions of net primary productivity or ambient temperature. Earlier research has suggested/shown positive relationships. We rather found that beta-diversities were negatively related to NPP and mean temperature. Why would that be?
   
 Taxonomic beta-diversity- habitat diversity is the main driver. Theory predicts that different components of species diversity are positively associated with environmental heterogeneity. It is easy to understand why and how HD affect species richness and alpha-diversity (see also Allouche et al. 2012). Our results support earlied findings that habitat heterogeneity also maintains beta-diversity, i.e. differentiation in community composition among sites.
   
 Functional beta-diversity was a positive function of human footprint index even after controlling for habitat diversity, productivity etc. Thus, intensified human land-use resulted in increased variation among local communities in their functional composition, i.e. communities in landscapes under strong human land use became functionally dissimilar. I assume a same kind of mechanism is behind this pattern as we suggested in our earlier alpha-diversity paper (Häkkilä et al. 2017): in that paper, we explained why functional diversity, counter to expectation, increases with human land-use intensity in the matrix surrounding the protected areas.
-  
-----
-  
-#Conclusion  
-  
-----
-  
-#Appdendix  
+<br>
 
-##1. Correlations between diversity measures
+#Conclusion  
+<br>
+
+#Appdendix  
+##1. Correlations between human footprint and human influence components in Minnesota data
   
+##2. Correlations between diversity measures
 ###a) Taxonomic diversity components
 ```{r, echo = FALSE, message = FALSE, warning = FALSE}
 psych::pairs.panels(units_merged_beta_subset@data[c(
@@ -341,8 +345,7 @@ psych::pairs.panels(units_merged_beta_subset@data[c(
   'phyl_alpha_div', 'phyl_beta_div', 'phyl_gamma_div')], hist.col = NULL)
 ```
   
-##2. Variance inflation factors from models  
-  
+##3. Variance inflation factors from models  
 ###a) Taxonomic beta diversity  
 ```{r tax_vif, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
 pander::pander(tax_model_vif)
@@ -358,7 +361,7 @@ pander::pander(func_model_vif)
 pander::pander(phyl_model_vif)
 ```
   
-##3. Histogram of number of forest BBA points per unit
+##4. Histogram of number of forest BBA points per unit
 ```{r, echo = FALSE, message = FALSE, warning = FALSE}
 ggplot(units_merged_beta_subset@data, aes(x = forest_point_freq)) + 
   geom_histogram(binwidth = 1,  fill = "grey", colour = "black") + 
@@ -369,8 +372,7 @@ ggplot(units_merged_beta_subset@data, aes(x = forest_point_freq)) +
   mytheme
 ```
   
-##4. Spatial distribution of explanatory variables  
-  
+##5. Spatial distribution of explanatory variables  
 ###a) Human footprint  
 ```{r, echo = FALSE, message = FALSE, warning = FALSE}
 ggplot(data = units_merged_fort, 
@@ -437,7 +439,7 @@ ggplot(data = units_merged_fort,
   coord_equal() + theme_void()
 ```
   
-##5. List of used R packages and their versions  
+##6. List of used R packages and their versions  
 ```{r list_packages, echo = FALSE, comment = NA}
 for (package in sort(.packages())) {
   #print(paste(package, packageVersion(package), sep = ' '))
