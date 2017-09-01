@@ -163,6 +163,8 @@ We prepare the vector data by joining all unit- level data together
 # Read the different unit- level shapefiles
 units <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Units.shp', 'Units')
 units_road_density <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Units_RoadDensity.shp', 'Units_RoadDensity')
+units_road_density$Dens_Minor[is.na(units_road_density$Dens_Minor)] <- 0
+units_road_density$Dens_Minor <- as.numeric(units_road_density$Dens_Minor)
 units_census <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Units_Census.shp', 'Units_Census')
 units_eco_subsection <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Units_EcoSubsection.shp', 'Units_EcoSubsection')
 units_forest_status <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Units_ForestStatus.shp', 'Units_ForestStatus')
@@ -178,7 +180,6 @@ units_merged <- merge(units_merged, units_eco_subsection@data, by = 'unit')
 units_merged <- merge(units_merged, units_forest_status@data, by = 'unit')
 units_merged <- merge(units_merged, units_land_fire@data, by = 'unit')
 units_merged <- merge(units_merged, units_prism@data, by = 'unit')
-units_merged$Dens_Minor <- as.numeric(units_merged$Dens_Minor)
 ```
 
 ##Load other data
@@ -187,7 +188,6 @@ mnn_bba_points <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_
 mnn_bba_points$Date <- as.Date(mnn_bba_points$Date , "%Y/%m/%d")
 minnesota <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Minnesota_Outline.shp', 'Minnesota_Outline')
 land_fire_3 <- raster('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/landfire/landfire3.tif')
-#aaa <- raster('./data/minnesota_bird_data/mnbba_homogenization_gisfiles_8_2015/landcover/landfire.tif')
 ```
 
 ##Process and calculate human footprint index
@@ -233,6 +233,23 @@ write.csv(units_hfp, './data/last_of_the_wild/human_footprint_2/units_hfp.csv',
 # Join human footprint data to units_merged
 units_hfp <- read.csv('./data/last_of_the_wild/human_footprint_2/units_hfp.csv')
 units_merged <- merge(units_merged, units_hfp, by = 'unit')
+```
+
+Even though we are using human footprint to estimate human impact here is the 
+old code for performing a PCA on variables describing human impact to justify 
+the new method.
+```{r}
+# Select variables for PCA
+units_merged_pca <- dplyr::select(units_merged@data, censusSUM, Dens_Major, 
+  Dens_Minor, Dens_Other, HabV15:HabV18, HabV26)
+# Print scree plot, showing how many components to include in the PCA
+#psych::VSS.scree(units_merged_pca, main = "scree plot")
+# 3 components should be enough, let’s perform the PCA and extract 3 factors
+human_gradient_pca <- principal(units_merged_pca, nfactors = 3, rotate = 'varimax',
+  covar = F)
+# Join first principal component to the merged data
+units_merged$human_pca <- human_gradient_pca$scores[, 1]
+human_gradient_pca
 ```
 
 ##Process and calculate forest loss
@@ -335,6 +352,7 @@ df = pd.read_csv(path)
 df.rename(columns={'system:index': 'unit', 'mean': 'npp'}, inplace=True)
 df[[0, 2]].to_csv('../data/npp/mean_npp_unit.csv')
 ```
+
 ```{r}
 npp <- read.csv('./data/npp/mean_npp_unit.csv')
 units_merged$net_prim_prod <- npp$npp
@@ -550,6 +568,13 @@ data.frame('Min_forested_BBA_points_per_unit' = c(1, 2, 3, 4, 5),
 
 #Select columns and standardise their names
 ```{r}
+units_merged_human_impact <- dplyr::select(units_merged, human_footprint, 
+  human_pca, 'forest_loss' = allV1, 'total_pop' = censusSUM, 
+  'major_highways' = Dens_Major, 'minor_highways' = Dens_Minor, 
+  'other_roads' = Dens_Other, 'quarries' = HabV15, 
+  'low_intensity_development' = HabV16, 'med_intensity_development' = HabV17, 
+  'high_intensity_development' = HabV18, 'croplands' = HabV26)
+
 units_merged <- dplyr::select(units_merged, unit, 'forest_loss' = allV1, 
   'other_roads' = Dens_Other, 'mean_prec' = precMN, 'mean_temp' = tempMN, 
   'eco_subsection' = SUBSECNAME, human_footprint, net_prim_prod, 
@@ -564,7 +589,7 @@ forested BBA points per unit.
 units_merged_subset <- units_merged[units_merged$forest_point_freq >= min_points, ]
 ```
 
-```{r, fig.width = 3, fig.height = 3, message = FALSE}
+```{r, fig.width = 2, fig.height = 2, message = FALSE}
 ggplot() + 
   geom_polygon(data = minnesota, aes(x = long, y = lat, group = group), fill = NA, color = 'black') + 
   geom_polygon(data = units_merged_subset, aes(x = long, y = lat, group = group), fill = 'lightgray', color = 'black') + 
@@ -932,13 +957,18 @@ hist(units_merged_beta$phyl_beta_div, main = 'Distribution of phylogenetic beta 
 ```
 
 ##3. Colinearity of explanatory variables
+Let's start by having a look at how correlated the human footprint variable is 
+with variables describing human impact in Minnesota:
+```{r, fig.show = 'hold', results = 'hold', fig.width = 10, fig.height = 10}
+# Pair plots of human footprint and other variables explaining human impact
+pairs(units_merged_human_impact, cex.labels = 1.2, font.labels = 1.6, diag.panel = panel.hist, upper.panel = panel.cor)
+```
+
+
 ```{r, fig.show = 'hold', results = 'hold', fig.width = 10, fig.height = 10}
 # Pair plots of explanatory variables
 pairs(as.data.frame(dplyr::select(explanatory_variables, -unit, -eco_subsection)), 
   cex.labels = 1.2, font.labels = 1.6, diag.panel = panel.hist, upper.panel = panel.cor)
-
-#source('./code/HighstatLib.r')
-#explanatory_variable_vifs <- corvif(dplyr::select(explanatory_variables, -unit))
 ```
 
 We can see that there is a strongish correlation between a few of the variables.
