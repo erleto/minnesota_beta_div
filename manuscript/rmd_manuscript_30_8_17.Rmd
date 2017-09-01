@@ -208,12 +208,12 @@ pander::pander(summary_table)
   
 The range of taxonomic beta diversity values (`r tabRef("response_summary")`) was a lot larger than that of functional and phylogenetic beta diversity, reflecting the more limited set of ecological functions and phylogenetic backgrounds in comparison to the number of species present.  
 
-```{r pairplots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRef('pairplots', 'Correlations between forest species richness, taxonomic, functional, and phylogenetic beta diversity, and their distributions')}
+```{r div_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRef('div_plots', 'Correlations between forest species richness, taxonomic, functional, and phylogenetic beta diversity, and their distributions')}
 psych::pairs.panels(units_merged_beta_subset@data[c('forest_spp_richness', 
   'tax_beta_div', 'func_beta_div', 'phyl_beta_div')], hist.col = NULL)
 ```
   
-`r figRef("pairplots")` shows that none of the response variables was strongly correlated with species richness, although taxonomic beta diversity showed a weak positive correlation with unit-wide species richness up to about 70 species, after which the relation levelled off. Species richness was actually very weakly negatively associated with functional and phylogenetic beta diversity. As the figure shows, these beta diversity indicators are invariably low when species richness is high, and vary widely in units with low species richness. In summary, variation in local bird community composition is not strongly linked with regional (unit level) species richness. 
+`r figRef("div_plots")` shows that none of the response variables was strongly correlated with species richness, although taxonomic beta diversity showed a weak positive correlation with unit-wide species richness up to about 70 species, after which the relation levelled off. Species richness was actually very weakly negatively associated with functional and phylogenetic beta diversity. As the figure shows, these beta diversity indicators are invariably low when species richness is high, and vary widely in units with low species richness. In summary, variation in local bird community composition is not strongly linked with regional (unit level) species richness. 
   
 All three beta diversity measures were at least moderately positively correlated with each other. The correlation between functional and phylogenetic beta diversity was fairly strong, suggesting that these two aspects of biodiversity are fairly strongly linked with each other in this data set. All three beta diversity measures increased strongly with the number of BBA points per unit, which can be seen in the results of individual response variables.  
 
@@ -326,6 +326,11 @@ Functional beta-diversity was a positive function of human footprint index even 
 #Appdendix  
 ##1. Correlations between human footprint and human influence components in Minnesota data
   
+##2. Correlations between explanatory variables and their distributions
+```{r explanatory_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRef('explanatory_plots', 'Correlations between explanatory variables, and their distributions')}
+psych::pairs.panels(units_merged_beta_subset@data[c('human_footprint', 
+  'forest_loss', 'habitat_div', 'net_prim_prod', 'mean_temp', 'forest_point_freq')], hist.col = NULL)
+```
 ##2. Correlations between diversity measures
 ###a) Taxonomic diversity components
 ```{r, echo = FALSE, message = FALSE, warning = FALSE}
