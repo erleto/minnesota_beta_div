@@ -1585,17 +1585,19 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'phyl_div_resid'),
 ##Save data
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 response_summary <- summary(units_merged_beta_subset@data[c('forest_spp_richness', 'tax_alpha_div', 'func_alpha_div', 'phyl_alpha_div', 'tax_beta_div', 'func_beta_div', 'phyl_beta_div', 'tax_gamma_div', 'func_gamma_div', 'phyl_gamma_div')])
-save(response_summary, file = './results/response_summary.rda')
 
 # Fortify subsetted explanatory variables for plotting
 units_merged_beta_subset_fort <- fortify(units_merged_beta_subset, region = 'unit')
 units_merged_beta_subset_fort <- left_join(units_merged_beta_subset_fort, 
   units_merged_beta_subset@data)
 
-save(units_merged_beta_subset, file = './results/units_merged_beta_subset.rda')
-save(units_merged_fort, file = './results/units_merged_fort.rda')
-save(units_merged_beta_subset_fort, file = './results/units_merged_beta_subset_fort.rda')
 save(min_points, count_radius, file = './results/min_points_radius.rda')
+save(response_summary, file = './results/response_summary.rda')
+save(units_merged_fort, file = './results/units_merged_fort.rda')
+save(units_merged_beta_subset, file = './results/units_merged_beta_subset.rda')
+save(units_merged_beta_subset_fort, file = './results/units_merged_beta_subset_fort.rda')
+save(units_merged_human_impact_subset, file = './results/units_merged_human_impact_subset.rda')
+
 save(tax_model_summary, file = './results/tax_model_summary.rda')
 save(tax_model_vif, file = './results/tax_model_vif.rda')
 save(func_model_summary, file = './results/func_model_summary.rda')
