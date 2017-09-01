@@ -240,7 +240,7 @@ old code for performing a PCA on variables describing human impact to justify
 the new method.
 ```{r}
 # Select variables for PCA
-units_merged_pca <- dplyr::select(units_merged@data, censusSUM, Dens_Major, 
+units_merged_pca <- dplyr::select(units_merged, censusSUM, Dens_Major, 
   Dens_Minor, Dens_Other, HabV15:HabV18, HabV26)
 # Print scree plot, showing how many components to include in the PCA
 #psych::VSS.scree(units_merged_pca, main = "scree plot")
@@ -379,6 +379,7 @@ land_fire_3_classes[is.na(land_fire_3_classes)] <- 0
 #land_fire_3_classes <- dplyr::select(land_fire_3_classes, unit, landfire_2:landfire_51)
 write.csv(land_fire_3_classes, './data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/landfire/land_fire_3_classes_unit.csv', row.names = FALSE)
 ```
+
 ```{r}
 land_fire_3_classes <- read.csv('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/landfire/land_fire_3_classes_unit.csv')
 
@@ -568,7 +569,7 @@ data.frame('Min_forested_BBA_points_per_unit' = c(1, 2, 3, 4, 5),
 
 #Select columns and standardise their names
 ```{r}
-units_merged_human_impact <- dplyr::select(units_merged, human_footprint, 
+units_merged_human_impact <- dplyr::select(units_merged, unit, human_footprint, 
   human_pca, 'forest_loss' = allV1, 'total_pop' = censusSUM, 
   'major_highways' = Dens_Major, 'minor_highways' = Dens_Minor, 
   'other_roads' = Dens_Other, 'quarries' = HabV15, 
@@ -961,7 +962,9 @@ Let's start by having a look at how correlated the human footprint variable is
 with variables describing human impact in Minnesota:
 ```{r, fig.show = 'hold', results = 'hold', fig.width = 10, fig.height = 10}
 # Pair plots of human footprint and other variables explaining human impact
-pairs(units_merged_human_impact, cex.labels = 1.2, font.labels = 1.6, diag.panel = panel.hist, upper.panel = panel.cor)
+units_merged_human_impact_subset <- dplyr::filter(units_merged_human_impact, unit %in% common_units$unit) %>% dplyr::select(-unit)
+
+pairs(units_merged_human_impact_subset, cex.labels = 1.2, font.labels = 1.6, diag.panel = panel.hist, upper.panel = panel.cor)
 ```
 
 
