@@ -143,7 +143,7 @@ We prepare the vector data by joining all unit- level data together
 units <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Units.shp', 'Units')
 units_road_density <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Units_RoadDensity.shp', 'Units_RoadDensity')
 units_road_density$Dens_Minor[is.na(units_road_density$Dens_Minor)] <- 0
-units_road_density$Dens_Minor <- as.numeric(units_road_density$Dens_Minor)
+units_road_density$Dens_Minor <- as.numeric(as.character(units_road_density$Dens_Minor))
 units_census <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Units_Census.shp', 'Units_Census')
 units_eco_subsection <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Units_EcoSubsection.shp', 'Units_EcoSubsection')
 units_forest_status <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Units_ForestStatus.shp', 'Units_ForestStatus')
@@ -549,11 +549,10 @@ data.frame('Min_forested_BBA_points_per_unit' = c(1, 2, 3, 4, 5),
 #Select columns and standardise their names
 ```{r}
 units_merged_human_impact <- dplyr::select(units_merged, unit, human_footprint, 
-  human_pca, 'forest_loss' = allV1, 'total_pop' = censusSUM, 
-  'major_highways' = Dens_Major, 'minor_highways' = Dens_Minor, 
-  'other_roads' = Dens_Other, 'quarries' = HabV15, 
-  'low_intensity_development' = HabV16, 'med_intensity_development' = HabV17, 
-  'high_intensity_development' = HabV18, 'croplands' = HabV26)
+  'forest_loss' = allV1, 'total_pop' = censusSUM, 'all_roads' = Dens_All, 
+  HabV15:HabV18, HabV26) %>% 
+  dplyr::mutate('human_land_use' = HabV15 + HabV16 + HabV17 + HabV18 + HabV26) %>% 
+  dplyr::select(-(HabV15:HabV18), -HabV26)
 
 units_merged <- dplyr::select(units_merged, unit, 'forest_loss' = allV1, 
   'other_roads' = Dens_Other, 'mean_prec' = precMN, 'mean_temp' = tempMN, 
@@ -569,7 +568,7 @@ forested BBA points per unit.
 units_merged_subset <- units_merged[units_merged$forest_point_freq >= min_points, ]
 ```
 
-```{r, fig.width = 2, fig.height = 2, message = FALSE}
+```{r, fig.width = 3, fig.height = 3, message = FALSE}
 ggplot() + 
   geom_polygon(data = minnesota, aes(x = long, y = lat, group = group), fill = NA, color = 'black') + 
   geom_polygon(data = units_merged_subset, aes(x = long, y = lat, group = group), fill = 'lightgray', color = 'black') + 
@@ -942,13 +941,14 @@ with variables describing human impact in Minnesota:
 ```{r, fig.show = 'hold', results = 'asis', fig.width = 10, fig.height = 10}
 # Pair plots of human footprint and other variables explaining human impact
 units_merged_human_impact_subset <- dplyr::filter(units_merged_human_impact, unit %in% common_units$unit) %>% dplyr::select(-unit)
-psych::pairs.panels(units_merged_human_impact_subset, hist.col = NULL)
+psych::pairs.panels(units_merged_human_impact_subset, hist.col = NULL, method = 'spearman')
 ```
 
 
 ```{r, fig.show = 'hold', results = 'hold', fig.width = 10, fig.height = 10}
 # Pair plots of explanatory variables
-psych::pairs.panels(as.data.frame(dplyr::select(explanatory_variables, -unit, -eco_subsection)), hist.col = NULL)
+psych::pairs.panels(as.data.frame(dplyr::select(explanatory_variables, -unit, -eco_subsection)), 
+  hist.col = NULL, method = 'spearman')
 ```
 
 We can see that there is a strongish correlation between a few of the variables.
