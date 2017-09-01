@@ -4,10 +4,10 @@ author: "Eric Le Tortorec"
 output:
   html_document:
     toc: yes
-    toc_depth: 3
+    toc_depth: 4
   html_notebook:
     toc: yes
-    toc_depth: 3
+    toc_depth: 4
 ---
 
 Description: Code for preparing and performing preliminary analysis on Minnesota 
@@ -159,7 +159,7 @@ count_radius <- 100
 #Prepare landscape data
 ##Join unit-level data
 We prepare the vector data by joining all unit- level data together
-```{r, results = 'hide'}
+```{r, results = 'hide', message = FALSE, warning = FALSE}
 # Read the different unit- level shapefiles
 units <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Units.shp', 'Units')
 units_road_density <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Units_RoadDensity.shp', 'Units_RoadDensity')
@@ -196,10 +196,7 @@ the human footprint.
 
 Then we read, clip and reproject the human footprint data so that average values 
 per unit can be calculated. The first part of the code below reads, clips and 
-reprojects the human footprint data. For some reason raster::projectRaster 
-cannot reproject between WGS84 and UTM zone 15, even if the raster has been 
-clipped to the spatial limits of zone 15. Thus, the clipped raster is saved as 
-a geotiff, and reprojected with gdal in the terminal.
+reprojects the human footprint data.
 ```{r, eval = FALSE}
 human_footprint_orig <- raster('./data/last_of_the_wild/human_footprint_2/hfp_n_amer/dblbnd.adf')
 crs(human_footprint_orig) <- CRS("+init=epsg:4326")
@@ -211,7 +208,14 @@ minnesota_extent_wgs84 <- spTransform(minnesota_extent, CRS = CRS('+init=epsg:43
 human_footprint_minnesota <- crop(human_footprint_orig, minnesota_extent_wgs84)
 
 writeRaster(human_footprint_minnesota, filename = './Data/last_of_the_wild/human_footprint_2/human_footprint_minnesota.tif', overwrite =T)
-###gdalwarp -s_srs '+init=epsg:4326' -t_srs '+init=epsg:26915' human_footprint_minnesota.tif human_footprint_utm15n.tif
+```
+
+For some reason raster::projectRaster cannot reproject between WGS84 and UTM 
+zone 15, even if the raster has been clipped to the spatial limits of zone 15. 
+Thus, the clipped raster is saved as a geotiff, and reprojected with gdal in 
+with a bash script.
+```{bash, eval = FALSE}
+gdalwarp -s_srs '+init=epsg:4326' -t_srs '+init=epsg:26915' ./data/last_of_the_wild/human_footprint_2/human_footprint_minnesota.tif ./data/last_of_the_wild/human_footprint_2/human_footprint_utm15n.tif
 ```
 
 We then read the reprojected data and calculate the average human footprint 
