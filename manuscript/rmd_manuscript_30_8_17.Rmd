@@ -189,6 +189,8 @@ attach('./results/units_merged_fort.rda')
 attach('./results/units_merged_beta_subset.rda')
 attach('./results/units_merged_beta_subset_fort.rda')
 attach('./results/min_points_radius.rda')
+attach('./results/bba_forest_point_count.rda')
+attach('./results/forest_unit_count.rda')
 attach('./results/units_merged_human_impact_subset.rda')
 attach('./results/tax_model_summary.rda')
 attach('./results/func_model_summary.rda')
@@ -210,7 +212,7 @@ expl_names <- c('Intercept', 'Human footprint', 'Forest loss', 'Net primary prod
 * What the loss of beta diversity tells us
   
 * What is biotic homogenistation - the anthropogenic blender
-* Biotic homogenisation is a pressing worldwide problem
+* Biotic homogenisation is a pressing worldwide problem 
 * How biotic homogenisation can be measured
 * Impacts of anthropogenic and natural processes on biotic homogenisation
   
@@ -219,9 +221,9 @@ expl_names <- c('Intercept', 'Human footprint', 'Forest loss', 'Net primary prod
 * Why studying phylogenetic and functional homogenisation is important
   
 * The precise mechanisms causing biotic homogenisation are still unclear
-* Species introductions and extinctions lead to biotic homogenisation of communities but 
+* Species introductions and extinctions lead to biotic homogenisation of communities
   
-* What we did
+* What we did 
 * How this helps us understand the link between human impact and biotic homogenisation better
 * Hypotheses:
     1. Increased human footprint and forest loss lead to decreased beta diversity between units
@@ -230,16 +232,14 @@ expl_names <- c('Intercept', 'Human footprint', 'Forest loss', 'Net primary prod
 <br>
 
 #Methods  
-* Outline of Minnesota Breeding Bird Atlas (BBA)  
-  
-* Outline of study design (units)  
+##Study design
+The state of Minnesota was split into 617 units, each measuring 12 x 12 miles. Each unit was composed of four townships, forming a square, except for a few specific areas where irregular units constructed from one to four townships were used. A random township in Minnesota was selected, which was used as the northeastern square of a unit. Subsequent units were then formed using the first unit as a reference point until the entire state was covered by units. Within each township three point locations were selected for bird counts, which were conducted as a part of the Minnesota breeding bird atlas (BBA). One BBA point was placed in an area representing the most common land use class in the township, one point was placed in the second most common land use class, and one was placed in a random land use class. 
 
-* Selection of BBA points  
-The land class classification of BBA points was based on the dominant land class within a `r count_radius`m buffer around the BBA point.The land classes were determined from classified satellite images.Bird observations from each BBA point were restricted to `r count_radius`m, which was determined to be the maximum distance within which birds could reliably be identified. We only selected points that were at least twice this distance from each other (`r 2 * count_radius`m) in order to avoid duplicate counts of bird observations.
-In our final analyses we only selected units with at least `r min_points` forested BBA points, which we determined to be the minimum number of communities to reliably estimate beta diversity.
+**A brief description of BBA protocol needed.** A total of 7070 BBA counts were performed between May 2009 and June 2014.  Abundances of birds identified to the species level within `r count_radius`m of the BBA point were used since this was determined to be the maximum distance within which birds could reliably be identified. For those BBA points that had been counted more than once we selected the earlier observation. We used BBA points located at least `r 2 * count_radius`m from each other (twice the distance of the bird count radius) in order to avoid overlap between BBA bird counts. From pairs of BBA points located under `r 2 * count_radius`m from each other we selected the earlier observation, and if both points had the same date one was chosen randomly. For the analyses in this study we used BBA points located in forested land cover classes. The dominant land cover for each BBA point was  determined from classified satellite images (**More information needed**) within `r count_radius`m of the BBA location. For calculating bird community diversities we only used states that had at least `r min_points` BBA points located in a forested land use class (`r bba_forest_point_count` forested BBA points in `r forest_unit_count` units). We determined `r min_points` points to be the minimum number of communities to reliably estimate beta diversity. 
   
-* Calculation of beta diversities  
-Beta diversity was calcualted as total species diversity per unit minus the mean alpha diversity per unit. This unitless measure reflects the number of individual BBA points with no overlapping species needed to achieve the before- mentioned aplha and gamma diversities.
+##Calculation of beta diversities  
+Beta diversity was calcualted as total species diversity per unit minus the mean alpha diversity per unit. This unitless measure reflects the number of individual BBA points with no overlapping species needed to achieve the before- mentioned aplha and gamma diversities.  
+
 * Taxonomic, functional and phylogenetic beta-diversity.
 * Calculation of landscape metrics  
     * Human footprint
@@ -247,7 +247,7 @@ Beta diversity was calcualted as total species diversity per unit minus the mean
     * Habitat diversity
     * Net primary production
   
-* Statistical models  
+##Statistical models  
 We chose the explanatory variables so that the variance inflation factors (VIF) were under 3 (Zuur et al. 2007).
 All analyses wer performed with `r R.Version()$version.string`.  
 * Spatial autocorrelation
@@ -368,9 +368,9 @@ Phylogenetic beta diversity showed a similar pattern to that of functional diver
 
 #Discussion  
 
-* Summarry of results
+Summarry of results
 
-* Why did human footprint have a positive impact?
+Why did human footprint have a positive impact?
 
 
 Overall, species richness is not a driver of beta-diversity as species rich units (landscapes) do not foster more local variation in bird community composition. Moreover, beta-diversity indices were not positive functions of net primary productivity or ambient temperature. Earlier research has suggested/shown positive relationships. We rather found that beta-diversities were negatively related to NPP and mean temperature. Why would that be?
