@@ -84,8 +84,8 @@ figRefApp <- local({
     tag <- numeric()
     created <- logical()
     used <- logical()
-    function(label, caption, prefix = options('figcap.prefix'), 
-        sep = options('figcap.sep'), prefix.highlight = options('figcap.prefix.highlight')) {
+    function(label, caption, prefix = options('figcap.app.prefix'), 
+        sep = options('figcap.app.sep'), prefix.highlight = options('figcap.app.prefix.highlight')) {
         i <- which(names(tag) == label)
         if (length(i) == 0) {
             i <- length(tag) + 1
@@ -106,7 +106,7 @@ figRefApp <- local({
         }
     }
 })
-options(figcap.prefix = 'Figure A', figcap.sep = ':', figcap.prefix.highlight = '**')
+options(figcap.app.prefix = 'Figure A', figcap.app.sep = ':', figcap.app.prefix.highlight = '**')
 
 tabRef <- local({
     tag <- numeric()
@@ -140,8 +140,8 @@ tabRefApp <- local({
     tag <- numeric()
     created <- logical()
     used <- logical()
-    function(label, caption, prefix = options('tabcap.prefix'), 
-        sep = options('tabcap.sep'), prefix.highlight = options('tabcap.prefix.highlight')) {
+    function(label, caption, prefix = options('tabcap.app.prefix'), 
+        sep = options('tabcap.app.sep'), prefix.highlight = options('tabcap.app.prefix.highlight')) {
         i <- which(names(tag) == label)
         if (length(i) == 0) {
             i <- length(tag) + 1
@@ -162,7 +162,7 @@ tabRefApp <- local({
         }
     }
 })
-options(tabcap.prefix = 'Table A', tabcap.sep = ':', tabcap.prefix.highlight = '**')
+options(tabcap.app.prefix = 'Table A', tabcap.app.sep = ':', tabcap.app.prefix.highlight = '**')
 
 summary_fun <- function(x,...){
   c(min = min(x, ...), 
@@ -420,6 +420,7 @@ psych::pairs.panels(units_merged_beta_subset@data[c(
 set.caption(tabRefApp('vif', 'Variance inflation factors of explanatory variables in models explaining taxonomic, functional, and phylogenetic beta diversity'))
 vif_table <- as.data.frame(rbind(t(tax_model_vif), t(func_model_vif), t(phyl_model_vif)))
 rownames(vif_table) <- c('Taxonomic', 'Functional', 'Phylogenetic')
+colnames(vif_table) <- expl_names[2:7]
 pander::pander(vif_table)
 ```
   
