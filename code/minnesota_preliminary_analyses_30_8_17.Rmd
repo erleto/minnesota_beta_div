@@ -507,6 +507,8 @@ mnn_bba_points_unique_over <- mnn_bba_points_unique[mnn_bba_points_unique$ID %in
     point_dist_nn_over$ID, ]
 
 mnn_bba_points_unique_subset <- spRbind(mnn_bba_points_unique_over, mnn_bba_points_unique_under)
+
+bba_forest_point_count <- sum(mnn_bba_points_unique_subset$forest_bba)
 ```
 
 There are a total of `r length(mnn_bba_points_unique_subset)` unique BBA points 
@@ -566,6 +568,7 @@ Before doing anything else, we subset the data by setting a minumum number of
 forested BBA points per unit.
 ```{r}
 units_merged_subset <- units_merged[units_merged$forest_point_freq >= min_points, ]
+forest_unit_count <- length(units_merged_subset)
 ```
 
 ```{r, fig.width = 3, fig.height = 3, message = FALSE}
@@ -1592,6 +1595,8 @@ units_merged_beta_subset_fort <- left_join(units_merged_beta_subset_fort,
   units_merged_beta_subset@data)
 
 save(min_points, count_radius, file = './results/min_points_radius.rda')
+save(bba_forest_point_count, file = './results/bba_forest_point_count.rda')
+save(forest_unit_count, file = './results/forest_unit_count.rda')
 save(response_summary, file = './results/response_summary.rda')
 save(units_merged_fort, file = './results/units_merged_fort.rda')
 save(units_merged_beta_subset, file = './results/units_merged_beta_subset.rda')
