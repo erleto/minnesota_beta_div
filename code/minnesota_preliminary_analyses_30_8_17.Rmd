@@ -23,7 +23,7 @@ knitr::opts_knit$set(root.dir = normalizePath('/Users/Eric/Dropbox/Eric/Work/JKL
 #Setup
 ##Load necessary packages
 ```{r, message = FALSE, warning = FALSE}
-#install.packages(c('knitr', 'rgdal', 'gstat', 'raster', 'maptools', 'spdep', 'nlme', 'reshape2', 'tidyverse', 'maptools', 'rgeos', 'psych', 'lattice', 'car', 'cluster', 'ape', 'adephylo', 'DBI'))
+#install.packages(c('knitr', 'rgdal', 'gstat', 'raster', 'maptools', 'spdep', 'nlme', 'reshape2', 'tidyverse', 'maptools', 'rgeos', 'psych', 'lattice', 'car', 'cluster', 'ape', 'adephylo', 'DBI', 'moments'))
 library(reshape2)
 library(tidyverse)
 library(maptools)
@@ -39,6 +39,7 @@ library(cluster)
 library(ape)
 library(adephylo)
 library(nlme)
+library(moments)
 ```
 
 ## Define functions
@@ -846,7 +847,7 @@ phylo_distance_subset <- phylo_distance[rownames(phylo_distance) %in%
     rownames(bird_points_species_wide), colnames(phylo_distance) %in% 
     rownames(bird_points_species_wide)]
 bird_div_all <- Rao(sample = bird_points_species_wide, dfunc = trait_distance, 
-  dphyl = phylo_distance_subset, weight = FALSE, Jost = FALSE, structure = NULL)
+  dphyl = phylo_distance_subset, weight = FALSE, Jost = TRUE, structure = NULL)
 
 whole_area_div_summary <- data.frame(
   alpha_div = c(bird_div_all$TD$Mean_Alpha, bird_div_all$FD$Mean_Alpha, bird_div_all$PD$Mean_Alpha), 
@@ -1185,7 +1186,8 @@ tax_standardised_pred <- (predict(tax_model) - mean(predict(tax_model))) / sd(pr
 tax_standardised_resid <- (resid(tax_model) - mean(resid(tax_model))) / sd(resid(tax_model))
 # Create standardised residuals plot
 plot(tax_standardised_pred, tax_standardised_resid, main = "Standardised Taxonomic Residuals Plot", xlab = "Standardised Predicted Values", ylab = "Standardised Residuals")
-abline(0,0)
+abline(0, 0)
+abline(h = c(-2, 2), col = 'red')
 ```
 
 ###2. Normality of residuals
@@ -1250,22 +1252,8 @@ Due to the structure of our data (units of ~ 20 * 20km) we will assume that
 neighbouring units are two far away to have an impact so we will go with the 
 error model.
 ```{r}
-f_tax_model <- formula(tax_beta_div ~ 
-    human_footprint + 
-    forest_loss + 
-    net_prim_prod + 
-    habitat_div + 
-    mean_temp + 
-    #mean_prec + 
-    #other_roads + 
-    #x + 
-    #y + 
-    forest_point_freq)
-
-tax_model <- lm(f_tax_model, data = tax_model_variables)
-tax_model_err <- spdep::errorsarlm(f_tax_model, data = tax_model_variables, listw = units_merged_subset_lw, 
+tax_model_spatial <- spdep::errorsarlm(f_tax_model, data = tax_model_variables, listw = units_merged_subset_lw, 
   etype = 'error', tol.solve = 1.0e-30, zero.policy = TRUE)
-tax_model_spatial <- tax_model_err
 
 units_merged_beta_subset$tax_div_resid <- residuals(tax_model_spatial)
 tax_model_summary <- summary(tax_model_spatial)
@@ -1281,7 +1269,8 @@ tax_standardised_resid <- (resid(tax_model_spatial) - mean(resid(tax_model_spati
 # Create standardised residuals plot
 plot(tax_standardised_pred, tax_standardised_resid, main = "Standardised 
   taxonomic residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
-abline(0,0)
+abline(0, 0)
+abline(h = c(-2, 2), col = 'red')
 
 # Histogram of standardised residuals
 hist(tax_standardised_resid, freq = FALSE, main = 'Histogram of taxonomic 
@@ -1292,9 +1281,10 @@ curve(dnorm, add = TRUE)
 tax_prob_dist <- pnorm(tax_standardised_resid)
 plot(ppoints(length(tax_standardised_resid)), sort(tax_prob_dist), main = "PP Plot", 
   xlab = "Observed Probability", ylab = "Expected Probability")
-abline(0,1)
+abline(0, 1)
 ```
-```{r}
+
+```{r, results = 'hold', fig.show = 'hold'}
 # Test for spatial autocorrelation
 moran.test(units_merged_beta_subset$tax_div_resid, listw = units_merged_subset_lw, 
   alternative = 'two.sided', zero.policy = TRUE)
@@ -1309,8 +1299,6 @@ plot(variogram(tax_div_resid ~ 1, locations = coordinates(units_merged_beta_subs
 
 # Print Moran plot
 moran_plot_func(units_merged_beta_subset, tax_div_resid)
-
-max(tax_model_variables$net_prim_prod) - min(tax_model_variables$net_prim_prod)
 ```
 
 Let's print a map to show local differences in residual values.
@@ -1329,10 +1317,8 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'tax_div_resid'),
 ```{r, results = 'hold', message = FALSE}
 func_model_variables <- dplyr::inner_join(units_merged_beta_subset@data[c('unit', 
   'func_beta_div')], explanatory_variables)
-#func_model_variables <- merge(units_merged_beta_subset[c('unit', 
-#  'func_beta_div')], explanatory_variables)
-func_model_variables$x <- coordinates(units_merged_beta_subset)[, 1]
-func_model_variables$y <- coordinates(units_merged_beta_subset)[, 2]
+#func_model_variables$x <- coordinates(units_merged_beta_subset)[, 1]
+#func_model_variables$y <- coordinates(units_merged_beta_subset)[, 2]
 f_func_model <- formula(func_beta_div ~ 
     human_footprint + 
     forest_loss + 
@@ -1347,8 +1333,9 @@ f_func_model <- formula(func_beta_div ~
 #func_model <- lm(f_func_model, data = func_model_variables)
 func_model <- glm(f_func_model, family = Gamma(link = "identity"), 
   data = func_model_variables)
-units_merged_beta_subset$func_div_resid <- residuals(func_model)
+moments::skewness(residuals(func_model))
 
+units_merged_beta_subset$func_div_resid <- residuals(func_model)
 func_model_summary <- summary(func_model)
 func_model_vif <- car::vif(func_model)
 func_model_summary
@@ -1363,7 +1350,8 @@ func_standardised_pred <- (predict(func_model) - mean(predict(func_model))) / sd
 func_standardised_resid <- (resid(func_model) - mean(resid(func_model))) / sd(resid(func_model))
 # Create standardised residuals plot
 plot(func_standardised_pred, func_standardised_resid, main = "Standardised functional residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
-abline(0,0)
+abline(0, 0)
+abline(h = c(-2, 2), col = 'red')
 ```
 
 ###2. Normality of residuals
@@ -1375,7 +1363,7 @@ curve(dnorm, add = TRUE)
 # Probability- probability plot of standardised residuals
 func_prob_dist <- pnorm(func_standardised_resid)
 plot(ppoints(length(func_standardised_resid)), sort(func_prob_dist), main = "PP Plot", xlab = "Observed Probability", ylab = "Expected Probability")
-abline(0,1)
+abline(0, 1)
 ```
 
 ###3. Independence of residuals
@@ -1414,9 +1402,8 @@ We construct a GLM with a Gamma distribution. More information can be found
 ```{r, results = 'hold', message = FALSE}
 phyl_model_variables <- dplyr::inner_join(units_merged_beta_subset@data[c('unit', 
   'phyl_beta_div')], explanatory_variables)
-
-phyl_model_variables$x <- coordinates(units_merged_beta_subset)[, 1]
-phyl_model_variables$y <- coordinates(units_merged_beta_subset)[, 2]
+#phyl_model_variables$x <- coordinates(units_merged_beta_subset)[, 1]
+#phyl_model_variables$y <- coordinates(units_merged_beta_subset)[, 2]
 f_phyl_model <- formula(phyl_beta_div ~ 
     human_footprint + 
     forest_loss + 
@@ -1433,6 +1420,8 @@ f_phyl_model <- formula(phyl_beta_div ~
 #phyl_model <- glm(f_phyl_model, family = Gamma(link = "inverse"), data = phyl_model_variables)
 phyl_model <- glm(f_phyl_model, family = Gamma(link = "identity"), data = phyl_model_variables)
 #phyl_model <- glm(f_phyl_model, family = Gamma(link = "log"), data = phyl_model_variables)
+AIC(phyl_model)
+moments::skewness(residuals(phyl_model))
 
 units_merged_beta_subset$phyl_div_resid <- residuals(phyl_model)
 phyl_model_summary <- summary(phyl_model)
@@ -1450,7 +1439,8 @@ phyl_standardised_resid <- (resid(phyl_model) - mean(resid(phyl_model))) / sd(re
 # Create standardised residuals plot
 plot(phyl_standardised_pred, phyl_standardised_resid, main = "Standardised 
   phylogenetic residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
-abline(0,0)
+abline(0, 0)
+abline(h = c(-2, 2), col = 'red')
 ```
 
 ###2. Normality of residuals
@@ -1464,7 +1454,7 @@ curve(dnorm, add = TRUE)
 phyl_prob_dist <- pnorm(phyl_standardised_resid)
 plot(ppoints(length(phyl_standardised_resid)), sort(phyl_prob_dist), main = "PP Plot", 
   xlab = "Observed Probability", ylab = "Expected Probability")
-abline(0,1)
+abline(0, 1)
 ```
 
 ###3. Independence of residuals
@@ -1483,6 +1473,18 @@ plot(variogram(phyl_div_resid ~ 1, locations = coordinates(units_merged_beta_sub
 
 # Print Moran plot
 moran_plot_func(units_merged_beta_subset, phyl_div_resid)
+```
+
+Let's print a map to show local differences in residual values.
+```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4, echo = FALSE, eval = FALSE}
+# Plot residual values on map
+units_merged_beta_subset$id <- rownames(units_merged_beta_subset@data)
+units_merged_beta_subset_fort <- fortify(units_merged_beta_subset, region = 'unit')
+units_merged_beta_subset_fort <- left_join(units_merged_beta_subset_fort, 
+  units_merged_beta_subset@data)
+
+multiplot(plot_variable_map(units_merged_beta_subset_fort, 'phyl_div_resid'), 
+  plot_lisa_map(units_merged_beta_subset, phyl_div_resid), cols = 2)
 ```
 
 ~~Oh no! We have clear spatial autocorrelation in the residuals of the model~~
@@ -1540,7 +1542,7 @@ phyl_standardised_resid <- (resid(phyl_model_spatial) - mean(resid(phyl_model_sp
 # Create standardised residuals plot
 plot(phyl_standardised_pred, phyl_standardised_resid, main = "Standardised 
   phylogenetic residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
-abline(0,0)
+abline(0, 0)
 
 # Histogram of standardised residuals
 hist(phyl_standardised_resid, freq = FALSE, main = 'Histogram of phylogenetic 
@@ -1551,7 +1553,7 @@ curve(dnorm, add = TRUE)
 phyl_prob_dist <- pnorm(phyl_standardised_resid)
 plot(ppoints(length(phyl_standardised_resid)), sort(phyl_prob_dist), main = "PP Plot", 
   xlab = "Observed Probability", ylab = "Expected Probability")
-abline(0,1)
+abline(0, 1)
 ```
 ```{r, eval = FALSE}
 # Test for spatial autocorrelation
