@@ -803,9 +803,9 @@ for (unit in as.vector(common_units$unit)) {
   tax_alpha_unit_list[[counter]] <- bird_div$TD$Mean_Alpha
   func_alpha_unit_list[[counter]] <- bird_div$FD$Mean_Alpha
   phyl_alpha_unit_list[[counter]] <- bird_div$PD$Mean_Alpha
-  tax_beta_unit_list[[counter]] <- bird_div$TD$Gamma / bird_div$TD$Mean_Alpha
-  func_beta_unit_list[[counter]] <- bird_div$FD$Gamma / bird_div$FD$Mean_Alpha
-  phyl_beta_unit_list[[counter]] <- bird_div$PD$Gamma / bird_div$PD$Mean_Alpha
+  tax_beta_unit_list[[counter]] <- bird_div$TD$Beta_prop / (1 - (1 / ncol(bird_unit_wide)))
+  func_beta_unit_list[[counter]] <- bird_div$FD$Beta_prop / (1 - (1 / ncol(bird_unit_wide)))
+  phyl_beta_unit_list[[counter]] <- bird_div$PD$Beta_prop / (1 - (1 / ncol(bird_unit_wide)))
   tax_gamma_unit_list[[counter]] <- bird_div$TD$Gamma
   func_gamma_unit_list[[counter]] <- bird_div$FD$Gamma
   phyl_gamma_unit_list[[counter]] <- bird_div$PD$Gamma
