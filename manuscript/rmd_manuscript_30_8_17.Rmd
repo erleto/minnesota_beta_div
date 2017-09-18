@@ -41,14 +41,15 @@ library(tidyr)
 ```
 
 ```{r set_pander_options, echo = FALSE, message = FALSE, warning = FALSE}
-panderOptions('table.split.table', 100)
+panderOptions('table.split.table', 150)
 panderOptions('table.style', 'rmarkdown')
-panderOptions('digits', 4)
-panderOptions('keep.trailing.zeros', TRUE)
+panderOptions('digits', 3)
+panderOptions('keep.trailing.zeros', FALSE)
 panderOptions('missing', '-')
 panderOptions('table.alignment.rownames', 'left')
 panderOptions('table.alignment.default', 'left')
 panderOptions('table.emphasize.rownames', TRUE)
+#panderOptions('round', 3)
 ```
 
 ```{r define_functions, echo = FALSE, message = FALSE, warning = FALSE}
@@ -202,7 +203,7 @@ minnesota <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_
 ```
 
 ```{r set_variables, echo = FALSE, message = FALSE, warning = FALSE, results = 'hide'}
-expl_names <- c('Intercept', 'Human footprint', 'Forest loss', 'Net primary production', 'Habitat diversity', 'Mean temperature', 'Number forested points')
+expl_names <- c('Intercept', 'Human footprint', 'Forest loss', 'Net primary production', 'Habitat diversity', 'Mean temperature')
 ```
 <br>
 
@@ -237,7 +238,10 @@ The state of Minnesota was split into 617 units, each measuring 12 x 12 miles. E
 
 **A brief description of BBA protocol needed.** A total of 7070 BBA counts were performed between May 2009 and June 2014.  Abundances of birds identified to the species level within `r count_radius`m of the BBA point were used since this was determined to be the maximum distance within which birds could reliably be identified. For those BBA points that had been counted more than once we selected the earlier observation. We used BBA points located at least `r 2 * count_radius`m from each other (twice the distance of the bird count radius) in order to avoid overlap between BBA bird counts. From pairs of BBA points located under `r 2 * count_radius`m from each other we selected the earlier observation, and if both points had the same date one was chosen randomly. For the analyses in this study we used BBA points located in forested land cover classes. The dominant land cover for each BBA point was  determined from classified satellite images (**More information needed**) within `r count_radius`m of the BBA location. For calculating bird community diversities we only used states that had at least `r min_points` BBA points located in a forested land use class (`r bba_forest_point_count` forested BBA points in `r forest_unit_count` units). We determined `r min_points` points to be the minimum number of communities to reliably estimate beta diversity. 
   
-##Calculation of beta diversities  
+##Calculation of beta diversities
+Within each unit we calculated taxonomic, functional, and phylogenetic `r '\u03b2'` diversities with Rao’s quadratic entropy using R functions developed by De Bello et al. \u03b2 diversity partitioned additively as the total diversity of a unit (`r '\u03b3', $\gamma$) minus the average diversity within BBA points (\u03b1). 
+The taxonomic \u03b2 diversity of a unit represents 
+
 Beta diversity was calcualted as total species diversity per unit minus the mean alpha diversity per unit. This unitless measure reflects the number of individual BBA points with no overlapping species needed to achieve the before- mentioned aplha and gamma diversities.  
 
 * Taxonomic, functional and phylogenetic beta-diversity.
@@ -280,13 +284,20 @@ All three beta diversity measures were at least moderately positively correlated
 ##Taxonomic beta diversity  
 ```{r tax_beta_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
 set.caption(tabRef('tax_model_summary', 'Summary of spatial error model explaining taxonomic beta diversity'))
-tax_model_coef <- as.data.frame(tax_model_summary$Coef)
+tax_model_coef <- as.data.frame(tax_model_summary$coefficients)
 colnames(tax_model_coef)[4] <- 'p value'
 rownames(tax_model_coef) <- expl_names
 pander::pander(tax_model_coef)
 
 tax_range <- round(max(units_merged_beta_subset$tax_beta_div) - 
     min(units_merged_beta_subset$tax_beta_div), digits = 3)
+
+min_hfp <- round(min(units_merged_beta_subset$human_footprint), digits = 2)
+max_hfp <- round(max(units_merged_beta_subset$human_footprint), digits = 2)
+hfp_range <- round(max(units_merged_beta_subset$human_footprint) - 
+    min(units_merged_beta_subset$human_footprint), digits = 2)
+tax_hfp_change <- round(tax_model_coef['Human footprint', 'Estimate'] * hfp_range, digits = 2)
+tax_hfp_perc <- round((tax_hfp_change / tax_range) * 100, digits = 2)
 
 min_hdiv <- round(min(units_merged_beta_subset$habitat_div), digits = 2)
 max_hdiv <- round(max(units_merged_beta_subset$habitat_div), digits = 2)
@@ -309,10 +320,6 @@ pander::pander(func_model_coef)
 func_range <- round(max(units_merged_beta_subset$func_beta_div) - 
     min(units_merged_beta_subset$func_beta_div), digits = 2)
 
-min_hfp <- round(min(units_merged_beta_subset$human_footprint), digits = 2)
-max_hfp <- round(max(units_merged_beta_subset$human_footprint), digits = 2)
-hfp_range <- round(max(units_merged_beta_subset$human_footprint) - 
-    min(units_merged_beta_subset$human_footprint), digits = 2)
 func_hfp_change <- round(func_model_coef['Human footprint', 'Estimate'] * hfp_range, digits = 2)
 func_hfp_perc <- round((func_hfp_change / func_range) * 100, digits = 2)
 
@@ -336,25 +343,13 @@ On the other hand, functional beta diversity was impacted by human influence. Hu
 ##Phylogenetic beta diversity  
 ```{r phyl_beta_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
 set.caption(tabRef('phyl_model_summary', 'Summary of generalised linear model explaining phylogenetic beta diversity'))
-phyl_model_coef <- as.data.frame(phyl_model_summary$coefficients)
+phyl_model_coef <- as.data.frame(phyl_model_summary$Coef)
 colnames(phyl_model_coef)[4] <- 'p value'
 rownames(phyl_model_coef) <- expl_names
-#phyl_model_coef$'Est. Transf.' <- exp(phyl_model_coef$Estimate)
-#phyl_model_coef <- dplyr::select(phyl_model_coef, 1, 5, 2, 3, 4)
 pander::pander(phyl_model_coef)
 
 phyl_range <- round(max(units_merged_beta_subset$phyl_beta_div) - 
     min(units_merged_beta_subset$phyl_beta_div), digits = 3)
-
-phyl_hfp_change <- round(phyl_model_coef['Human footprint', 'Estimate'] * hfp_range, digits = 2)
-phyl_hfp_perc <- round((phyl_hfp_change / func_range) * 100, digits = 2)
-
-min_floss <- round(min(units_merged_beta_subset$forest_loss), digits = 2)
-max_floss <- round(max(units_merged_beta_subset$forest_loss), digits = 2)
-floss_range <- round(max(units_merged_beta_subset$forest_loss) - 
-    min(units_merged_beta_subset$forest_loss), digits = 2)
-phyl_floss_change <- round(phyl_model_coef['Forest loss', 'Estimate'] * floss_range, digits = 2)
-phyl_floss_perc <- round((phyl_floss_change / phyl_range) * 100, digits = 2)
 
 phyl_npp_perc <- 100 - round(exp(phyl_model_coef['Net primary production', 'Estimate'] * npp_range) * 100, digits = 2)
 phyl_npp_change <- round((phyl_npp_perc / 100) * phyl_range, digits = 3)
