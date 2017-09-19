@@ -170,8 +170,7 @@ summary_fun <- function(x,...){
     median = median(x, ...), 
     mean = mean(x, ...), 
     max = max(x,...), 
-    sd = sd(x, ...), 
-    n = length(x))
+    sd = sd(x, ...))
 }
 
 mytheme <- theme(axis.text = element_text(colour = 'black', size = 14), 
@@ -236,51 +235,73 @@ expl_names <- c('Intercept', 'Human footprint', 'Forest loss', 'Net primary prod
 ##Study design
 The state of Minnesota was split into 617 units, each measuring 12 x 12 miles. Each unit was composed of four townships, forming a square, except for a few specific areas where irregular units constructed from one to four townships were used. A random township in Minnesota was selected, which was used as the northeastern square of a unit. Subsequent units were then formed using the first unit as a reference point until the entire state was covered by units. Within each township three point locations were selected for bird counts, which were conducted as a part of the Minnesota breeding bird atlas (BBA). One BBA point was placed in an area representing the most common land use class in the township, one point was placed in the second most common land use class, and one was placed in a random land use class. 
 
-**A brief description of BBA protocol needed.** A total of 7070 BBA counts were performed between May 2009 and June 2014.  Abundances of birds identified to the species level within `r count_radius`m of the BBA point were used since this was determined to be the maximum distance within which birds could reliably be identified. For those BBA points that had been counted more than once we selected the earlier observation. We used BBA points located at least `r 2 * count_radius`m from each other (twice the distance of the bird count radius) in order to avoid overlap between BBA bird counts. From pairs of BBA points located under `r 2 * count_radius`m from each other we selected the earlier observation, and if both points had the same date one was chosen randomly. For the analyses in this study we used BBA points located in forested land cover classes. The dominant land cover for each BBA point was  determined from classified satellite images (**More information needed**) within `r count_radius`m of the BBA location. For calculating bird community diversities we only used states that had at least `r min_points` BBA points located in a forested land use class (`r bba_forest_point_count` forested BBA points in `r forest_unit_count` units). We determined `r min_points` points to be the minimum number of communities to reliably estimate beta diversity. 
+A brief description of BBA protocol. Bird counts were performed between May 2009 and June 2014.
+
+A total of 7070 BBA counts were performed between May 2009 and June 2014.  Abundances of birds identified to the species level within `r count_radius`m of the BBA point were used since this was determined to be the maximum distance within which birds could reliably be identified. For those BBA points that had been counted more than once we selected the earlier observation. We used BBA points located at least `r 2 * count_radius`m from each other (twice the distance of the bird count radius) in order to avoid overlap between BBA bird counts. From pairs of BBA points located under `r 2 * count_radius`m from each other we selected the earlier observation, and if both points had the same date one was chosen randomly. For the analyses in this study we used BBA points located in forested land cover classes. The dominant land cover for each BBA point was  determined from classified satellite images (**Ed, can you add some more information about this?**) within `r count_radius`m of the BBA location. For calculating bird community diversities we only used units that had at least `r min_points` BBA points located in a forested land use class (`r bba_forest_point_count` forested BBA points in `r forest_unit_count` units). We determined `r min_points` points to be the minimum number of communities to reliably estimate beta diversity. 
   
 ##Calculation of beta diversities
-Within each unit we calculated taxonomic, functional, and phylogenetic `r '\u03b2'` diversities with Rao’s quadratic entropy using R functions developed by De Bello et al. \u03b2 diversity partitioned additively as the total diversity of a unit (`r '\u03b3', $\gamma$) minus the average diversity within BBA points (\u03b1). 
-The taxonomic \u03b2 diversity of a unit represents 
+Within each unit we calculated taxonomic, functional, and phylogenetic beta ($\beta$) diversities with Rao’s quadratic entropy using R functions developed by De Bello et al. The Rao index measures dissimilarity by summing total dissimilarity, and weighting it by species proportions. In addition, the Rao index makes it easy to incorporate alternative measures of biodiversity by taking into account distances (e.g. functional or phylogenetic) between pairs of species (de Bello et al. 2010). 
 
-Beta diversity was calcualted as total species diversity per unit minus the mean alpha diversity per unit. This unitless measure reflects the number of individual BBA points with no overlapping species needed to achieve the before- mentioned aplha and gamma diversities.  
+We calculated $\beta_{\text{eqv}}$ as the total diversity of a unit ($\gamma_{\text{eqv}}$) minus the average diversity of BBA points ($\alpha_{\text{eqv}}$) within a unit, and calculated $\beta_{\text{prop}}$ as the proportion of $\gamma_{\text{eqv}}$ explained by $\beta_{\text{eqv}}$. We then normalised $\beta_{\text{prop}}$ by taking the number of communities in each unit into account using equation 14 from De Bello et al. 2010:
+    
+$$\beta_{\text{norm-prop}} = \frac{\beta_{\text{prop}}} {1-\frac{1} {n}}$$
 
-* Taxonomic, functional and phylogenetic beta-diversity.
-* Calculation of landscape metrics  
-    * Human footprint
-    * Forest loss
-    * Habitat diversity
-    * Net primary production
+This normalised measure of $\beta_{\text{prop}}$ enabled us to compare the proportion of $\gamma_{\text{eqv}}$ explained by $\beta_{\text{eqv}}$ between units with differing numbers of bird count points. In addition, using a proportional measure of $\beta_{\text{eqv}}$ enabled us to directly compare the proportion explained by different facets of biodiversity (taxonomic, functional, and phylogenetic).
+
+Taxonomic diversity measures were calculated using species abundance data collected from BBA bird count locations. We calculated functional diversity by using numerical data on the diet composition, foraging stratum, activity time and body size from the dataset produced by Belmaker et al. (2014). Bird species were limited to those species found in our data, and functional distances were calculated with the daisy function in the R package cluster using euclidean distances. Functional distances were scaled between 0 and 1, and used as a distance matrix in the calculation of diversity metrics. For the calculation of phylogenetic diversity we downloaded a set of 1000 randomly chosen phylogenetic trees from the BirdTree database (Jetz et al. 2012), limited to the bird species found in our data. We used the consense function from the PHYLIP package (v.3.695) to create a single unrooted concensus tree using the 50% majority rule. This included all species that appeared in more than 50% of the trees. A phylogenetic distance matrix for all species in our data was calculated with the distTips function from the adephylo R package, using the sums of branch lengths. These distances were then scaled between 0 and 1, and used to calculate phylogenetic diversities.
+
+##Calculation of explanatory variables
+
+Human influence was estimated using the human footprint index (HFI) developed by the Wildlife Conservation Society and the Center For International Earth Science Information Network (2005). The HFI uses nine datasets describing four proxies of human influence measured between 1995 and 2004: population density, land transformation, accessibility, and electrical power infrastructure (Sanderson et al. 2002). Each 1km^2 grid cell in the global dataset was given a value ranging from 0 (low level) to 10 (high level) for each dataset. The nine values for each grid cell were summed, and for each biome the cell with the lowest value got a value of 0, and the cell with the largest value got a value of 100. The hfi data was clipped to the state of Minnesota, and the average hfi value for each unit was calculated.
+
+Forest loss was quantified from the the global forest change dataset developed by Hansen et al. (2013). The dataset uses Landsat data to quantify gross forest loss and gain at an annual frequency between 2000 and 2014. For each unit we calculated the percent cover of forest loss between 2000 and 2014. Even though the time span of the forest loss data began nine years before the first BBA observations we assumed that areas impacted by forest loss before the bird counts would have still been non-habitat for the vast majority of the forest birds in our data (**is this a safe assumption?**). There was no reliable way of systematically separating forest loss caused by humans from loss caused by natural events such as forest fires and storms. In order to limit this potential source of confusion we left out four units that had been significantly impacted by two large forest fires (Pagami Creek and Ham Lake fires).
+
+Habitat diversity for each unit was quantified by calculating the mean alpha diversity of habitat classes within units. Habitat classes were taken from... **Ed, could you fill in some basic information about how the landfire3 classification was done?**
+
+We calculated net primary production (NPP)
   
 ##Statistical models  
-We chose the explanatory variables so that the variance inflation factors (VIF) were under 3 (Zuur et al. 2007).
+Linear models and generalised linear models
+We chose the explanatory variables so that the variance inflation factors (VIF) were under 3 (Zuur et al. 2007). VIF values can be found in chapter 3 of the appendix.
+
+Spatial autocorrelation
+
 All analyses wer performed with `r R.Version()$version.string`.  
-* Spatial autocorrelation
 <br>
 
 #Results  
 ##Summary statistics  
-```{r summary_stats, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
+```{r response_summary_stats, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
 set.caption(tabRef('response_summary', 
   'Summary statistics of forest bird species richness and response variables per unit'))
 response_variables <- units_merged_beta_subset@data[c('forest_spp_richness', 
   'tax_beta_div', 'func_beta_div', 'phyl_beta_div')]
-summary_table <- as.data.frame(sapply(response_variables, summary_fun))
-colnames(summary_table) <- c('Species richness', 'Taxonomic \u03b2', 'Functional \u03b2', 'Phylogenetic \u03b2')
-rownames(summary_table) <- c('Min', 'Median', 'Mean', 'Max', 'SD', 'n')
-pander::pander(summary_table)
+response_summary_table <- as.data.frame(sapply(response_variables, summary_fun))
+colnames(response_summary_table) <- c('Species richness', 'Taxonomic \u03b2', 'Functional \u03b2', 'Phylogenetic \u03b2')
+rownames(response_summary_table) <- c('Min', 'Median', 'Mean', 'Max', 'SD')
+pander::pander(response_summary_table)
 ```
   
 The range of taxonomic beta diversity values (`r tabRef("response_summary")`) was a lot larger than that of functional and phylogenetic beta diversity, reflecting the more limited set of ecological functions and phylogenetic backgrounds in comparison to the number of species present.  
+
+```{r explanatory_summary_stats, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
+set.caption(tabRef('explanatory_summary', 
+  'Summary statistics of explanatory variables used in models'))
+explanatory_variables <- units_merged_beta_subset@data[c('human_footprint', 
+  'forest_loss', 'net_prim_prod', 'habitat_div', 'mean_temp')]
+explanatory_summary_table <- as.data.frame(sapply(explanatory_variables, summary_fun))
+colnames(explanatory_summary_table) <- expl_names[2:6]
+rownames(explanatory_summary_table) <- c('Min', 'Median', 'Mean', 'Max', 'SD')
+pander::pander(explanatory_summary_table)
+```
 
 ```{r div_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRef('div_plots', 'Distributions of forest species richness, taxonomic, functional, and phylogenetic beta diversity, and Pearson correlations between diversity measures')}
 psych::pairs.panels(units_merged_beta_subset@data[c('forest_spp_richness', 
   'tax_beta_div', 'func_beta_div', 'phyl_beta_div')], hist.col = NULL)
 ```
   
-`r figRef("div_plots")` shows that none of the response variables was strongly correlated with species richness, although taxonomic beta diversity showed a weak positive correlation with unit-wide species richness up to about 70 species, after which the relation levelled off. Species richness was actually very weakly negatively associated with functional and phylogenetic beta diversity. As the figure shows, these beta diversity indicators are invariably low when species richness is high, and vary widely in units with low species richness. In summary, variation in local bird community composition is not strongly linked with regional (unit level) species richness. 
+`r figRef("div_plots")` shows that none of the response variables was strongly correlated with species richness. All three beta diversity measures were positively correlated with each other. The correlation between functional and phylogenetic beta diversity was fairly strong.
   
-All three beta diversity measures were at least moderately positively correlated with each other. The correlation between functional and phylogenetic beta diversity was fairly strong, suggesting that these two aspects of biodiversity are fairly strongly linked with each other in this data set. All three beta diversity measures increased strongly with the number of BBA points per unit, which can be seen in the results of individual response variables.  
-
 ##Taxonomic beta diversity  
 ```{r tax_beta_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
 set.caption(tabRef('tax_model_summary', 'Summary of spatial error model explaining taxonomic beta diversity'))
@@ -307,7 +328,7 @@ tax_hdiv_change <- round(tax_model_coef['Habitat diversity', 'Estimate'] * hdiv_
 tax_hdiv_perc <- round((tax_hdiv_change / tax_range) * 100, digits = 2)
 ```
 
-Taxonomic beta diversity was not impacted by human impact (human footprint and forest loss), nor by net primary production or mean temperature. The only variable clearly influencing taxonomic beta diversity was habitat diversity, which had a strong positive impact. Along the range of habitat diversity (`r paste(min_hdiv, ' - ', max_hdiv)`), taxonomic beta diversity increased by `r tax_hdiv_change` units, which is `r tax_hdiv_perc`% of the range of taxonomic beta values in our data.
+Taxonomic beta diversity was impacted by human footprint index (HFI), but not forest loss. Increasing levels of HFI were associated with increasing levels of taxonomic beta diversity. Along the range of human footprint values (`r tabRef("explanatory_summary")`) taxonomic beta diversity increased by `r tax_hfp_change` units (`r tax_hfp_perc`%). Taxonomic beta diversity was also positively associated with habitat diversity, although the effect was not statistically significant. Along the range of habitat diversity values (`r tabRef("explanatory_summary")`), taxonomic beta diversity increased by `r tax_hdiv_change` units (`r tax_hdiv_perc`%).
   
 ##Functional beta diversity  
 ```{r func_beta_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
@@ -338,7 +359,7 @@ func_temp_change <- round(func_model_coef['Mean temperature', 'Estimate'] * temp
 func_temp_perc <- round((func_temp_change / func_range) * 100, digits = 2)
 ```
   
-On the other hand, functional beta diversity was impacted by human influence. Human footprint had a positive impact on functional beta diversity, even when natural variation caused by habitat diversity, net primary production (npp) and mean annual temperature were taken into account. Along the unitless gradient of human footprint in our data, ranging from `r min_hfp` (very small human footprint) to `r max_hfp` (relatively large human footprint), functional beta diversity increased by `r func_hfp_change`, which is `r func_hfp_perc`% of the range of functional beta values in our data. Forest loss did not appear to influence functional beta diversity. Net primary production had a negative impact on functional beta diversity. Along the range of npp values (`r paste(min_npp, ' - ', max_npp)` kg C / Ha / year) functional beta diversity decreased by `r abs(func_npp_change)` units (`r func_npp_perc`%). Similarly, mean annual temperature had a negative impact, decreasing functional beta diversity by `r abs(func_temp_change)` units (`r func_temp_perc`%) along the temperature gradient ranging from `r paste(min_temp, ' - ', max_temp)`°C.
+Similar to taxonomic beta diversity, functional beta diversity had a statistically significant association with HFI. Along the gradient of HFI in our data (`r tabRef("explanatory_summary")`), functional beta diversity increased strongly (`r func_hfp_change` units, `r func_hfp_perc`%). Forest loss did not appear to influence functional beta diversity. In addition, net primary production (NPP) had a strong negative impact on functional beta diversity. Along the range of NPP values (`r tabRef("explanatory_summary")`) functional beta diversity decreased by `r abs(func_npp_change)` units (`r func_npp_perc`%). Similarly, mean annual temperature had a negative impact, decreasing functional beta diversity by `r abs(func_temp_change)` units (`r func_temp_perc`%).
   
 ##Phylogenetic beta diversity  
 ```{r phyl_beta_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
@@ -358,21 +379,23 @@ phyl_temp_perc <- 100 - round(exp(phyl_model_coef['Mean temperature', 'Estimate'
 phyl_temp_change <- round((phyl_temp_perc / 100) * phyl_range, digits = 3)
 ```
   
-Phylogenetic beta diversity showed a similar pattern to that of functional diversity. Along the gradient of human footprint in our data phylogenetic beta diversity increased by `r phyl_hfp_change`, which is `r phyl_hfp_perc`% of the range of values in our data. Interestingly, forest loss showed the opposite impact to human footprint, increasing phylogenetic beta diversity by `r phyl_floss_perc`% (`r phyl_floss_change` units) along the range of forest loss in our study landscape (`r paste(min_floss, ' - ', max_floss)`%). As with functional beta diversity, npp had a negative impact on phylogenetic beta diversity, although here the biological impacts were a fair bit weaker. Along the range of npp values phylogenetic beta diversity decreased by `r abs(phyl_npp_change)` units (-`r phyl_npp_perc`%). Mean annual temperature also had a negative impact, decreasing phylogenetic beta diversity by `r abs(phyl_temp_change)` units (-`r phyl_temp_perc`%) along the range of temperature values.
+Phylogenetic beta diversity was not impacted by HFI or forest loss. As was the case with functional beta diversity, phylogenetic beta diversity was negatively associated with NPP and mean temperature, although the biological impacts much stronger. Along the range of NPP values (`r tabRef("explanatory_summary")`) phylogenetic beta diversity decreased by `r abs(phyl_npp_change)` units (-`r phyl_npp_perc`%). Along the range of mean annual temperature values phylogenetic beta diversity decreased by `r abs(phyl_temp_change)` units (-`r phyl_temp_perc`%).
 <br>
 
 #Discussion  
 
-Summarry of results
+* Summary of results
 
-Why did human footprint have a positive impact?
-
-
-Overall, species richness is not a driver of beta-diversity as species rich units (landscapes) do not foster more local variation in bird community composition. Moreover, beta-diversity indices were not positive functions of net primary productivity or ambient temperature. Earlier research has suggested/shown positive relationships. We rather found that beta-diversities were negatively related to NPP and mean temperature. Why would that be?
+* Why did human footprint have a positive impact?
+* Habitat diversity was taken into account, so increased beta diversity due to HFI increasing habitat diversity is not the answer
+* Bird counts were conducted from road sides, so bird communities were not in pristine areas
   
-Taxonomic beta-diversity- habitat diversity is the main driver. Theory predicts that different components of species diversity are positively associated with environmental heterogeneity. It is easy to understand why and how HD affect species richness and alpha-diversity (see also Allouche et al. 2012). Our results support earlied findings that habitat heterogeneity also maintains beta-diversity, i.e. differentiation in community composition among sites.
-  
-Functional beta-diversity was a positive function of human footprint index even after controlling for habitat diversity, productivity etc. Thus, intensified human land-use resulted in increased variation among local communities in their functional composition, i.e. communities in landscapes under strong human land use became functionally dissimilar. I assume a same kind of mechanism is behind this pattern as we suggested in our earlier alpha-diversity paper (Häkkilä et al. 2017): in that paper, we explained why functional diversity, counter to expectation, increases with human land-use intensity in the matrix surrounding the protected areas.
+* Species richness is not a driver of beta-diversity in our data
+* Beta-diversity indices were not positive functions of net primary productivity or ambient temperature.
+* We rather found that beta-diversities were negatively related to NPP and mean temperature.
+* **Why is this?**  
+
+* Why was phylogenetic diversity not impacted by human influence?
 <br>
 
 #Conclusion  
@@ -387,7 +410,7 @@ psych::pairs.panels(units_merged_human_impact_subset, hist.col = NULL, method = 
 ##2. Correlations between explanatory variables and their distributions
 ```{r explanatory_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('explanatory_plots', "Distributions of explanatory variables, and Spearman's rank correlations between variables")}
 psych::pairs.panels(units_merged_beta_subset@data[c('human_footprint', 
-  'forest_loss', 'habitat_div', 'net_prim_prod', 'mean_temp', 'forest_point_freq')], 
+  'forest_loss', 'habitat_div', 'net_prim_prod', 'mean_temp')], 
   hist.col = NULL, method = 'spearman')
 ```
   
@@ -415,7 +438,7 @@ psych::pairs.panels(units_merged_beta_subset@data[c(
 set.caption(tabRefApp('vif', 'Variance inflation factors of explanatory variables in models explaining taxonomic, functional, and phylogenetic beta diversity'))
 vif_table <- as.data.frame(rbind(t(tax_model_vif), t(func_model_vif), t(phyl_model_vif)))
 rownames(vif_table) <- c('Taxonomic', 'Functional', 'Phylogenetic')
-colnames(vif_table) <- expl_names[2:7]
+colnames(vif_table) <- expl_names[2:6]
 pander::pander(vif_table)
 ```
   
@@ -482,17 +505,6 @@ ggplot(data = units_merged_fort,
   geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
   geom_polygon(color = 'black', size = .05) + 
   scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Mean \ntemperature') + 
-  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = 'black') + 
-  coord_equal() + theme_void()
-```
-  
-###f) Number of forested points  
-```{r for_points_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('for_points_plot', 'Map showing the spatial distribution of the number of forested BBA points per unit in the state of Minnesota')}
-ggplot(data = units_merged_fort, 
-  aes_string(x = 'long', y = 'lat', fill = 'forest_point_freq', group = 'group')) + 
-  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
-  geom_polygon(color = 'black', size = .05) + 
-  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Forest point \nfrequency') + 
   geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = 'black') + 
   coord_equal() + theme_void()
 ```
