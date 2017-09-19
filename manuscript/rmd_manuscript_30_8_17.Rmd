@@ -414,25 +414,6 @@ psych::pairs.panels(units_merged_beta_subset@data[c('human_footprint',
   hist.col = NULL, method = 'spearman')
 ```
   
-##2. Correlations between diversity measures
-###a) Taxonomic diversity components
-```{r tax_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('tax_plots', "Distributions of taxonomic diversity measures, and Pearson correlations between variables")}
-psych::pairs.panels(units_merged_beta_subset@data[c(
-  'tax_alpha_div', 'tax_beta_div', 'tax_gamma_div')], hist.col = NULL)
-```
-  
-###b) Functional diversity components
-```{r func_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('func_plots', "Distributions of functional diversity measures, and Pearson correlations between variables")}
-psych::pairs.panels(units_merged_beta_subset@data[c(
-  'func_alpha_div', 'func_beta_div', 'func_gamma_div')], hist.col = NULL)
-```
-  
-###c) Phylogenetic diversity components
-```{r phyl_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('phyl_plots', "Distributions of phylogenetic diversity measures, and Pearson correlations between variables")}
-psych::pairs.panels(units_merged_beta_subset@data[c(
-  'phyl_alpha_div', 'phyl_beta_div', 'phyl_gamma_div')], hist.col = NULL)
-```
-  
 ##3. Variance inflation factors from models  
 ```{r vif, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
 set.caption(tabRefApp('vif', 'Variance inflation factors of explanatory variables in models explaining taxonomic, functional, and phylogenetic beta diversity'))
