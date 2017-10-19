@@ -10,7 +10,10 @@
 *.pdf
 *.ppt
 *.pptx
-
+*.jpg
+*.jpeg
+*.tiff
+*.svg
 
 /data
 /figures
