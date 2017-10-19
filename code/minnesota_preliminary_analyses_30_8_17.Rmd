@@ -22,7 +22,7 @@ knitr::opts_knit$set(root.dir = normalizePath('/Users/Eric/Dropbox/Eric/Work/JKL
 ```
 #Setup
 ##Load necessary packages
-```{r, message = FALSE, warning = FALSE}
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
 #install.packages(c('knitr', 'rgdal', 'gstat', 'raster', 'maptools', 'spdep', 'nlme', 'reshape2', 'tidyverse', 'maptools', 'rgeos', 'psych', 'lattice', 'car', 'cluster', 'ape', 'adephylo', 'DBI', 'moments'))
 library(reshape2)
 library(tidyverse)
@@ -43,7 +43,7 @@ library(moments)
 ```
 
 ## Define functions
-```{r, message = FALSE, warning = FALSE}
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
 # Moran plot. Requires SpatialPolygonsDataFrame, column name, and 
 # number of neighbours.
 moran_plot_func <- function(df, col_name) {
@@ -124,7 +124,7 @@ multiplot <- function(..., plotlist=NULL, file, cols = 1, layout = NULL) {
 ```
 
 ##Set values
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 # Set minimum number of forested unique BBA points per unit
 ################
 min_points <- 3
@@ -139,7 +139,7 @@ count_radius <- 100
 #Prepare landscape data
 ##Join unit-level data
 We prepare the vector data by joining all unit- level data together
-```{r, results = 'hide', message = FALSE, warning = FALSE}
+```{r, echo = FALSE, results = 'hide', message = FALSE, warning = FALSE}
 # Read the different unit- level shapefiles
 units <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Units.shp', 'Units')
 units_road_density <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Units_RoadDensity.shp', 'Units_RoadDensity')
@@ -163,7 +163,7 @@ units_merged <- merge(units_merged, units_prism@data, by = 'unit')
 ```
 
 ##Load other data
-```{r, results = 'hide', message = FALSE, warning = FALSE}
+```{r, echo = FALSE, results = 'hide', message = FALSE, warning = FALSE}
 mnn_bba_points <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/bird_data/MNBBA_Surveys_DominantHabitat_Final.shp', 'MNBBA_Surveys_DominantHabitat_Final')
 mnn_bba_points$Date <- as.Date(mnn_bba_points$Date , "%Y/%m/%d")
 minnesota <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Minnesota_Outline.shp', 'Minnesota_Outline')
@@ -209,7 +209,7 @@ units_hfp <- data.frame(unit = seq(1, 617, 1), human_footprint = units_hfp)
 write.csv(units_hfp, './data/last_of_the_wild/human_footprint_2/units_hfp.csv', 
   row.names = FALSE)
 ```
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 # Join human footprint data to units_merged
 units_hfp <- read.csv('./data/last_of_the_wild/human_footprint_2/units_hfp.csv')
 units_merged <- merge(units_merged, units_hfp, by = 'unit')
@@ -218,7 +218,7 @@ units_merged <- merge(units_merged, units_hfp, by = 'unit')
 Even though we are using human footprint to estimate human impact here is the 
 old code for performing a PCA on variables describing human impact to justify 
 the new method.
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 # Select variables for PCA
 units_merged_pca <- dplyr::select(units_merged, censusSUM, Dens_Major, 
   Dens_Minor, Dens_Other, HabV15:HabV18, HabV26)
@@ -333,7 +333,7 @@ df.rename(columns={'system:index': 'unit', 'mean': 'npp'}, inplace=True)
 df[[0, 2]].to_csv('../data/npp/mean_npp_unit.csv')
 ```
 
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 npp <- read.csv('./data/npp/mean_npp_unit.csv')
 units_merged$net_prim_prod <- npp$npp
 ```
@@ -343,7 +343,7 @@ units_merged$net_prim_prod <- npp$npp
 land_fire_3_classes <- data.frame(class = c(2:51))
 for (unit in as.vector(units$unit)) {
   #print(unit)
-  unit_cropped <- crop(land_fire_3, units[units$unit == unit, ])
+  unit_cropped <- raster::crop(land_fire_3, units[units$unit == unit, ])
   unit_freq <- raster::freq(unit_cropped)
   land_fire_3_classes <- merge(land_fire_3_classes, unit_freq, by.x = 'class', by.y = 'value', all.x = TRUE)
   colnames(land_fire_3_classes)[ncol(land_fire_3_classes)] <- unit
@@ -360,16 +360,12 @@ land_fire_3_classes[is.na(land_fire_3_classes)] <- 0
 write.csv(land_fire_3_classes, './data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/landfire/land_fire_3_classes_unit.csv', row.names = FALSE)
 ```
 
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 land_fire_3_classes <- read.csv('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/landfire/land_fire_3_classes_unit.csv')
 
 source('./code/Appendix2/Rao.r')
-funct_matrix <- matrix(data = 0, nrow = nrow(land_fire_3_classes), 
-  ncol = nrow(land_fire_3_classes))
-phylo_matrix <- matrix(data = 0, nrow = nrow(land_fire_3_classes), 
-  ncol = nrow(land_fire_3_classes))
-habitat_div <- Rao(sample = land_fire_3_classes, dfunc = funct_matrix, 
-  dphyl = phylo_matrix, weight = FALSE, Jost = TRUE, structure = NULL)
+habitat_div <- Rao(sample = land_fire_3_classes, dfunc = NULL, 
+  dphyl = NULL, weight = FALSE, Jost = TRUE, structure = NULL)
 #units_habitat_div <- data.frame(unit = units$unit, habitat_div = habitat_div$TD$Alpha)
 units_merged$habitat_div <- habitat_div$TD$Alpha
 ```
@@ -400,7 +396,7 @@ The reclassifications for the last two approaches are such that forests are:
 
 Before continuing any further let's calculate the minimum distance between BBA 
 points (2 * the count radius), and specify which column to use from the data.
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 ####
 min_dist <- 2 * count_radius
 reclass_col <- paste0('Reclass3_', substr(count_radius, 1, 1))
@@ -413,7 +409,7 @@ field. We reclassify the `r reclass_col`- column from mnna_bba_points (dominant
 landcover type within `r count_radius`m of the BBA point data, using the reclass3 
 classification). This will be used later on to calculate the number of forested 
 BBA points per unit.
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 mnn_bba_points$forest_bba <- unlist(mnn_bba_points@data[reclass_col])
 levels(mnn_bba_points$forest_bba) <- list('1' = c("Boreal Coniferous", 
   "Boreal Coniferous_10m", "Boreal Deciduous", "Boreal Deciduous_10m", 
@@ -433,7 +429,7 @@ mnn_bba_points$forest_bba <- as.numeric(as.character(mnn_bba_points$forest_bba))
 
 We then continue by calculating how many unique BBA points fall within each 
 unit. Let's count if there are points with duplicated coordinates.
-```{r, results = 'hold'}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 coord_counts <- plyr::count(mnn_bba_points@data, c('x', 'y'))
 table(coord_counts$freq)
 coord_counts_dupl <- coord_counts[coord_counts$freq > 1, ]
@@ -444,7 +440,7 @@ one duplicate, and one is present three times!
 
 Let's continue by inspecting nearest neghbour distances for points with unique 
 coordinates.
-```{r, results = 'hold', fig.show = 'hold'}
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Select unique points based on coordinates, also sort by date
 mnn_bba_points_unique <- mnn_bba_points[order(mnn_bba_points$x, 
   mnn_bba_points$y, mnn_bba_points$Date), ]
@@ -480,7 +476,7 @@ Since we are using bird counts within a `r count_radius`m radius, as well as usi
 land cover within `r count_radius`m, we will subset the points so we only include points that 
 are at least `r min_dist`m away from each other. We will include the earlier observation 
 from each point pair, and randomy select a point if the dates are the same.
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 # Select points located under min_dist from each other
 point_dist_nn_over <- data.frame(distance = point_dist_nn[point_dist_nn > min_dist])
 point_dist_nn_over$ID <- as.integer(rownames(point_dist_nn_over))
@@ -517,7 +513,7 @@ located at least `r min_dist`m from each other, out of a total of `r length(mnn_
 BBA points in the data. Of the unique BBA points there are a total of `r sum(mnn_bba_points_unique_subset$forest_bba)` forested BBA points.
 
 Let's then calculate the number of forested BBA points per unit.
-```{r, results = 'hold', fig.show = 'hold'}
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Select forest BBA points
 mnn_bba_points_forest <- mnn_bba_points_unique_subset[mnn_bba_points_unique_subset$forest_bba == 1, ]
 
@@ -540,7 +536,7 @@ of forested BBA points', main = 'Forested BBA points per unit')
 
 From the following table we can see how many units are available if a minimum 
 number of forested BBA points is set.
-```{r, echo = FALSE}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 data.frame('Min_forested_BBA_points_per_unit' = c(1, 2, 3, 4, 5), 
   'No_of_units' = c(nrow(units_merged[units_merged$forest_point_freq >= 1, ]), 
     nrow(units_merged[units_merged$forest_point_freq >= 2, ]), 
@@ -550,7 +546,7 @@ data.frame('Min_forested_BBA_points_per_unit' = c(1, 2, 3, 4, 5),
 ```
 
 #Select columns and standardise their names
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 units_merged_human_impact <- dplyr::select(units_merged, unit, human_footprint, 
   'forest_loss' = allV1, 'total_pop' = censusSUM, 'all_roads' = Dens_All, 
   HabV15:HabV18, HabV26) %>% 
@@ -567,14 +563,14 @@ units_merged <- merge(units, units_merged, by = 'unit')
 #Prepare bird data
 Before doing anything else, we subset the data by setting a minumum number of 
 forested BBA points per unit.
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 units_merged_subset <- units_merged[units_merged$forest_point_freq >= min_points, ]
 forest_unit_count <- length(units_merged_subset)
 ```
 
-```{r, fig.width = 3, fig.height = 3, message = FALSE}
+```{r, echo = FALSE, results = 'hold', message = FALSE, fig.width = 3, fig.height = 3}
 ggplot() + 
-  geom_polygon(data = minnesota, aes(x = long, y = lat, group = group), fill = NA, color = 'black') + 
+  geom_polygon(data = minnesota, aes(x = long, y = lat, group = group), fill = NA, color = 'black') +
   geom_polygon(data = units_merged_subset, aes(x = long, y = lat, group = group), fill = 'lightgray', color = 'black') + 
   theme_void() + 
   coord_fixed()
@@ -585,7 +581,7 @@ northern parts of the state:
 
 Let's continue by loading the bird data and printing all unique bird species in 
 the data.
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 bird_data_whole <- readxl::read_excel('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/bird_data/Homogenization_All_BirdData.xlsx')
 bird_data_whole$common = gsub('N. Rough-winged Swallow', 'Northern Rough-winged Swallow', bird_data_whole$common, fixed = TRUE)
 sort(unique(bird_data_whole$common))
@@ -594,7 +590,7 @@ sort(unique(bird_data_whole$common))
 We filter the bird data so that we only include forested BBA points with unique 
 coordinates located in units with a minimum of `r min_points` forested BBA points, and 
 leave out all unidentified species.
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 # Replace dashes and spaces with underscores, apostrophes with nothing, and convert all to lower case
 bird_data_whole$common <- gsub('-', "_", bird_data_whole$common, fixed = TRUE)
 bird_data_whole$common <- gsub(' ', "_", bird_data_whole$common, fixed = TRUE)
@@ -616,7 +612,7 @@ bird_points_species <- dplyr::select_(bird_data_whole, 'ID', 'unit', 'common', c
 
 We then calculate overall species richness for all units, and for units with at 
 least `r min_points` forested BBA points.
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 unique_coord_id <- mnn_bba_points_unique_subset$ID
 spp_richness_unit <- dplyr::select_(bird_data_whole, 'ID', 'unit', 'common', count_column) %>% 
   dplyr::filter(ID %in% unique_coord_id) %>% 
@@ -647,7 +643,7 @@ EltonTraits 1.0: Species-level foraging attributes of the world’s birds and
 mammals. Ecology. 2014;95(7):2027–2027. 
 
 Let's clean the functional data.
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 # Data munging
 bird_func_data <- read.table('./data/functional_data/BirdFuncDat.txt', sep = '\t', 
   header = TRUE, fill = TRUE, quote = "", fileEncoding = 'Windows-1252')
@@ -686,7 +682,7 @@ bird_func_data <- rbind(bird_func_data, joined_rows)
 ```
 
 Then we select species included in the Minnesota bird data.
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 # Unify species names between MNN data and functional data
 bird_func_data$English <- gsub('Blue-grey Gnatcatcher', 'Blue-gray Gnatcatcher', bird_func_data$English, fixed = TRUE)
 bird_func_data$English <- gsub('American Treecreeper', 'Brown Creeper', bird_func_data$English, fixed = TRUE)
@@ -722,7 +718,7 @@ bird_func_data_subset <- dplyr::left_join(bird_names, bird_func_data,
 
 Then we calculate functional distances between bird species. This will be used 
 later on to calculate functional beta diversity.
-```{r, message = FALSE, warning = FALSE}
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
 trait_matrix <- dplyr::select(bird_func_data_subset, Diet.Inv:Diet.PlantO, 
   ForStrat.watbelowsurf:PelagicSpecialist, Nocturnal, BodyMass.Value)
 trait_matrix <- as.data.frame(lapply(trait_matrix, as.numeric))
@@ -731,7 +727,7 @@ trait_matrix <- as.data.frame(lapply(trait_matrix, as.numeric))
 #trait_matrix[c(1:10, 12:21)] <- lapply(trait_matrix[c(1:10, 12:21)], as.numeric)
 trait_matrix <- apply(trait_matrix, 2, FUN = function(x) {x / max(x)})
 rownames(trait_matrix) <- bird_func_data_subset$common
-trait_distance <- as.matrix(daisy(trait_matrix, metric = "euclidean"))
+trait_distance <- as.matrix(cluster::daisy(trait_matrix, metric = "euclidean"))
 trait_distance <- trait_distance / max(trait_distance)
 ```
 
@@ -742,7 +738,7 @@ rule, and calculate phylogenetic distances with the adephylo- package.
 
 *Jetz W, Thomas GH, Joy JB, Hartmann K, Mooers AO. The global diversity of birds 
 in space and time. Nature. 2012 Oct 31;491(7424):444–8. 
-```{r, message = FALSE}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 consensus_tree <- ape::read.tree("./data/phylogenetic_data/MajRuleConsesnsus.tre")
 #consensus_tree <- read.tree("./data/phylogenetic_data/StrictConsesnsus.tre")
 phylo_species_latin <- data.frame(Scientific = consensus_tree$tip.label, stringsAsFactors = FALSE)
@@ -765,7 +761,7 @@ calculate mean additive beta per unit (gamma minus mean alpha).
 *De Bello F, Lavergne S, Meynard CN, Lepš J, Thuiller W. The partitioning of 
 diversity: showing Theseus a way out of the labyrinth: Theseus and the 
 partitioning of diversity. Journal of Vegetation Science. 2010;21(5):992–1000.
-```{r, message = FALSE}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 source('./Code/Appendix2/Rao.r')
 
 tax_alpha_unit_list <- vector("list", base::nrow(common_units))
@@ -777,6 +773,7 @@ phyl_beta_unit_list <- vector("list", base::nrow(common_units))
 tax_gamma_unit_list <- vector("list", base::nrow(common_units))
 func_gamma_unit_list <- vector("list", base::nrow(common_units))
 phyl_gamma_unit_list <- vector("list", base::nrow(common_units))
+
 tax_effective_unit_list <- vector("list", base::nrow(common_units))
 func_effective_unit_list <- vector("list", base::nrow(common_units))
 phyl_effective_unit_list <- vector("list", base::nrow(common_units))
@@ -803,12 +800,18 @@ for (unit in as.vector(common_units$unit)) {
   tax_alpha_unit_list[[counter]] <- bird_div$TD$Mean_Alpha
   func_alpha_unit_list[[counter]] <- bird_div$FD$Mean_Alpha
   phyl_alpha_unit_list[[counter]] <- bird_div$PD$Mean_Alpha
-  tax_beta_unit_list[[counter]] <- bird_div$TD$Beta_prop / (1 - (1 / ncol(bird_unit_wide)))
-  func_beta_unit_list[[counter]] <- bird_div$FD$Beta_prop / (1 - (1 / ncol(bird_unit_wide)))
-  phyl_beta_unit_list[[counter]] <- bird_div$PD$Beta_prop / (1 - (1 / ncol(bird_unit_wide)))
-  tax_gamma_unit_list[[counter]] <- bird_div$TD$Gamma
-  func_gamma_unit_list[[counter]] <- bird_div$FD$Gamma
-  phyl_gamma_unit_list[[counter]] <- bird_div$PD$Gamma
+  tax_beta_unit_list[[counter]] <- bird_div$TD$Beta_prop# / (1 - (1 / ncol(bird_unit_wide)))
+  func_beta_unit_list[[counter]] <- bird_div$FD$Beta_prop# / (1 - (1 / ncol(bird_unit_wide)))
+  phyl_beta_unit_list[[counter]] <- bird_div$PD$Beta_prop# / (1 - (1 / ncol(bird_unit_wide)))
+  tax_gamma_unit_list[[counter]] <- bird_div$TD$Gamma# / (1 - (1 / ncol(bird_unit_wide)))
+  func_gamma_unit_list[[counter]] <- bird_div$FD$Gamma# / (1 - (1 / ncol(bird_unit_wide)))
+  phyl_gamma_unit_list[[counter]] <- bird_div$PD$Gamma# / (1 - (1 / ncol(bird_unit_wide)))
+  #tax_gamma_corr_unit_list[[counter]] <- bird_div$TD$Mean_Alpha / (1 - ((bird_div$TD$Beta_prop / (1 - (1 
+  #  / ncol(bird_unit_wide)))) / 100))
+  #func_gamma_corr_unit_list[[counter]] <- bird_div$FD$Mean_Alpha / (1 - ((bird_div$FD$Beta_prop / (1 - (1
+  #  / ncol(bird_unit_wide)))) / 100))
+  #phyl_gamma_corr_unit_list[[counter]] <- bird_div$PD$Mean_Alpha / (1 - ((bird_div$PD$Beta_prop / (1 - (1
+  #  / ncol(bird_unit_wide)))) / 100))
   tax_effective_unit_list[[counter]] <- bird_div$TD$Gamma / bird_div$TD$Mean_Alpha
   func_effective_unit_list[[counter]] <- bird_div$FD$Gamma / bird_div$FD$Mean_Alpha
   phyl_effective_unit_list[[counter]] <- bird_div$PD$Gamma / bird_div$PD$Mean_Alpha
@@ -816,14 +819,14 @@ for (unit in as.vector(common_units$unit)) {
 }
 
 units_beta <- data.frame(unit = common_units$unit, 
-  tax_alpha_div = unlist(tax_alpha_unit_list), 
-  func_alpha_div = unlist(func_alpha_unit_list), 
-  phyl_alpha_div = unlist(phyl_alpha_unit_list), 
   tax_beta_div = unlist(tax_beta_unit_list), 
-  func_beta_div = unlist(func_beta_unit_list), 
-  phyl_beta_div = unlist(phyl_beta_unit_list), 
+  tax_alpha_div = unlist(tax_alpha_unit_list), 
   tax_gamma_div = unlist(tax_gamma_unit_list), 
+  func_beta_div = unlist(func_beta_unit_list), 
+  func_alpha_div = unlist(func_alpha_unit_list), 
   func_gamma_div = unlist(func_gamma_unit_list), 
+  phyl_beta_div = unlist(phyl_beta_unit_list), 
+  phyl_alpha_div = unlist(phyl_alpha_unit_list), 
   phyl_gamma_div = unlist(phyl_gamma_unit_list), 
   tax_effective_units = unlist(tax_effective_unit_list), 
   func_effective_units = unlist(func_effective_unit_list), 
@@ -834,7 +837,7 @@ units_merged_beta <- units_merged_beta[!is.na(units_merged_beta$tax_beta_div) |
 ```
 
 Summarise response variables
-```{r, echo = FALSE}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 summary(units_merged_beta@data[c('forest_spp_richness', 'tax_alpha_div', 
   'func_alpha_div', 'phyl_alpha_div', 'tax_beta_div', 'func_beta_div', 
   'phyl_beta_div', 'tax_gamma_div', 'func_gamma_div', 'phyl_gamma_div', 
@@ -844,7 +847,7 @@ summary(units_merged_beta@data[c('forest_spp_richness', 'tax_alpha_div',
 In order to further understand forest diversity in the whole study area we also 
 calculate taxonomic, functional and phylogenetic diversity using all units with 
 more than `r min_points` forested BBA points (not one unit at a time as before).
-```{r, message = FALSE}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 bird_points_species_wide <- dplyr::select(bird_points_species, -unit) %>% 
     tidyr::spread_('ID', count_column) %>% as.data.frame()
 bird_points_species_wide[is.na(bird_points_species_wide)] <- 0
@@ -858,10 +861,8 @@ bird_div_all <- Rao(sample = bird_points_species_wide, dfunc = trait_distance,
 
 whole_area_div_summary <- data.frame(
   alpha = c(bird_div_all$TD$Mean_Alpha, bird_div_all$FD$Mean_Alpha, bird_div_all$PD$Mean_Alpha), 
-  beta_add = c(bird_div_all$TD$Beta_add, bird_div_all$FD$Beta_add, bird_div_all$PD$Beta_add), 
-  beta_prop_norm = c(bird_div_all$TD$Beta_prop / (1 - (1 / ncol(bird_points_species_wide))), 
-    bird_div_all$FD$Beta_prop / (1 - (1 / ncol(bird_points_species_wide))), 
-    bird_div_all$PD$Beta_prop / (1 - (1 / ncol(bird_points_species_wide)))), 
+  #beta_add = c(bird_div_all$TD$Beta_add, bird_div_all$FD$Beta_add, bird_div_all$PD$Beta_add), 
+  beta = c(bird_div_all$TD$Beta_prop, bird_div_all$FD$Beta_prop, bird_div_all$PD$Beta_prop), 
   gamma = c(bird_div_all$TD$Gamma, bird_div_all$FD$Gamma, bird_div_all$PD$Gamma), 
   effective_units = c(bird_div_all$TD$Gamma / bird_div_all$TD$Mean_Alpha, bird_div_all$FD$Gamma / 
       bird_div_all$FD$Mean_Alpha, bird_div_all$PD$Gamma / bird_div_all$PD$Mean_Alpha))
@@ -878,7 +879,7 @@ have outliers, colinearity etc. These explanatory analyses are from Zuur et. al
 statistical problems: Data exploration. Methods in Ecology and Evolution. 2010 
 Mar;1(1):3–14. 
 
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 # Define explanatory variables
 explanatory_variables <- dplyr::select(units_merged_beta@data, unit, 
   human_footprint, forest_loss, other_roads, mean_temp, mean_prec, 
@@ -886,7 +887,7 @@ explanatory_variables <- dplyr::select(units_merged_beta@data, unit,
 ```
 
 ##1. Outliers
-```{r, fig.width = 10, fig.height = 10}
+```{r, echo = FALSE, message = FALSE, fig.width = 10, fig.height = 10}
 explanatory_variables_long <- dplyr::select(explanatory_variables, -unit, -eco_subsection) %>% 
   tidyr::gather()
 
@@ -896,7 +897,7 @@ ggplot(explanatory_variables_long, aes(factor(0), value)) +
     axis.title.y = element_blank())
 ```
 
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 # Print units with highest forest loss values
 dplyr::select(units_merged_beta@data, unit, forest_loss) %>% 
   dplyr::arrange(desc(forest_loss)) %>% head(n = 10)
@@ -908,7 +909,7 @@ almost half of the area of the unit (and a fifth of unit 38). In addition, units
 12 and 559, located northeast from Pagami creek seems to be covered by a forest 
 fire, most probably the 2007 Ham Lake fire. We should consider leaving these out.
 
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 # Print units with highest forest point frequency values
 dplyr::select(units_merged_beta@data, unit, forest_point_freq) %>% 
   dplyr::arrange(desc(forest_point_freq)) %>% head(n = 10)
@@ -916,7 +917,7 @@ dplyr::select(units_merged_beta@data, unit, forest_point_freq) %>%
 Unit 115 has a lot more forested BBA points than others, but this is taken into 
 account in the model.
 
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 # Print units with highest other road density values
 dplyr::select(units_merged_beta@data, unit, other_roads) %>% 
   dplyr::arrange(desc(other_roads)) %>% head(n = 10)
@@ -928,39 +929,72 @@ because they are heavily urbanised, but they also have at least `r min_points`
 forested BBA points. Since we do not have any clear reason to drop them we 
 probably just keep them.
 
-##2. Check reponse variables for excess of zeros
+##2. Check distributions of reponse variables
 ###Taxonomic beta diversity
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 hist(units_merged_beta$tax_beta_div, main = 'Distribution of taxonomic beta values', 
   xlab = 'Mean taxonomic beta per unit')
 ```
 
-We shouldn't have problems here. Zeros don't dominate the data, and the 
-taxonomic beta diversity values are more or less normally distributed.
+###Taxonomic alpha diversity
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+hist(units_merged_beta$tax_alpha_div, main = 'Distribution of taxonomic alpha values', 
+  xlab = 'Mean taxonomic alpha per unit')
+```
+
+###Taxonomic gamma diversity
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+hist(units_merged_beta$tax_gamma_div, main = 'Distribution of taxonomic gamma values', 
+  xlab = 'Mean taxonomic gamma per unit')
+```
 
 ###Functional beta diversity
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 hist(units_merged_beta$func_beta_div, main = 'Distribution of functional beta values', 
   xlab = 'Mean functional beta per unit')
 ```
 
+###Functional alpha diversity
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+hist(units_merged_beta$func_alpha_div, main = 'Distribution of functional alpha values', 
+  xlab = 'Mean functional alpha per unit')
+```
+
+###Functional gamma diversity
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+hist(units_merged_beta$func_gamma_div, main = 'Distribution of functional gamma values', 
+  xlab = 'Mean functional gamma per unit')
+```
+
 ###Phylogenetic beta diversity
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 hist(units_merged_beta$phyl_beta_div, main = 'Distribution of phylogenetic beta values', 
   xlab = 'Mean phylogenetic beta per unit')
+```
+
+###Phylogenetic alpha diversity
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+hist(units_merged_beta$phyl_alpha_div, main = 'Distribution of phylogenetic alpha values', 
+  xlab = 'Mean phylogenetic alpha per unit')
+```
+
+###Phylogenetic gamma diversity
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+hist(units_merged_beta$phyl_gamma_div, main = 'Distribution of phylogenetic gamma values', 
+  xlab = 'Mean phylogenetic gamma per unit')
 ```
 
 ##3. Colinearity of explanatory variables
 Let's start by having a look at how correlated the human footprint variable is 
 with variables describing human impact in Minnesota:
-```{r, fig.show = 'hold', results = 'asis', fig.width = 10, fig.height = 10}
+```{r, echo = FALSE, fig.show = 'hold', results = 'asis', fig.width = 10, fig.height = 10}
 # Pair plots of human footprint and other variables explaining human impact
 units_merged_human_impact_subset <- dplyr::filter(units_merged_human_impact, unit %in% common_units$unit) %>% dplyr::select(-unit)
 psych::pairs.panels(units_merged_human_impact_subset, hist.col = NULL, method = 'spearman')
 ```
 
 
-```{r, fig.show = 'hold', results = 'hold', fig.width = 10, fig.height = 10}
+```{r, echo = FALSE, fig.show = 'hold', results = 'hold', fig.width = 10, fig.height = 10}
 # Pair plots of explanatory variables
 psych::pairs.panels(as.data.frame(dplyr::select(explanatory_variables, -unit, -eco_subsection)), 
   hist.col = NULL, method = 'spearman')
@@ -970,7 +1004,7 @@ We can see that there is a strongish correlation between a few of the variables.
 
 ##4. Relationships between response and explanatory variables
 ###Taxonomic beta diversity
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 # Explanatory variables in vector format
 x <- as.vector(as.matrix(dplyr::select(explanatory_variables, -unit, -eco_subsection)))
 # Response variable in vector format, repeat once for each explanatory variable
@@ -995,13 +1029,60 @@ lattice::xyplot(y ~ x | x_id, col = 1,
     })
 ```
 
-There are two interesting relations. First, the outlier in forest loss really 
-sticks out. Also, there is a very clear pattern of increasing mean taxonomic 
-beta diversity per unit with an increasing number of forested BBA points per 
-unit.
+###Taxonomic alpha diversity
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+# Explanatory variables in vector format
+x <- as.vector(as.matrix(dplyr::select(explanatory_variables, -unit, -eco_subsection)))
+# Response variable in vector format, repeat once for each explanatory variable
+y <- rep(units_merged_beta$tax_alpha_div, length(names(explanatory_variables)))
+# Explanatory variable ID's as factors
+x_id <- factor(rep(names(dplyr::select(explanatory_variables, -unit, -eco_subsection)), 
+  each = length(units_merged_beta$tax_alpha_div)))
+
+# Plot y vs x, and use a loess smoother to give some idea of the relation
+lattice::xyplot(y ~ x | x_id, col = 1,
+  strip = function(bg = 'white', ...) strip.default(bg = 'white', ...),
+  scales = list(alternating = T,
+                x = list(relation = "free"),
+                y = list(relation = "same")),
+  xlab = "Explanatory variables",
+  par.strip.text = list(cex = 0.8),
+  ylab = "Mean taxonmic alpha diversity per unit",
+  panel = function(x, y, subscripts, ...){
+    panel.grid(h = -1, v = 2)
+    panel.points(x, y, col = 1, pch = 16)
+    panel.loess(x, y, col = 1, lwd = 2)
+    })
+```
+
+###Taxonomic gamma diversity
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+# Explanatory variables in vector format
+x <- as.vector(as.matrix(dplyr::select(explanatory_variables, -unit, -eco_subsection)))
+# Response variable in vector format, repeat once for each explanatory variable
+y <- rep(units_merged_beta$tax_gamma_div, length(names(explanatory_variables)))
+# Explanatory variable ID's as factors
+x_id <- factor(rep(names(dplyr::select(explanatory_variables, -unit, -eco_subsection)), 
+  each = length(units_merged_beta$tax_gamma_div)))
+
+# Plot y vs x, and use a loess smoother to give some idea of the relation
+lattice::xyplot(y ~ x | x_id, col = 1,
+  strip = function(bg = 'white', ...) strip.default(bg = 'white', ...),
+  scales = list(alternating = T,
+                x = list(relation = "free"),
+                y = list(relation = "same")),
+  xlab = "Explanatory variables",
+  par.strip.text = list(cex = 0.8),
+  ylab = "Mean taxonmic gamma diversity per unit",
+  panel = function(x, y, subscripts, ...){
+    panel.grid(h = -1, v = 2)
+    panel.points(x, y, col = 1, pch = 16)
+    panel.loess(x, y, col = 1, lwd = 2)
+    })
+```
 
 ###Functional beta diversity
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 # Explanatory variables in vector format
 x <- as.vector(as.matrix(dplyr::select(explanatory_variables, -unit, -eco_subsection)))
 # Response variable in vector format, repeat once for each explanatory variable
@@ -1026,8 +1107,60 @@ lattice::xyplot(y ~ x | x_id, col = 1,
     })
 ```
 
+###Functional alpha diversity
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+# Explanatory variables in vector format
+x <- as.vector(as.matrix(dplyr::select(explanatory_variables, -unit, -eco_subsection)))
+# Response variable in vector format, repeat once for each explanatory variable
+y <- rep(units_merged_beta$func_alpha_div, length(names(explanatory_variables)))
+# Explanatory variable ID's as factors
+x_id <- factor(rep(names(dplyr::select(explanatory_variables, -unit, -eco_subsection)), 
+  each = length(units_merged_beta$func_alpha_div)))
+
+# Plot y vs x, and use a loess smoother to give some idea of the relation
+lattice::xyplot(y ~ x | x_id, col = 1,
+  strip = function(bg = 'white', ...) strip.default(bg = 'white', ...),
+  scales = list(alternating = T,
+                x = list(relation = "free"),
+                y = list(relation = "same")),
+  xlab = "Explanatory variables",
+  par.strip.text = list(cex = 0.8),
+  ylab = "Mean functional alpha diversity per unit",
+  panel = function(x, y, subscripts, ...){
+    panel.grid(h = -1, v = 2)
+    panel.points(x, y, col = 1, pch = 16)
+    panel.loess(x, y, col = 1, lwd = 2)
+    })
+```
+
+###Functional gamma diversity
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+# Explanatory variables in vector format
+x <- as.vector(as.matrix(dplyr::select(explanatory_variables, -unit, -eco_subsection)))
+# Response variable in vector format, repeat once for each explanatory variable
+y <- rep(units_merged_beta$func_gamma_div, length(names(explanatory_variables)))
+# Explanatory variable ID's as factors
+x_id <- factor(rep(names(dplyr::select(explanatory_variables, -unit, -eco_subsection)), 
+  each = length(units_merged_beta$func_gamma_div)))
+
+# Plot y vs x, and use a loess smoother to give some idea of the relation
+lattice::xyplot(y ~ x | x_id, col = 1,
+  strip = function(bg = 'white', ...) strip.default(bg = 'white', ...),
+  scales = list(alternating = T,
+                x = list(relation = "free"),
+                y = list(relation = "same")),
+  xlab = "Explanatory variables",
+  par.strip.text = list(cex = 0.8),
+  ylab = "Mean functional gamma diversity per unit",
+  panel = function(x, y, subscripts, ...){
+    panel.grid(h = -1, v = 2)
+    panel.points(x, y, col = 1, pch = 16)
+    panel.loess(x, y, col = 1, lwd = 2)
+    })
+```
+
 ###Phylogenetic beta diversity
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 # Explanatory variables in vector format
 x <- as.vector(as.matrix(dplyr::select(explanatory_variables, -unit, -eco_subsection)))
 # Response variable in vector format, repeat once for each explanatory variable
@@ -1052,8 +1185,60 @@ lattice::xyplot(y ~ x | x_id, col = 1,
     })
 ```
 
+###Phylogenetic alpha diversity
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+# Explanatory variables in vector format
+x <- as.vector(as.matrix(dplyr::select(explanatory_variables, -unit, -eco_subsection)))
+# Response variable in vector format, repeat once for each explanatory variable
+y <- rep(units_merged_beta$phyl_alpha_div, length(names(explanatory_variables)))
+# Explanatory variable ID's as factors
+x_id <- factor(rep(names(dplyr::select(explanatory_variables, -unit, -eco_subsection)), 
+  each = length(units_merged_beta$phyl_alpha_div)))
+
+# Plot y vs x, and use a loess smoother to give some idea of the relation
+lattice::xyplot(y ~ x | x_id, col = 1,
+  strip = function(bg = 'white', ...) strip.default(bg = 'white', ...),
+  scales = list(alternating = T,
+                x = list(relation = "free"),
+                y = list(relation = "same")),
+  xlab = "Explanatory variables",
+  par.strip.text = list(cex = 0.8),
+  ylab = "Mean phylogenetic alpha diversity per unit",
+  panel = function(x, y, subscripts, ...){
+    panel.grid(h = -1, v = 2)
+    panel.points(x, y, col = 1, pch = 16)
+    panel.loess(x, y, col = 1, lwd = 2)
+    })
+```
+
+###Phylogenetic gamma diversity
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+# Explanatory variables in vector format
+x <- as.vector(as.matrix(dplyr::select(explanatory_variables, -unit, -eco_subsection)))
+# Response variable in vector format, repeat once for each explanatory variable
+y <- rep(units_merged_beta$phyl_gamma_div, length(names(explanatory_variables)))
+# Explanatory variable ID's as factors
+x_id <- factor(rep(names(dplyr::select(explanatory_variables, -unit, -eco_subsection)), 
+  each = length(units_merged_beta$phyl_gamma_div)))
+
+# Plot y vs x, and use a loess smoother to give some idea of the relation
+lattice::xyplot(y ~ x | x_id, col = 1,
+  strip = function(bg = 'white', ...) strip.default(bg = 'white', ...),
+  scales = list(alternating = T,
+                x = list(relation = "free"),
+                y = list(relation = "same")),
+  xlab = "Explanatory variables",
+  par.strip.text = list(cex = 0.8),
+  ylab = "Mean phylogenetic gamma diversity per unit",
+  panel = function(x, y, subscripts, ...){
+    panel.grid(h = -1, v = 2)
+    panel.points(x, y, col = 1, pch = 16)
+    panel.loess(x, y, col = 1, lwd = 2)
+    })
+```
+
 ##5. Spatial distribution of variables
-```{r, message = FALSE, warning = FALSE}
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
 response_variables <- c('id', 'unit', 
   'tax_beta_div', 'func_beta_div', 'phyl_beta_div', 'forest_spp_richness')
 units_merged_beta$id <- rownames(units_merged_beta@data)
@@ -1065,7 +1250,7 @@ units_merged_lw <- nb2listw(units_merged_nb, zero.policy = TRUE)
 ```
 
 ###Taxonomic beta diversity
-```{r, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
 # Test for spatial autocorrelation
 moran.test(units_merged_beta$tax_beta_div, listw = units_merged_lw, 
   alternative = 'two.sided', zero.policy = TRUE)
@@ -1077,10 +1262,8 @@ multiplot(plot_variable_map(units_merged_beta_fort, 'tax_beta_div'),
   plot_lisa_map(units_merged_beta, tax_beta_div), cols = 2)
 ```
 
-Taxonomic beta diversity values appear to be spatially autocorrelated.
-
 ###Functional beta diversity
-```{r, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
 # Test for spatial autocorrelation
 moran.test(units_merged_beta$func_beta_div, listw = units_merged_lw, 
   alternative = 'two.sided', zero.policy = TRUE)
@@ -1093,7 +1276,7 @@ multiplot(plot_variable_map(units_merged_beta_fort, 'func_beta_div'),
 ```
 
 ###Phylogenetic beta diversity
-```{r, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
 # Test for spatial autocorrelation
 moran.test(units_merged_beta$phyl_beta_div, listw = units_merged_lw, 
   alternative = 'two.sided', zero.policy = TRUE)
@@ -1106,7 +1289,7 @@ multiplot(plot_variable_map(units_merged_beta_fort, 'phyl_beta_div'),
 ```
 
 ###Forest species richness
-```{r, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
 # Test for spatial autocorrelation
 moran.test(units_merged_beta$forest_spp_richness, listw = units_merged_lw, 
   alternative = 'two.sided', zero.policy = TRUE)
@@ -1119,7 +1302,7 @@ multiplot(plot_variable_map(units_merged_beta_fort, 'forest_spp_richness'),
 ```
 
 ###Explanatory variables
-```{r, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 8, fig.height = 16}
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 8, fig.height = 16}
 # Plot beta diversity and local Moran's I values on map
 units_merged$id <- rownames(units_merged@data)
 units_merged_fort <- fortify(units_merged, region = 'unit')
@@ -1145,89 +1328,89 @@ multiplot(plot_variable_map(units_merged_fort, 'human_footprint'),
   plot_lisa_map(units_merged, mean_temp), 
   cols = 2)
 ```
-
-#Analyse taxonomic beta diversity
 Let's drop the four units clearly impacted by forest fires. Since beta diversity 
 values are calculated within units we can just drop them, instead of having to 
 recalculate diversity measures.
-```{r}
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 units_merged_beta_subset <- units_merged_beta[!(units_merged_beta$unit %in% 
     c(39, 12, 38, 559)), ]
 units_merged_subset_nb <- poly2nb(units_merged_beta_subset)
 units_merged_subset_lw <- nb2listw(units_merged_subset_nb, zero.policy = TRUE)
 ```
-
 We now have a total of `r length(unique(units_merged_beta_subset$unit))` 
 units to work with.
 
-We then continue by starting to construct a model where the response variable is 
-mean taxonomic beta diversity per unit, and the explanatory variables are, for 
+We then continue by starting to construct models where the response variables 
+are diversity measures per unit, and the explanatory variables are, for 
 example, human footprint, forest loss etc. We also take the number of forest 
 points per unit into account as a covariate.
 
-```{r, results = 'hold', message = FALSE}
+#Analyse taxonomic diversity
+```{r, echo = FALSE, results = 'hold', message = FALSE}
 tax_model_variables <- dplyr::inner_join(units_merged_beta_subset@data[c('unit', 
-  'tax_beta_div')], explanatory_variables)
-#tax_model_variables$x <- coordinates(units_merged_beta_subset)[, 1]
-#tax_model_variables$y <- coordinates(units_merged_beta_subset)[, 2]
-f_tax_model <- formula(tax_beta_div ~ 
+  'tax_alpha_div', 'tax_beta_div', 'tax_gamma_div')], explanatory_variables)
+```
+
+##Taxonomic beta diversity
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+f_tax_beta_model <- formula(tax_beta_div ~ 
     human_footprint + 
     forest_loss + 
     net_prim_prod + 
     habitat_div + 
-    mean_temp #+ 
+    mean_temp + 
     #mean_prec + 
     #other_roads + 
     #x + 
     #y + 
-    #forest_point_freq
+    forest_point_freq
     )
-tax_model <- lm(f_tax_model, data = tax_model_variables)
+tax_beta_model <- lm(f_tax_beta_model, data = tax_model_variables)
 #tax_model <- glm(f_tax_model, family = Gamma(link = "identity"), 
 #  data = tax_model_variables)
-units_merged_beta_subset$tax_div_resid <- residuals(tax_model)
-tax_model_summary <- summary(tax_model)
-tax_model_vif <- car::vif(tax_model)
-tax_model_summary
-tax_model_vif
+units_merged_beta_subset$tax_beta_div_resid <- residuals(tax_beta_model)
+tax_beta_model_summary <- summary(tax_beta_model)
+tax_beta_model_vif <- car::vif(tax_beta_model)
+tax_beta_model_summary
+tax_beta_model_vif
 ```
 
 ##Check taxonomic beta residuals
 ###1. Homogeneity of residuals
-```{r}
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Get standardised predicted and residual values
-tax_standardised_pred <- (predict(tax_model) - mean(predict(tax_model))) / sd(predict(tax_model))
-tax_standardised_resid <- (resid(tax_model) - mean(resid(tax_model))) / sd(resid(tax_model))
+tax_beta_standardised_pred <- (predict(tax_beta_model) - mean(predict(tax_beta_model))) / sd(predict(tax_beta_model))
+tax_beta_standardised_resid <- (resid(tax_beta_model) - mean(resid(tax_beta_model))) / sd(resid(tax_beta_model))
 # Create standardised residuals plot
-plot(tax_standardised_pred, tax_standardised_resid, main = "Standardised Taxonomic Residuals Plot", xlab = "Standardised Predicted Values", ylab = "Standardised Residuals")
+plot(tax_beta_standardised_pred, tax_beta_standardised_resid, main = "Standardised Taxonomic Beta Residuals Plot", xlab = "Standardised Predicted Values", ylab = "Standardised Residuals")
 abline(0, 0)
 abline(h = c(-2, 2), col = 'red')
 ```
 
 ###2. Normality of residuals
-```{r, fig.show = 'hold'}
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Histogram of standardised residuals
-hist(tax_standardised_resid, freq = FALSE, main = 'Histogram of taxonomic residuals', xlab = 'Residuals')
+hist(tax_beta_standardised_resid, freq = FALSE, main = 'Histogram of taxonomic beta residuals', xlab = 'Residuals')
 curve(dnorm, add = TRUE)
 
 # Probability- probability plot of standardised residuals
-tax_prob_dist <- pnorm(tax_standardised_resid)
-plot(ppoints(length(tax_standardised_resid)), sort(tax_prob_dist), main = "PP Plot", xlab = "Observed Probability", ylab = "Expected Probability")
+tax_beta_prob_dist <- pnorm(tax_beta_standardised_resid)
+plot(ppoints(length(tax_beta_standardised_resid)), sort(tax_beta_prob_dist), main = "PP Plot", xlab = "Observed Probability", ylab = "Expected Probability")
 abline(0, 1)
 ```
 
 ###3. Independence of residuals
-```{r, results = 'hold', fig.show = 'hold'}
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Test for spatial autocorrelation
-moran.test(units_merged_beta_subset$tax_div_resid, listw = units_merged_subset_lw, 
+moran.test(units_merged_beta_subset$tax_beta_div_resid, listw = units_merged_subset_lw, 
   alternative = 'two.sided', zero.policy = TRUE)
-moran.mc(units_merged_beta_subset$tax_div_resid, units_merged_subset_lw, 
+moran.mc(units_merged_beta_subset$tax_beta_div_resid, units_merged_subset_lw, 
   alternative = 'greater', 999, zero.policy = TRUE)
-moran.mc(units_merged_beta_subset$tax_div_resid, units_merged_subset_lw, 
+moran.mc(units_merged_beta_subset$tax_beta_div_resid, units_merged_subset_lw, 
   alternative = 'less', 999, zero.policy = TRUE)
 
 # Plot variogram
-plot(variogram(tax_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
+plot(variogram(tax_beta_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
   data = units_merged_beta_subset, cloud = FALSE), type = "b")
 
 # Print Moran plot, which shows standardised values on the x- axis, along with 
@@ -1237,7 +1420,7 @@ plot(variogram(tax_div_resid ~ 1, locations = coordinates(units_merged_beta_subs
 # left quadrant has low observed and high lagged values, top right has high- 
 # high values, bottom left has low- low values, and bottom right has high- low 
 # values. Influential observations are marked in the plot.
-moran_plot_func(units_merged_beta_subset, tax_div_resid)
+moran_plot_func(units_merged_beta_subset, tax_beta_div_resid)
 ```
 
 Let's print a map to show local differences in residual values.
@@ -1248,72 +1431,73 @@ units_merged_beta_subset_fort <- fortify(units_merged_beta_subset, region = 'uni
 units_merged_beta_subset_fort <- left_join(units_merged_beta_subset_fort, 
   units_merged_beta_subset@data)
 
-multiplot(plot_variable_map(units_merged_beta_subset_fort, 'tax_div_resid'), 
-  plot_lisa_map(units_merged_beta_subset, tax_div_resid), cols = 2)
+multiplot(plot_variable_map(units_merged_beta_subset_fort, 'tax_beta_div_resid'), 
+  plot_lisa_map(units_merged_beta_subset, tax_beta_div_resid), cols = 2)
 ```
-##~~Spatial error model~~
+
+###Spatial model
 ~~Oh no! We have clear spatial autocorrelation in the residuals of the model~~
 ~~explaining taxonomic beta diversity. Let's analyse taxonomic beta diversity~~
-~~with a spatial regression model~~
-  
+~~with a spatial regression model.~~
+
 ~~Within the second spatial regression models we have a two options:~~
   ~~a) Spatial lag models, where the spatial autocorrelation is assumed to arise~~
   ~~from the influence of neighbouring points.~~
   ~~b) Spatial error models, where spatial autocorrelation is assumed to arise~~
   ~~from an unmeasured variable.~~
-    
+
 ~~Due to the structure of our data (units of ~ 20 * 20km) we will assume that~~
 ~~neighbouring units are two far away to have an impact so we will go with the~~
 ~~error model.~~
 ```{r, eval = FALSE}
-tax_model_spatial <- spdep::errorsarlm(f_tax_model, data = tax_model_variables, listw = units_merged_subset_lw, 
+tax_beta_model_spatial <- spdep::errorsarlm(f_tax_beta_model, data = tax_model_variables, listw = units_merged_subset_lw, 
   etype = 'error', tol.solve = 1.0e-30, zero.policy = TRUE)
 
-units_merged_beta_subset$tax_div_resid <- residuals(tax_model_spatial)
-tax_model_summary <- summary(tax_model_spatial)
+units_merged_beta_subset$tax_beta_div_resid <- residuals(tax_beta_model_spatial)
+tax_beta_model_summary <- summary(tax_beta_model_spatial)
 # VIFs are not available for sarlm models so we use the VIFs from the OLS model
-tax_model_vif <- car::vif(tax_model)
-tax_model_summary
-tax_model_vif
+tax_beta_model_vif <- car::vif(tax_beta_model)
+tax_beta_model_summary
+tax_beta_model_vif
 ```
 
-```{r, eval = FALSE}
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE, eval = FALSE}
 # Get standardised predicted and residual values
-tax_standardised_pred <- (predict(tax_model_spatial) - mean(predict(tax_model_spatial))) / sd(predict(tax_model_spatial))
-tax_standardised_resid <- (resid(tax_model_spatial) - mean(resid(tax_model_spatial))) / sd(resid(tax_model_spatial))
+tax_beta_standardised_pred <- (predict(tax_beta_model_spatial) - mean(predict(tax_beta_model_spatial))) / sd(predict(tax_beta_model_spatial))
+tax_beta_standardised_resid <- (resid(tax_beta_model_spatial) - mean(resid(tax_beta_model_spatial))) / sd(resid(tax_beta_model_spatial))
 # Create standardised residuals plot
-plot(tax_standardised_pred, tax_standardised_resid, main = "Standardised 
-  taxonomic residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
+plot(tax_beta_standardised_pred, tax_beta_standardised_resid, main = "Standardised 
+  taxonomic beta residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
 abline(0, 0)
 abline(h = c(-2, 2), col = 'red')
 
 # Histogram of standardised residuals
-hist(tax_standardised_resid, freq = FALSE, main = 'Histogram of taxonomic 
+hist(tax_beta_standardised_resid, freq = FALSE, main = 'Histogram of taxonomic beta
   model residuals', xlab = 'Residuals')
 curve(dnorm, add = TRUE)
 
 # Probability- probability plot of standardised residuals
-tax_prob_dist <- pnorm(tax_standardised_resid)
-plot(ppoints(length(tax_standardised_resid)), sort(tax_prob_dist), main = "PP Plot", 
+tax_beta_prob_dist <- pnorm(tax_beta_standardised_resid)
+plot(ppoints(length(tax_beta_standardised_resid)), sort(tax_beta_prob_dist), main = "PP Plot", 
   xlab = "Observed Probability", ylab = "Expected Probability")
 abline(0, 1)
 ```
 
-```{r, results = 'hold', fig.show = 'hold', eval = FALSE}
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE, eval = FALSE}
 # Test for spatial autocorrelation
-moran.test(units_merged_beta_subset$tax_div_resid, listw = units_merged_subset_lw, 
+moran.test(units_merged_beta_subset$tax_beta_div_resid, listw = units_merged_subset_lw, 
   alternative = 'two.sided', zero.policy = TRUE)
-moran.mc(units_merged_beta_subset$tax_div_resid, units_merged_subset_lw, 
+moran.mc(units_merged_beta_subset$tax_beta_div_resid, units_merged_subset_lw, 
   alternative = 'greater', 999, zero.policy = TRUE)
-moran.mc(units_merged_beta_subset$tax_div_resid, units_merged_subset_lw, 
+moran.mc(units_merged_beta_subset$tax_beta_div_resid, units_merged_subset_lw, 
   alternative = 'less', 999, zero.policy = TRUE)
 
 # Plot variogram
-plot(variogram(tax_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
+plot(variogram(tax_beta_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
   data = units_merged_beta_subset, cloud = FALSE), type = "b")
 
 # Print Moran plot
-moran_plot_func(units_merged_beta_subset, tax_div_resid)
+moran_plot_func(units_merged_beta_subset, tax_beta_div_resid)
 ```
 
 ~~Let's print a map to show local differences in residual values.~~
@@ -1324,82 +1508,73 @@ units_merged_beta_subset_fort <- fortify(units_merged_beta_subset, region = 'uni
 units_merged_beta_subset_fort <- left_join(units_merged_beta_subset_fort, 
   units_merged_beta_subset@data)
 
-multiplot(plot_variable_map(units_merged_beta_subset_fort, 'tax_div_resid'), 
-  plot_lisa_map(units_merged_beta_subset, tax_div_resid), cols = 2)
+multiplot(plot_variable_map(units_merged_beta_subset_fort, 'tax_beta_div_resid'), 
+  plot_lisa_map(units_merged_beta_subset, tax_beta_div_resid), cols = 2)
 ```
 
-#Analyse functional beta diversity
-We construct a GLM with a Gamma distribution. More information can be found 
-[here](http://seananderson.ca/2014/04/08/gamma-glms.html)
-```{r, results = 'hold', message = FALSE}
-func_model_variables <- dplyr::inner_join(units_merged_beta_subset@data[c('unit', 
-  'func_beta_div')], explanatory_variables)
-#func_model_variables$x <- coordinates(units_merged_beta_subset)[, 1]
-#func_model_variables$y <- coordinates(units_merged_beta_subset)[, 2]
-f_func_model <- formula(func_beta_div ~ 
+##Taxonomic alpha diversity
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+f_tax_alpha_model <- formula(tax_alpha_div ~ 
     human_footprint + 
     forest_loss + 
     net_prim_prod + 
-    habitat_div +     
-    mean_temp #+ 
+    habitat_div + 
+    mean_temp# + 
     #mean_prec + 
     #other_roads + 
     #x + 
     #y + 
     #forest_point_freq
     )
-#func_model <- lm(f_func_model, data = func_model_variables)
-func_model <- glm(f_func_model, family = Gamma(link = "identity"), 
-  data = func_model_variables)
-moments::skewness(residuals(func_model))
-
-units_merged_beta_subset$func_div_resid <- residuals(func_model)
-func_model_summary <- summary(func_model)
-func_model_vif <- car::vif(func_model)
-func_model_summary
-func_model_vif
+tax_alpha_model <- lm(f_tax_alpha_model, data = tax_model_variables)
+#tax_model <- glm(f_tax_model, family = Gamma(link = "identity"), 
+#  data = tax_model_variables)
+units_merged_beta_subset$tax_alpha_div_resid <- residuals(tax_alpha_model)
+tax_alpha_model_summary <- summary(tax_alpha_model)
+tax_alpha_model_vif <- car::vif(tax_alpha_model)
+tax_alpha_model_summary
+tax_alpha_model_vif
 ```
 
-##Check functional beta residuals
+##Check taxonomic alpha residuals
 ###1. Homogeneity of residuals
-```{r}
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Get standardised predicted and residual values
-func_standardised_pred <- (predict(func_model) - mean(predict(func_model))) / sd(predict(func_model))
-func_standardised_resid <- (resid(func_model) - mean(resid(func_model))) / sd(resid(func_model))
+tax_alpha_standardised_pred <- (predict(tax_alpha_model) - mean(predict(tax_alpha_model))) / sd(predict(tax_alpha_model))
+tax_alpha_standardised_resid <- (resid(tax_alpha_model) - mean(resid(tax_alpha_model))) / sd(resid(tax_alpha_model))
 # Create standardised residuals plot
-plot(func_standardised_pred, func_standardised_resid, main = "Standardised functional residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
+plot(tax_alpha_standardised_pred, tax_alpha_standardised_resid, main = "Standardised Taxonomic Alpha Residuals Plot", xlab = "Standardised Predicted Values", ylab = "Standardised Residuals")
 abline(0, 0)
 abline(h = c(-2, 2), col = 'red')
 ```
 
 ###2. Normality of residuals
-```{r, fig.show = 'hold'}
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Histogram of standardised residuals
-hist(func_standardised_resid, freq = FALSE, main = 'Histogram of functional model residuals', xlab = 'Residuals')
+hist(tax_alpha_standardised_resid, freq = FALSE, main = 'Histogram of taxonomic alpha residuals', xlab = 'Residuals')
 curve(dnorm, add = TRUE)
 
 # Probability- probability plot of standardised residuals
-func_prob_dist <- pnorm(func_standardised_resid)
-plot(ppoints(length(func_standardised_resid)), sort(func_prob_dist), main = "PP Plot", xlab = "Observed Probability", ylab = "Expected Probability")
+tax_alpha_prob_dist <- pnorm(tax_alpha_standardised_resid)
+plot(ppoints(length(tax_alpha_standardised_resid)), sort(tax_alpha_prob_dist), main = "PP Plot", xlab = "Observed Probability", ylab = "Expected Probability")
 abline(0, 1)
 ```
 
 ###3. Independence of residuals
-```{r, results = 'hold', fig.show = 'hold'}
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Test for spatial autocorrelation
-moran.test(units_merged_beta_subset$func_div_resid, listw = units_merged_subset_lw, 
+moran.test(units_merged_beta_subset$tax_alpha_div_resid, listw = units_merged_subset_lw, 
   alternative = 'two.sided', zero.policy = TRUE)
-moran.mc(units_merged_beta_subset$func_div_resid, units_merged_subset_lw, 
+moran.mc(units_merged_beta_subset$tax_alpha_div_resid, units_merged_subset_lw, 
   alternative = 'greater', 999, zero.policy = TRUE)
-moran.mc(units_merged_beta_subset$func_div_resid, units_merged_subset_lw, 
+moran.mc(units_merged_beta_subset$tax_alpha_div_resid, units_merged_subset_lw, 
   alternative = 'less', 999, zero.policy = TRUE)
 
 # Plot variogram
-plot(variogram(func_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
+plot(variogram(tax_alpha_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
   data = units_merged_beta_subset, cloud = FALSE), type = "b")
-
 # Print Moran plot
-moran_plot_func(units_merged_beta_subset, func_div_resid)
+moran_plot_func(units_merged_beta_subset, tax_alpha_div_resid)
 ```
 
 Let's print a map to show local differences in residual values.
@@ -1410,124 +1585,304 @@ units_merged_beta_subset_fort <- fortify(units_merged_beta_subset, region = 'uni
 units_merged_beta_subset_fort <- left_join(units_merged_beta_subset_fort, 
   units_merged_beta_subset@data)
 
-multiplot(plot_variable_map(units_merged_beta_subset_fort, 'func_div_resid'), 
-  plot_lisa_map(units_merged_beta_subset, func_div_resid), cols = 2)
+multiplot(plot_variable_map(units_merged_beta_subset_fort, 'tax_alpha_div_resid'), 
+  plot_lisa_map(units_merged_beta_subset, tax_alpha_div_resid), cols = 2)
 ```
 
-#Analyse phylogenetic beta diversity
-We construct a GLM with a Gamma distribution. More information can be found 
-[here](http://seananderson.ca/2014/04/08/gamma-glms.html)
-```{r, results = 'hold', message = FALSE}
-phyl_model_variables <- dplyr::inner_join(units_merged_beta_subset@data[c('unit', 
-  'phyl_beta_div')], explanatory_variables)
-#phyl_model_variables$x <- coordinates(units_merged_beta_subset)[, 1]
-#phyl_model_variables$y <- coordinates(units_merged_beta_subset)[, 2]
-f_phyl_model <- formula(phyl_beta_div ~ 
+###Spatial model
+```{r, echo = FALSE, message = FALSE, results = 'hold'}
+tax_alpha_model_spatial <- spdep::errorsarlm(f_tax_alpha_model, data = tax_model_variables, listw = units_merged_subset_lw, 
+  etype = 'error', tol.solve = 1.0e-30, zero.policy = TRUE)
+
+units_merged_beta_subset$tax_alpha_div_resid <- residuals(tax_alpha_model_spatial)
+tax_alpha_model_summary <- summary(tax_alpha_model_spatial)
+# VIFs are not available for sarlm models so we use the VIFs from the OLS model
+tax_alpha_model_vif <- car::vif(tax_alpha_model)
+tax_alpha_model_summary
+tax_alpha_model_vif
+```
+
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Get standardised predicted and residual values
+tax_alpha_standardised_pred <- (predict(tax_alpha_model_spatial) - mean(predict(tax_alpha_model_spatial))) / sd(predict(tax_alpha_model_spatial))
+tax_alpha_standardised_resid <- (resid(tax_alpha_model_spatial) - mean(resid(tax_alpha_model_spatial))) / sd(resid(tax_alpha_model_spatial))
+# Create standardised residuals plot
+plot(tax_alpha_standardised_pred, tax_alpha_standardised_resid, main = "Standardised 
+  taxonomic alpha residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
+abline(0, 0)
+abline(h = c(-2, 2), col = 'red')
+
+# Histogram of standardised residuals
+hist(tax_alpha_standardised_resid, freq = FALSE, main = 'Histogram of taxonomic alpha
+  model residuals', xlab = 'Residuals')
+curve(dnorm, add = TRUE)
+
+# Probability- probability plot of standardised residuals
+tax_alpha_prob_dist <- pnorm(tax_alpha_standardised_resid)
+plot(ppoints(length(tax_alpha_standardised_resid)), sort(tax_alpha_prob_dist), main = "PP Plot", 
+  xlab = "Observed Probability", ylab = "Expected Probability")
+abline(0, 1)
+```
+
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Test for spatial autocorrelation
+moran.test(units_merged_beta_subset$tax_alpha_div_resid, listw = units_merged_subset_lw, 
+  alternative = 'two.sided', zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$tax_alpha_div_resid, units_merged_subset_lw, 
+  alternative = 'greater', 999, zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$tax_alpha_div_resid, units_merged_subset_lw, 
+  alternative = 'less', 999, zero.policy = TRUE)
+
+# Plot variogram
+plot(variogram(tax_alpha_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
+  data = units_merged_beta_subset, cloud = FALSE), type = "b")
+# Print Moran plot
+moran_plot_func(units_merged_beta_subset, tax_alpha_div_resid)
+```
+
+Let's print a map to show local differences in residual values.
+```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
+# Plot residual values on map
+units_merged_beta_subset$id <- rownames(units_merged_beta_subset@data)
+units_merged_beta_subset_fort <- fortify(units_merged_beta_subset, region = 'unit')
+units_merged_beta_subset_fort <- left_join(units_merged_beta_subset_fort, 
+  units_merged_beta_subset@data)
+
+multiplot(plot_variable_map(units_merged_beta_subset_fort, 'tax_alpha_div_resid'), 
+  plot_lisa_map(units_merged_beta_subset, tax_alpha_div_resid), cols = 2)
+```
+
+##Taxonomic gamma diversity
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+f_tax_gamma_model <- formula(tax_gamma_div ~ 
     human_footprint + 
     forest_loss + 
     net_prim_prod + 
-    habitat_div +     
-    mean_temp #+ 
+    habitat_div + 
+    mean_temp + 
     #mean_prec + 
     #other_roads + 
     #x + 
     #y + 
-    #forest_point_freq
+    forest_point_freq
     )
-
-#phyl_model <- lm(f_phyl_model, data = phyl_model_variables)
-#phyl_model <- glm(f_phyl_model, family = Gamma(link = "inverse"), data = phyl_model_variables)
-phyl_model <- glm(f_phyl_model, family = Gamma(link = "identity"), data = phyl_model_variables)
-#phyl_model <- glm(f_phyl_model, family = Gamma(link = "log"), data = phyl_model_variables)
-AIC(phyl_model)
-moments::skewness(residuals(phyl_model))
-
-units_merged_beta_subset$phyl_div_resid <- residuals(phyl_model)
-phyl_model_summary <- summary(phyl_model)
-phyl_model_vif <- car::vif(phyl_model)
-phyl_model_summary
-phyl_model_vif
+#tax_gamma_model <- lm(f_tax_gamma_model, data = tax_model_variables)
+tax_gamma_model <- glm(f_tax_gamma_model, family = Gamma(link = "identity"), 
+  data = tax_model_variables)
+units_merged_beta_subset$tax_gamma_div_resid <- residuals(tax_gamma_model)
+tax_gamma_model_summary <- summary(tax_gamma_model)
+tax_gamma_model_vif <- car::vif(tax_gamma_model)
+tax_gamma_model_summary
+tax_gamma_model_vif
 ```
 
-##Check phylogenetic beta residuals
+##Check taxonomic gamma residuals
 ###1. Homogeneity of residuals
-```{r}
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Get standardised predicted and residual values
-phyl_standardised_pred <- (predict(phyl_model) - mean(predict(phyl_model))) / sd(predict(phyl_model))
-phyl_standardised_resid <- (resid(phyl_model) - mean(resid(phyl_model))) / sd(resid(phyl_model))
+tax_gamma_standardised_pred <- (predict(tax_gamma_model) - mean(predict(tax_gamma_model))) / sd(predict(tax_gamma_model))
+tax_gamma_standardised_resid <- (resid(tax_gamma_model) - mean(resid(tax_gamma_model))) / sd(resid(tax_gamma_model))
 # Create standardised residuals plot
-plot(phyl_standardised_pred, phyl_standardised_resid, main = "Standardised 
-  phylogenetic residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
+plot(tax_gamma_standardised_pred, tax_gamma_standardised_resid, main = "Standardised Taxonomic Gamma Residuals Plot", xlab = "Standardised Predicted Values", ylab = "Standardised Residuals")
 abline(0, 0)
 abline(h = c(-2, 2), col = 'red')
 ```
 
 ###2. Normality of residuals
-```{r, fig.show = 'hold'}
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Histogram of standardised residuals
-hist(phyl_standardised_resid, freq = FALSE, main = 'Histogram of phylogenetic 
-  model residuals', xlab = 'Residuals')
+hist(tax_gamma_standardised_resid, freq = FALSE, main = 'Histogram of taxonomic gamma residuals', xlab = 'Residuals')
 curve(dnorm, add = TRUE)
 
 # Probability- probability plot of standardised residuals
-phyl_prob_dist <- pnorm(phyl_standardised_resid)
-plot(ppoints(length(phyl_standardised_resid)), sort(phyl_prob_dist), main = "PP Plot", 
-  xlab = "Observed Probability", ylab = "Expected Probability")
+tax_gamma_prob_dist <- pnorm(tax_gamma_standardised_resid)
+plot(ppoints(length(tax_gamma_standardised_resid)), sort(tax_gamma_prob_dist), main = "PP Plot", xlab = "Observed Probability", ylab = "Expected Probability")
 abline(0, 1)
 ```
 
 ###3. Independence of residuals
-```{r, results = 'hold', fig.show = 'hold'}
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Test for spatial autocorrelation
-moran.test(units_merged_beta_subset$phyl_div_resid, listw = units_merged_subset_lw, 
+moran.test(units_merged_beta_subset$tax_gamma_div_resid, listw = units_merged_subset_lw, 
   alternative = 'two.sided', zero.policy = TRUE)
-moran.mc(units_merged_beta_subset$phyl_div_resid, units_merged_subset_lw, 
+moran.mc(units_merged_beta_subset$tax_gamma_div_resid, units_merged_subset_lw, 
   alternative = 'greater', 999, zero.policy = TRUE)
-moran.mc(units_merged_beta_subset$phyl_div_resid, units_merged_subset_lw, 
+moran.mc(units_merged_beta_subset$tax_gamma_div_resid, units_merged_subset_lw, 
   alternative = 'less', 999, zero.policy = TRUE)
 
 # Plot variogram
-plot(variogram(phyl_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
+plot(variogram(tax_gamma_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
   data = units_merged_beta_subset, cloud = FALSE), type = "b")
-
 # Print Moran plot
-moran_plot_func(units_merged_beta_subset, phyl_div_resid)
+moran_plot_func(units_merged_beta_subset, tax_gamma_div_resid)
 ```
 
 Let's print a map to show local differences in residual values.
-```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4, echo = FALSE}
+```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
 # Plot residual values on map
 units_merged_beta_subset$id <- rownames(units_merged_beta_subset@data)
 units_merged_beta_subset_fort <- fortify(units_merged_beta_subset, region = 'unit')
 units_merged_beta_subset_fort <- left_join(units_merged_beta_subset_fort, 
   units_merged_beta_subset@data)
 
-multiplot(plot_variable_map(units_merged_beta_subset_fort, 'phyl_div_resid'), 
-  plot_lisa_map(units_merged_beta_subset, phyl_div_resid), cols = 2)
+multiplot(plot_variable_map(units_merged_beta_subset_fort, 'tax_gamma_div_resid'), 
+  plot_lisa_map(units_merged_beta_subset, tax_gamma_div_resid), cols = 2)
 ```
 
-Oh no! We have clear spatial autocorrelation in the residuals of the model
-explaining phylogenetic beta diversity. We have two main options:
-1) We can take the spatial structure into account in the covariance structure of
-the model
-2) We can analyse phylogenetic beta diversity with a spatial regression model
-  
-A quick check of option 1 shows that it does not seem to remove the spatial
-autocorrelation of the residuals so we will go with option 2. Within the second
-option we have a further two options:
-a) Spatial lag models, where the spatial autocorrelation is assumed to arise
-from the influence of neighbouring points.
-b) Spatial error models, where spatial autocorrelation is assumed to arise
-from an unmeasured variable.
-  
-Due to the structure of our data (units of ~ 20 * 20km) we will assume that
-neighbouring units are two far away to have an impact so we will go with the
-error model. Note that we are not able to construct a GLM with spatial
-regression so we natural log- transform the independent variable to get normally
-distributed residuals. Note that the regression coefficients need to be back-
-transformed (e^beta = percent change in the response variable)
-```{r, echo = FALSE}
-f_phyl_model <- formula(log(phyl_beta_div) ~ 
+###Spatial model
+```{r, echo = FALSE, message = FALSE, results = 'hold'}
+tax_gamma_model_spatial <- spdep::errorsarlm(f_tax_gamma_model, data = tax_model_variables, listw = units_merged_subset_lw, 
+  etype = 'error', tol.solve = 1.0e-30, zero.policy = TRUE)
+
+units_merged_beta_subset$tax_gamma_div_resid <- residuals(tax_gamma_model_spatial)
+tax_gamma_model_summary <- summary(tax_gamma_model_spatial)
+# VIFs are not available for sarlm models so we use the VIFs from the OLS model
+tax_gamma_model_vif <- car::vif(tax_gamma_model)
+tax_gamma_model_summary
+tax_gamma_model_vif
+```
+
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Get standardised predicted and residual values
+tax_gamma_standardised_pred <- (predict(tax_gamma_model_spatial) - mean(predict(tax_gamma_model_spatial))) / sd(predict(tax_gamma_model_spatial))
+tax_gamma_standardised_resid <- (resid(tax_gamma_model_spatial) - mean(resid(tax_gamma_model_spatial))) / sd(resid(tax_gamma_model_spatial))
+# Create standardised residuals plot
+plot(tax_gamma_standardised_pred, tax_gamma_standardised_resid, main = "Standardised 
+  taxonomic gamma residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
+abline(0, 0)
+abline(h = c(-2, 2), col = 'red')
+
+# Histogram of standardised residuals
+hist(tax_gamma_standardised_resid, freq = FALSE, main = 'Histogram of taxonomic gamma
+  model residuals', xlab = 'Residuals')
+curve(dnorm, add = TRUE)
+
+# Probability- probability plot of standardised residuals
+tax_gamma_prob_dist <- pnorm(tax_gamma_standardised_resid)
+plot(ppoints(length(tax_gamma_standardised_resid)), sort(tax_gamma_prob_dist), main = "PP Plot", 
+  xlab = "Observed Probability", ylab = "Expected Probability")
+abline(0, 1)
+```
+
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Test for spatial autocorrelation
+moran.test(units_merged_beta_subset$tax_gamma_div_resid, listw = units_merged_subset_lw, 
+  alternative = 'two.sided', zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$tax_gamma_div_resid, units_merged_subset_lw, 
+  alternative = 'greater', 999, zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$tax_gamma_div_resid, units_merged_subset_lw, 
+  alternative = 'less', 999, zero.policy = TRUE)
+
+# Plot variogram
+plot(variogram(tax_gamma_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
+  data = units_merged_beta_subset, cloud = FALSE), type = "b")
+# Print Moran plot
+moran_plot_func(units_merged_beta_subset, tax_gamma_div_resid)
+```
+
+Let's print a map to show local differences in residual values.
+```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
+# Plot residual values on map
+units_merged_beta_subset$id <- rownames(units_merged_beta_subset@data)
+units_merged_beta_subset_fort <- fortify(units_merged_beta_subset, region = 'unit')
+units_merged_beta_subset_fort <- left_join(units_merged_beta_subset_fort, 
+  units_merged_beta_subset@data)
+
+multiplot(plot_variable_map(units_merged_beta_subset_fort, 'tax_gamma_div_resid'), 
+  plot_lisa_map(units_merged_beta_subset, tax_gamma_div_resid), cols = 2)
+```
+
+#Analyse functional diversity
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+func_model_variables <- dplyr::inner_join(units_merged_beta_subset@data[c('unit', 
+  'func_alpha_div', 'func_beta_div', 'func_gamma_div')], explanatory_variables)
+```
+
+##Functional beta diversity
+We construct a GLM with a Gamma distribution. More information can be found 
+[here](http://seananderson.ca/2014/04/08/gamma-glms.html)
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+f_func_beta_model <- formula(func_beta_div ~ 
+    human_footprint + 
+    forest_loss + 
+    net_prim_prod + 
+    habitat_div +     
+    mean_temp + 
+    #mean_prec + 
+    #other_roads + 
+    #x + 
+    #y + 
+    forest_point_freq
+    )
+func_beta_model <- lm(f_func_beta_model, data = func_model_variables)
+func_beta_model <- glm(f_func_beta_model, family = Gamma(link = "identity"), 
+  data = func_model_variables)
+#func_beta_model <- gamlss(f_func_beta_model, familiy = LOGNO(), data = func_model_variables)
+moments::skewness(residuals(func_beta_model))
+
+units_merged_beta_subset$func_beta_div_resid <- residuals(func_beta_model)
+func_beta_model_summary <- summary(func_beta_model)
+func_beta_model_vif <- car::vif(func_beta_model)
+func_beta_model_summary
+func_beta_model_vif
+```
+
+##Check functional beta residuals
+###1. Homogeneity of residuals
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Get standardised predicted and residual values
+func_beta_standardised_pred <- (predict(func_beta_model) - mean(predict(func_beta_model))) / sd(predict(func_beta_model))
+func_beta_standardised_resid <- (resid(func_beta_model) - mean(resid(func_beta_model))) / sd(resid(func_beta_model))
+# Create standardised residuals plot
+plot(func_beta_standardised_pred, func_beta_standardised_resid, main = "Standardised functional residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
+abline(0, 0)
+abline(h = c(-2, 2), col = 'red')
+```
+
+###2. Normality of residuals
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Histogram of standardised residuals
+hist(func_beta_standardised_resid, freq = FALSE, main = 'Histogram of functional beta model residuals', xlab = 'Residuals')
+curve(dnorm, add = TRUE)
+
+# Probability- probability plot of standardised residuals
+func_beta_prob_dist <- pnorm(func_beta_standardised_resid)
+plot(ppoints(length(func_beta_standardised_resid)), sort(func_beta_prob_dist), main = "PP Plot", xlab = "Observed Probability", ylab = "Expected Probability")
+abline(0, 1)
+```
+
+###3. Independence of residuals
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Test for spatial autocorrelation
+moran.test(units_merged_beta_subset$func_beta_div_resid, listw = units_merged_subset_lw, 
+  alternative = 'two.sided', zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$func_beta_div_resid, units_merged_subset_lw, 
+  alternative = 'greater', 999, zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$func_beta_div_resid, units_merged_subset_lw, 
+  alternative = 'less', 999, zero.policy = TRUE)
+
+# Plot variogram
+plot(variogram(func_beta_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
+  data = units_merged_beta_subset, cloud = FALSE), type = "b")
+# Print Moran plot
+moran_plot_func(units_merged_beta_subset, func_beta_div_resid)
+```
+
+Let's print a map to show local differences in residual values.
+```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
+# Plot residual values on map
+units_merged_beta_subset$id <- rownames(units_merged_beta_subset@data)
+units_merged_beta_subset_fort <- fortify(units_merged_beta_subset, region = 'unit')
+units_merged_beta_subset_fort <- left_join(units_merged_beta_subset_fort, 
+  units_merged_beta_subset@data)
+
+multiplot(plot_variable_map(units_merged_beta_subset_fort, 'func_beta_div_resid'), 
+  plot_lisa_map(units_merged_beta_subset, func_beta_div_resid), cols = 2)
+```
+
+##Functional alpha diversity
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+f_func_alpha_model <- formula(func_alpha_div ~ 
     human_footprint + 
     forest_loss + 
     net_prim_prod + 
@@ -1539,59 +1894,125 @@ f_phyl_model <- formula(log(phyl_beta_div) ~
     #y + 
     #forest_point_freq
     )
-phyl_model <- lm(f_phyl_model, data = phyl_model_variables)
-phyl_model_spatial <- spdep::errorsarlm(f_phyl_model, data = phyl_model_variables, 
-  listw = units_merged_subset_lw, etype = 'error', tol.solve = 1.0e-30, zero.policy = TRUE)
+func_alpha_model <- lm(f_func_alpha_model, data = func_model_variables)
+#func_alpha_model <- glm(f_func_alpha_model, family = Gamma(link = "identity"), 
+#  data = func_model_variables)
+moments::skewness(residuals(func_alpha_model))
 
-units_merged_beta_subset$phyl_div_resid <- residuals(phyl_model_spatial)
-phyl_model_summary <- summary(phyl_model_spatial)
+units_merged_beta_subset$func_alpha_div_resid <- residuals(func_alpha_model)
+func_alpha_model_summary <- summary(func_alpha_model)
+func_alpha_model_vif <- car::vif(func_alpha_model)
+func_alpha_model_summary
+func_alpha_model_vif
+```
+
+##Check functional alpha residuals
+###1. Homogeneity of residuals
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Get standardised predicted and residual values
+func_alpha_standardised_pred <- (predict(func_alpha_model) - mean(predict(func_alpha_model))) / sd(predict(func_alpha_model))
+func_alpha_standardised_resid <- (resid(func_alpha_model) - mean(resid(func_alpha_model))) / sd(resid(func_alpha_model))
+# Create standardised residuals plot
+plot(func_alpha_standardised_pred, func_alpha_standardised_resid, main = "Standardised functional alpha residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
+abline(0, 0)
+abline(h = c(-2, 2), col = 'red')
+```
+
+###2. Normality of residuals
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Histogram of standardised residuals
+hist(func_alpha_standardised_resid, freq = FALSE, main = 'Histogram of functional alpha model residuals', xlab = 'Residuals')
+curve(dnorm, add = TRUE)
+
+# Probability- probability plot of standardised residuals
+func_alpha_prob_dist <- pnorm(func_alpha_standardised_resid)
+plot(ppoints(length(func_alpha_standardised_resid)), sort(func_alpha_prob_dist), main = "PP Plot", xlab = "Observed Probability", ylab = "Expected Probability")
+abline(0, 1)
+```
+
+###3. Independence of residuals
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Test for spatial autocorrelation
+moran.test(units_merged_beta_subset$func_alpha_div_resid, listw = units_merged_subset_lw, 
+  alternative = 'two.sided', zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$func_alpha_div_resid, units_merged_subset_lw, 
+  alternative = 'greater', 999, zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$func_alpha_div_resid, units_merged_subset_lw, 
+  alternative = 'less', 999, zero.policy = TRUE)
+
+# Plot variogram
+plot(variogram(func_alpha_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
+  data = units_merged_beta_subset, cloud = FALSE), type = "b")
+# Print Moran plot
+moran_plot_func(units_merged_beta_subset, func_alpha_div_resid)
+```
+
+Let's print a map to show local differences in residual values.
+```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
+# Plot residual values on map
+units_merged_beta_subset$id <- rownames(units_merged_beta_subset@data)
+units_merged_beta_subset_fort <- fortify(units_merged_beta_subset, region = 'unit')
+units_merged_beta_subset_fort <- left_join(units_merged_beta_subset_fort, 
+  units_merged_beta_subset@data)
+
+multiplot(plot_variable_map(units_merged_beta_subset_fort, 'func_alpha_div_resid'), 
+  plot_lisa_map(units_merged_beta_subset, func_alpha_div_resid), cols = 2)
+```
+
+###Spatial model
+```{r, echo = FALSE, message = FALSE, results = 'hold'}
+func_alpha_model_spatial <- spdep::errorsarlm(f_func_alpha_model, data = func_model_variables, 
+  listw = units_merged_subset_lw, etype = 'error', tol.solve = 1.0e-30, zero.policy = TRUE)
+moments::skewness(residuals(func_alpha_model_spatial))
+
+units_merged_beta_subset$func_alpha_div_resid <- residuals(func_alpha_model_spatial)
+func_alpha_model_summary <- summary(func_alpha_model_spatial)
 # VIFs are not available for sarlm models so we use the VIFs from the OLS model
-phyl_model_vif <- car::vif(phyl_model)
-phyl_model_summary
-phyl_model_vif
+func_alpha_model_vif <- car::vif(func_alpha_model)
+func_alpha_model_summary
+func_alpha_model_vif
 
 # Show by how much phylogenetic diversity will change (%) with a one unit increase
 # in the explanatory variable
-lapply(phyl_model_summary$coefficients, exp)
+#lapply(func_alpha_model_summary$coefficients, exp)
 ```
 
-```{r, results = 'hold', fig.show = 'hold'}
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Get standardised predicted and residual values
-phyl_standardised_pred <- (predict(phyl_model_spatial) - mean(predict(phyl_model_spatial))) / sd(predict(phyl_model_spatial))
-phyl_standardised_resid <- (resid(phyl_model_spatial) - mean(resid(phyl_model_spatial))) / sd(resid(phyl_model_spatial))
+func_alpha_standardised_pred <- (predict(func_alpha_model_spatial) - mean(predict(func_alpha_model_spatial))) / sd(predict(func_alpha_model_spatial))
+func_alpha_standardised_resid <- (resid(func_alpha_model_spatial) - mean(resid(func_alpha_model_spatial))) / sd(resid(func_alpha_model_spatial))
 # Create standardised residuals plot
-plot(phyl_standardised_pred, phyl_standardised_resid, main = "Standardised 
-  phylogenetic residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
+plot(func_alpha_standardised_pred, func_alpha_standardised_resid, main = "Standardised 
+  functional alpha residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
 abline(0, 0)
 abline(h = c(-2, 2), col = 'red')
 
 # Histogram of standardised residuals
-hist(phyl_standardised_resid, freq = FALSE, main = 'Histogram of phylogenetic 
+hist(func_alpha_standardised_resid, freq = FALSE, main = 'Histogram of functional alpha  
   model residuals', xlab = 'Residuals')
 curve(dnorm, add = TRUE)
 
 # Probability- probability plot of standardised residuals
-phyl_prob_dist <- pnorm(phyl_standardised_resid)
-plot(ppoints(length(phyl_standardised_resid)), sort(phyl_prob_dist), main = "PP Plot", 
+func_alpha_prob_dist <- pnorm(func_alpha_standardised_resid)
+plot(ppoints(length(func_alpha_standardised_resid)), sort(func_alpha_prob_dist), main = "PP Plot", 
   xlab = "Observed Probability", ylab = "Expected Probability")
 abline(0, 1)
 ```
 
-```{r, results = 'hold', fig.show = 'hold'}
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Test for spatial autocorrelation
-moran.test(units_merged_beta_subset$phyl_div_resid, listw = units_merged_subset_lw, 
+moran.test(units_merged_beta_subset$func_alpha_div_resid, listw = units_merged_subset_lw, 
   alternative = 'two.sided', zero.policy = TRUE)
-moran.mc(units_merged_beta_subset$phyl_div_resid, units_merged_subset_lw, 
+moran.mc(units_merged_beta_subset$func_alpha_div_resid, units_merged_subset_lw, 
   alternative = 'greater', 999, zero.policy = TRUE)
-moran.mc(units_merged_beta_subset$phyl_div_resid, units_merged_subset_lw, 
+moran.mc(units_merged_beta_subset$func_alpha_div_resid, units_merged_subset_lw, 
   alternative = 'less', 999, zero.policy = TRUE)
 
 # Plot variogram
-plot(variogram(phyl_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
+plot(variogram(func_alpha_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
   data = units_merged_beta_subset, cloud = FALSE), type = "b")
-
 # Print Moran plot
-moran_plot_func(units_merged_beta_subset, phyl_div_resid)
+moran_plot_func(units_merged_beta_subset, func_alpha_div_resid)
 ```
 
 Let's print a map to show local differences in residual values.
@@ -1602,8 +2023,620 @@ units_merged_beta_subset_fort <- fortify(units_merged_beta_subset, region = 'uni
 units_merged_beta_subset_fort <- left_join(units_merged_beta_subset_fort, 
   units_merged_beta_subset@data)
 
-multiplot(plot_variable_map(units_merged_beta_subset_fort, 'phyl_div_resid'), 
-  plot_lisa_map(units_merged_beta_subset, phyl_div_resid), cols = 2)
+multiplot(plot_variable_map(units_merged_beta_subset_fort, 'func_alpha_div_resid'), 
+  plot_lisa_map(units_merged_beta_subset, func_alpha_div_resid), cols = 2)
+```
+
+##Functional gamma diversity
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+f_func_gamma_model <- formula(func_gamma_div ~ 
+    human_footprint + 
+    forest_loss + 
+    net_prim_prod + 
+    habitat_div +     
+    mean_temp + 
+    #mean_prec + 
+    #other_roads + 
+    #x + 
+    #y + 
+    forest_point_freq
+    )
+func_gamma_model <- lm(f_func_gamma_model, data = func_model_variables)
+#func_gamma_model <- glm(f_func_gamma_model, family = Gamma(link = "identity"), 
+#  data = func_model_variables)
+moments::skewness(residuals(func_gamma_model))
+
+units_merged_beta_subset$func_gamma_div_resid <- residuals(func_gamma_model)
+func_gamma_model_summary <- summary(func_gamma_model)
+func_gamma_model_vif <- car::vif(func_gamma_model)
+func_gamma_model_summary
+func_gamma_model_vif
+```
+
+##Check functional gamma residuals
+###1. Homogeneity of residuals
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Get standardised predicted and residual values
+func_gamma_standardised_pred <- (predict(func_gamma_model) - mean(predict(func_gamma_model))) / sd(predict(func_gamma_model))
+func_gamma_standardised_resid <- (resid(func_gamma_model) - mean(resid(func_gamma_model))) / sd(resid(func_gamma_model))
+# Create standardised residuals plot
+plot(func_gamma_standardised_pred, func_gamma_standardised_resid, main = "Standardised functional gamma residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
+abline(0, 0)
+abline(h = c(-2, 2), col = 'red')
+```
+
+###2. Normality of residuals
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Histogram of standardised residuals
+hist(func_gamma_standardised_resid, freq = FALSE, main = 'Histogram of functional gamma model residuals', xlab = 'Residuals')
+curve(dnorm, add = TRUE)
+
+# Probability- probability plot of standardised residuals
+func_gamma_prob_dist <- pnorm(func_gamma_standardised_resid)
+plot(ppoints(length(func_gamma_standardised_resid)), sort(func_gamma_prob_dist), main = "PP Plot", xlab = "Observed Probability", ylab = "Expected Probability")
+abline(0, 1)
+```
+
+###3. Independence of residuals
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Test for spatial autocorrelation
+moran.test(units_merged_beta_subset$func_gamma_div_resid, listw = units_merged_subset_lw, 
+  alternative = 'two.sided', zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$func_gamma_div_resid, units_merged_subset_lw, 
+  alternative = 'greater', 999, zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$func_gamma_div_resid, units_merged_subset_lw, 
+  alternative = 'less', 999, zero.policy = TRUE)
+
+# Plot variogram
+plot(variogram(func_gamma_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
+  data = units_merged_beta_subset, cloud = FALSE), type = "b")
+# Print Moran plot
+moran_plot_func(units_merged_beta_subset, func_gamma_div_resid)
+```
+
+Let's print a map to show local differences in residual values.
+```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
+# Plot residual values on map
+units_merged_beta_subset$id <- rownames(units_merged_beta_subset@data)
+units_merged_beta_subset_fort <- fortify(units_merged_beta_subset, region = 'unit')
+units_merged_beta_subset_fort <- left_join(units_merged_beta_subset_fort, 
+  units_merged_beta_subset@data)
+
+multiplot(plot_variable_map(units_merged_beta_subset_fort, 'func_gamma_div_resid'), 
+  plot_lisa_map(units_merged_beta_subset, func_gamma_div_resid), cols = 2)
+```
+
+###Spatial model
+```{r, echo = FALSE, message = FALSE, results = 'hold'}
+func_gamma_model_spatial <- spdep::errorsarlm(f_func_gamma_model, data = func_model_variables, 
+  listw = units_merged_subset_lw, etype = 'error', tol.solve = 1.0e-30, zero.policy = TRUE)
+moments::skewness(residuals(func_gamma_model_spatial))
+
+units_merged_beta_subset$func_gamma_div_resid <- residuals(func_gamma_model_spatial)
+func_gamma_model_summary <- summary(func_gamma_model_spatial)
+# VIFs are not available for sarlm models so we use the VIFs from the OLS model
+func_gamma_model_vif <- car::vif(func_gamma_model)
+func_gamma_model_summary
+func_gamma_model_vif
+```
+
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Get standardised predicted and residual values
+func_gamma_standardised_pred <- (predict(func_gamma_model_spatial) - mean(predict(func_gamma_model_spatial))) / sd(predict(func_gamma_model_spatial))
+func_gamma_standardised_resid <- (resid(func_gamma_model_spatial) - mean(resid(func_gamma_model_spatial))) / sd(resid(func_gamma_model_spatial))
+# Create standardised residuals plot
+plot(func_gamma_standardised_pred, func_gamma_standardised_resid, main = "Standardised 
+  functional gamma residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
+abline(0, 0)
+abline(h = c(-2, 2), col = 'red')
+
+# Histogram of standardised residuals
+hist(func_gamma_standardised_resid, freq = FALSE, main = 'Histogram of functional gamma  
+  model residuals', xlab = 'Residuals')
+curve(dnorm, add = TRUE)
+
+# Probability- probability plot of standardised residuals
+func_gamma_prob_dist <- pnorm(func_gamma_standardised_resid)
+plot(ppoints(length(func_gamma_standardised_resid)), sort(func_gamma_prob_dist), main = "PP Plot", 
+  xlab = "Observed Probability", ylab = "Expected Probability")
+abline(0, 1)
+```
+
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Test for spatial autocorrelation
+moran.test(units_merged_beta_subset$func_gamma_div_resid, listw = units_merged_subset_lw, 
+  alternative = 'two.sided', zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$func_gamma_div_resid, units_merged_subset_lw, 
+  alternative = 'greater', 999, zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$func_gamma_div_resid, units_merged_subset_lw, 
+  alternative = 'less', 999, zero.policy = TRUE)
+
+# Plot variogram
+plot(variogram(func_gamma_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
+  data = units_merged_beta_subset, cloud = FALSE), type = "b")
+# Print Moran plot
+moran_plot_func(units_merged_beta_subset, func_gamma_div_resid)
+```
+
+Let's print a map to show local differences in residual values.
+```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4, echo = FALSE}
+# Plot residual values on map
+units_merged_beta_subset$id <- rownames(units_merged_beta_subset@data)
+units_merged_beta_subset_fort <- fortify(units_merged_beta_subset, region = 'unit')
+units_merged_beta_subset_fort <- left_join(units_merged_beta_subset_fort, 
+  units_merged_beta_subset@data)
+
+multiplot(plot_variable_map(units_merged_beta_subset_fort, 'func_gamma_div_resid'), 
+  plot_lisa_map(units_merged_beta_subset, func_gamma_div_resid), cols = 2)
+```
+
+#Analyse phylogenetic diversity
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+phyl_model_variables <- dplyr::inner_join(units_merged_beta_subset@data[c('unit', 
+  'phyl_beta_div', 'phyl_alpha_div', 'phyl_gamma_div')], explanatory_variables)
+```
+
+##Phylogenetic beta diversity
+We construct a GLM with a Gamma distribution. More information can be found 
+[here](http://seananderson.ca/2014/04/08/gamma-glms.html)
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+f_phyl_beta_model <- formula(phyl_beta_div ~ 
+    human_footprint + 
+    forest_loss + 
+    net_prim_prod + 
+    habitat_div +     
+    mean_temp + 
+    #mean_prec + 
+    #other_roads + 
+    #x + 
+    #y + 
+    forest_point_freq
+    )
+
+#phyl_beta_model <- lm(f_phyl_beta_model, data = phyl_model_variables)
+#AIC(phyl_beta_model)
+#moments::skewness(residuals(phyl_beta_model))
+#phyl_beta_model <- glm(f_phyl_beta_model, family = Gamma(link = "inverse"), data = phyl_model_variables)
+#AIC(phyl_beta_model)
+#moments::skewness(residuals(phyl_beta_model))
+phyl_beta_model <- glm(f_phyl_beta_model, family = Gamma(link = "identity"), data = phyl_model_variables)
+AIC(phyl_beta_model)
+moments::skewness(residuals(phyl_beta_model))
+#phyl_beta_model <- glm(f_phyl_beta_model, family = Gamma(link = "log"), data = phyl_model_variables)
+#AIC(phyl_beta_model)
+#moments::skewness(residuals(phyl_beta_model))
+
+units_merged_beta_subset$phyl_beta_div_resid <- residuals(phyl_beta_model)
+phyl_beta_model_summary <- summary(phyl_beta_model)
+phyl_beta_model_vif <- car::vif(phyl_beta_model)
+phyl_beta_model_summary
+phyl_beta_model_vif
+```
+
+##Check phylogenetic beta residuals
+###1. Homogeneity of residuals
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Get standardised predicted and residual values
+phyl_beta_standardised_pred <- (predict(phyl_beta_model) - mean(predict(phyl_beta_model))) / sd(predict(phyl_beta_model))
+phyl_beta_standardised_resid <- (resid(phyl_beta_model) - mean(resid(phyl_beta_model))) / sd(resid(phyl_beta_model))
+# Create standardised residuals plot
+plot(phyl_beta_standardised_pred, phyl_beta_standardised_resid, main = "Standardised 
+  phylogenetic beta residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
+abline(0, 0)
+abline(h = c(-2, 2), col = 'red')
+```
+
+###2. Normality of residuals
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Histogram of standardised residuals
+hist(phyl_beta_standardised_resid, freq = FALSE, main = 'Histogram of phylogenetic beta 
+  model residuals', xlab = 'Residuals')
+curve(dnorm, add = TRUE)
+
+# Probability- probability plot of standardised residuals
+phyl_beta_prob_dist <- pnorm(phyl_beta_standardised_resid)
+plot(ppoints(length(phyl_beta_standardised_resid)), sort(phyl_beta_prob_dist), main = "PP Plot", 
+  xlab = "Observed Probability", ylab = "Expected Probability")
+abline(0, 1)
+```
+
+###3. Independence of residuals
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Test for spatial autocorrelation
+moran.test(units_merged_beta_subset$phyl_beta_div_resid, listw = units_merged_subset_lw, 
+  alternative = 'two.sided', zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$phyl_beta_div_resid, units_merged_subset_lw, 
+  alternative = 'greater', 999, zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$phyl_beta_div_resid, units_merged_subset_lw, 
+  alternative = 'less', 999, zero.policy = TRUE)
+
+# Plot variogram
+plot(variogram(phyl_beta_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
+  data = units_merged_beta_subset, cloud = FALSE), type = "b")
+# Print Moran plot
+moran_plot_func(units_merged_beta_subset, phyl_beta_div_resid)
+```
+
+Let's print a map to show local differences in residual values.
+```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4, echo = FALSE}
+# Plot residual values on map
+units_merged_beta_subset$id <- rownames(units_merged_beta_subset@data)
+units_merged_beta_subset_fort <- fortify(units_merged_beta_subset, region = 'unit')
+units_merged_beta_subset_fort <- left_join(units_merged_beta_subset_fort, 
+  units_merged_beta_subset@data)
+
+multiplot(plot_variable_map(units_merged_beta_subset_fort, 'phyl_beta_div_resid'), 
+  plot_lisa_map(units_merged_beta_subset, phyl_beta_div_resid), cols = 2)
+```
+
+###Spatial model
+```{r, echo = FALSE, message = FALSE, results = 'hold', eval = FALSE}
+f_phyl_beta_model <- formula(log(phyl_beta_div) ~ 
+    human_footprint + 
+    forest_loss + 
+    net_prim_prod + 
+    habitat_div +     
+    mean_temp + 
+    #mean_prec + 
+    #other_roads + 
+    #x + 
+    #y + 
+    forest_point_freq
+    )
+phyl_beta_model <- lm(f_phyl_beta_model, data = phyl_model_variables)
+phyl_beta_model_spatial <- spdep::errorsarlm(f_phyl_beta_model, data = phyl_model_variables, 
+  listw = units_merged_subset_lw, etype = 'error', tol.solve = 1.0e-30, zero.policy = TRUE)
+
+units_merged_beta_subset$phyl_beta_div_resid <- residuals(phyl_beta_model_spatial)
+phyl_beta_model_summary <- summary(phyl_beta_model_spatial)
+# VIFs are not available for sarlm models so we use the VIFs from the OLS model
+phyl_beta_model_vif <- car::vif(phyl_beta_model)
+phyl_beta_model_summary
+phyl_beta_model_vif
+
+# Show by how much phylogenetic diversity will change (%) with a one unit increase
+# in the explanatory variable
+lapply(phyl_beta_model_summary$coefficients, exp)
+```
+
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE, eval = FALSE}
+# Get standardised predicted and residual values
+phyl_beta_standardised_pred <- (predict(phyl_beta_model_spatial) - mean(predict(phyl_beta_model_spatial))) / sd(predict(phyl_beta_model_spatial))
+phyl_beta_standardised_resid <- (resid(phyl_beta_model_spatial) - mean(resid(phyl_beta_model_spatial))) / sd(resid(phyl_beta_model_spatial))
+# Create standardised residuals plot
+plot(phyl_beta_standardised_pred, phyl_beta_standardised_resid, main = "Standardised 
+  phylogenetic beta residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
+abline(0, 0)
+abline(h = c(-2, 2), col = 'red')
+
+# Histogram of standardised residuals
+hist(phyl_beta_standardised_resid, freq = FALSE, main = 'Histogram of phylogenetic beta 
+  model residuals', xlab = 'Residuals')
+curve(dnorm, add = TRUE)
+
+# Probability- probability plot of standardised residuals
+phyl_beta_prob_dist <- pnorm(phyl_beta_standardised_resid)
+plot(ppoints(length(phyl_beta_standardised_resid)), sort(phyl_beta_prob_dist), main = "PP Plot", 
+  xlab = "Observed Probability", ylab = "Expected Probability")
+abline(0, 1)
+```
+
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE, eval = FALSE}
+# Test for spatial autocorrelation
+moran.test(units_merged_beta_subset$phyl_beta_div_resid, listw = units_merged_subset_lw, 
+  alternative = 'two.sided', zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$phyl_beta_div_resid, units_merged_subset_lw, 
+  alternative = 'greater', 999, zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$phyl_beta_div_resid, units_merged_subset_lw, 
+  alternative = 'less', 999, zero.policy = TRUE)
+
+# Plot variogram
+plot(variogram(phyl_beta_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
+  data = units_merged_beta_subset, cloud = FALSE), type = "b")
+# Print Moran plot
+moran_plot_func(units_merged_beta_subset, phyl_beta_div_resid)
+```
+
+Let's print a map to show local differences in residual values.
+```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4, echo = FALSE, eval = FALSE}
+# Plot residual values on map
+units_merged_beta_subset$id <- rownames(units_merged_beta_subset@data)
+units_merged_beta_subset_fort <- fortify(units_merged_beta_subset, region = 'unit')
+units_merged_beta_subset_fort <- left_join(units_merged_beta_subset_fort, 
+  units_merged_beta_subset@data)
+
+multiplot(plot_variable_map(units_merged_beta_subset_fort, 'phyl_beta_div_resid'), 
+  plot_lisa_map(units_merged_beta_subset, phyl_beta_div_resid), cols = 2)
+```
+
+##Phylogenetic alpha diversity
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+f_phyl_alpha_model <- formula(phyl_alpha_div ~ 
+    human_footprint + 
+    forest_loss + 
+    net_prim_prod + 
+    habitat_div +     
+    mean_temp #+ 
+    #mean_prec + 
+    #other_roads + 
+    #x + 
+    #y + 
+    #forest_point_freq
+    )
+
+phyl_alpha_model <- lm(f_phyl_alpha_model, data = phyl_model_variables)
+#AIC(phyl_alpha_model)
+#moments::skewness(residuals(phyl_alpha_model))
+
+units_merged_beta_subset$phyl_alpha_div_resid <- residuals(phyl_alpha_model)
+phyl_alpha_model_summary <- summary(phyl_alpha_model)
+phyl_alpha_model_vif <- car::vif(phyl_alpha_model)
+phyl_alpha_model_summary
+phyl_alpha_model_vif
+```
+
+##Check phylogenetic alpha residuals
+###1. Homogeneity of residuals
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Get standardised predicted and residual values
+phyl_alpha_standardised_pred <- (predict(phyl_alpha_model) - mean(predict(phyl_alpha_model))) / sd(predict(phyl_alpha_model))
+phyl_alpha_standardised_resid <- (resid(phyl_alpha_model) - mean(resid(phyl_alpha_model))) / sd(resid(phyl_alpha_model))
+# Create standardised residuals plot
+plot(phyl_alpha_standardised_pred, phyl_alpha_standardised_resid, main = "Standardised 
+  phylogenetic alpha residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
+abline(0, 0)
+abline(h = c(-2, 2), col = 'red')
+```
+
+###2. Normality of residuals
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Histogram of standardised residuals
+hist(phyl_alpha_standardised_resid, freq = FALSE, main = 'Histogram of phylogenetic beta 
+  model residuals', xlab = 'Residuals')
+curve(dnorm, add = TRUE)
+
+# Probability- probability plot of standardised residuals
+phyl_alpha_prob_dist <- pnorm(phyl_alpha_standardised_resid)
+plot(ppoints(length(phyl_alpha_standardised_resid)), sort(phyl_alpha_prob_dist), main = "PP Plot", 
+  xlab = "Observed Probability", ylab = "Expected Probability")
+abline(0, 1)
+```
+
+###3. Independence of residuals
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Test for spatial autocorrelation
+moran.test(units_merged_beta_subset$phyl_alpha_div_resid, listw = units_merged_subset_lw, 
+  alternative = 'two.sided', zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$phyl_alpha_div_resid, units_merged_subset_lw, 
+  alternative = 'greater', 999, zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$phyl_alpha_div_resid, units_merged_subset_lw, 
+  alternative = 'less', 999, zero.policy = TRUE)
+
+# Plot variogram
+plot(variogram(phyl_alpha_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
+  data = units_merged_beta_subset, cloud = FALSE), type = "b")
+# Print Moran plot
+moran_plot_func(units_merged_beta_subset, phyl_alpha_div_resid)
+```
+
+Let's print a map to show local differences in residual values.
+```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4, echo = FALSE}
+# Plot residual values on map
+units_merged_beta_subset$id <- rownames(units_merged_beta_subset@data)
+units_merged_beta_subset_fort <- fortify(units_merged_beta_subset, region = 'unit')
+units_merged_beta_subset_fort <- left_join(units_merged_beta_subset_fort, 
+  units_merged_beta_subset@data)
+
+multiplot(plot_variable_map(units_merged_beta_subset_fort, 'phyl_alpha_div_resid'), 
+  plot_lisa_map(units_merged_beta_subset, phyl_alpha_div_resid), cols = 2)
+```
+
+###Spatial model
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+phyl_alpha_model_spatial <- spdep::errorsarlm(f_phyl_alpha_model, data = phyl_model_variables, 
+  listw = units_merged_subset_lw, etype = 'error', tol.solve = 1.0e-30, zero.policy = TRUE)
+
+units_merged_beta_subset$phyl_alpha_div_resid <- residuals(phyl_alpha_model_spatial)
+phyl_alpha_model_summary <- summary(phyl_alpha_model_spatial)
+# VIFs are not available for sarlm models so we use the VIFs from the OLS model
+phyl_alpha_model_vif <- car::vif(phyl_alpha_model)
+phyl_alpha_model_summary
+phyl_alpha_model_vif
+```
+
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Get standardised predicted and residual values
+phyl_alpha_standardised_pred <- (predict(phyl_alpha_model_spatial) - mean(predict(phyl_alpha_model_spatial))) / sd(predict(phyl_alpha_model_spatial))
+phyl_alpha_standardised_resid <- (resid(phyl_alpha_model_spatial) - mean(resid(phyl_alpha_model_spatial))) / sd(resid(phyl_alpha_model_spatial))
+# Create standardised residuals plot
+plot(phyl_alpha_standardised_pred, phyl_alpha_standardised_resid, main = "Standardised 
+  phylogenetic alpha residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
+abline(0, 0)
+abline(h = c(-2, 2), col = 'red')
+
+# Histogram of standardised residuals
+hist(phyl_alpha_standardised_resid, freq = FALSE, main = 'Histogram of phylogenetic alpha 
+  model residuals', xlab = 'Residuals')
+curve(dnorm, add = TRUE)
+
+# Probability- probability plot of standardised residuals
+phyl_alpha_prob_dist <- pnorm(phyl_alpha_standardised_resid)
+plot(ppoints(length(phyl_alpha_standardised_resid)), sort(phyl_alpha_prob_dist), main = "PP Plot", 
+  xlab = "Observed Probability", ylab = "Expected Probability")
+abline(0, 1)
+```
+
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Test for spatial autocorrelation
+moran.test(units_merged_beta_subset$phyl_alpha_div_resid, listw = units_merged_subset_lw, 
+  alternative = 'two.sided', zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$phyl_alpha_div_resid, units_merged_subset_lw, 
+  alternative = 'greater', 999, zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$phyl_alpha_div_resid, units_merged_subset_lw, 
+  alternative = 'less', 999, zero.policy = TRUE)
+
+# Plot variogram
+plot(variogram(phyl_alpha_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
+  data = units_merged_beta_subset, cloud = FALSE), type = "b")
+# Print Moran plot
+moran_plot_func(units_merged_beta_subset, phyl_alpha_div_resid)
+```
+
+Let's print a map to show local differences in residual values.
+```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4, echo = FALSE}
+# Plot residual values on map
+units_merged_beta_subset$id <- rownames(units_merged_beta_subset@data)
+units_merged_beta_subset_fort <- fortify(units_merged_beta_subset, region = 'unit')
+units_merged_beta_subset_fort <- left_join(units_merged_beta_subset_fort, 
+  units_merged_beta_subset@data)
+
+multiplot(plot_variable_map(units_merged_beta_subset_fort, 'phyl_alpha_div_resid'), 
+  plot_lisa_map(units_merged_beta_subset, phyl_alpha_div_resid), cols = 2)
+```
+
+##Phylogenetic gamma diversity
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+f_phyl_gamma_model <- formula(phyl_gamma_div ~ 
+    human_footprint + 
+    forest_loss + 
+    net_prim_prod + 
+    habitat_div +     
+    mean_temp + 
+    #mean_prec + 
+    #other_roads + 
+    #x + 
+    #y + 
+    forest_point_freq
+    )
+
+phyl_gamma_model <- lm(f_phyl_gamma_model, data = phyl_model_variables)
+#AIC(phyl_gamma_model)
+#moments::skewness(residuals(phyl_gamma_model))
+
+units_merged_beta_subset$phyl_gamma_div_resid <- residuals(phyl_gamma_model)
+phyl_gamma_model_summary <- summary(phyl_gamma_model)
+phyl_gamma_model_vif <- car::vif(phyl_gamma_model)
+phyl_gamma_model_summary
+phyl_gamma_model_vif
+```
+
+##Check phylogenetic gamma residuals
+###1. Homogeneity of residuals
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Get standardised predicted and residual values
+phyl_gamma_standardised_pred <- (predict(phyl_gamma_model) - mean(predict(phyl_gamma_model))) / sd(predict(phyl_gamma_model))
+phyl_gamma_standardised_resid <- (resid(phyl_gamma_model) - mean(resid(phyl_gamma_model))) / sd(resid(phyl_gamma_model))
+# Create standardised residuals plot
+plot(phyl_gamma_standardised_pred, phyl_gamma_standardised_resid, main = "Standardised 
+  phylogenetic gamma residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
+abline(0, 0)
+abline(h = c(-2, 2), col = 'red')
+```
+
+###2. Normality of residuals
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Histogram of standardised residuals
+hist(phyl_gamma_standardised_resid, freq = FALSE, main = 'Histogram of phylogenetic gamma 
+  model residuals', xlab = 'Residuals')
+curve(dnorm, add = TRUE)
+
+# Probability- probability plot of standardised residuals
+phyl_gamma_prob_dist <- pnorm(phyl_gamma_standardised_resid)
+plot(ppoints(length(phyl_gamma_standardised_resid)), sort(phyl_gamma_prob_dist), main = "PP Plot", 
+  xlab = "Observed Probability", ylab = "Expected Probability")
+abline(0, 1)
+```
+
+###3. Independence of residuals
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Test for spatial autocorrelation
+moran.test(units_merged_beta_subset$phyl_gamma_div_resid, listw = units_merged_subset_lw, 
+  alternative = 'two.sided', zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$phyl_gamma_div_resid, units_merged_subset_lw, 
+  alternative = 'greater', 999, zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$phyl_gamma_div_resid, units_merged_subset_lw, 
+  alternative = 'less', 999, zero.policy = TRUE)
+
+# Plot variogram
+plot(variogram(phyl_gamma_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
+  data = units_merged_beta_subset, cloud = FALSE), type = "b")
+# Print Moran plot
+moran_plot_func(units_merged_beta_subset, phyl_gamma_div_resid)
+```
+
+Let's print a map to show local differences in residual values.
+```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4, echo = FALSE}
+# Plot residual values on map
+units_merged_beta_subset$id <- rownames(units_merged_beta_subset@data)
+units_merged_beta_subset_fort <- fortify(units_merged_beta_subset, region = 'unit')
+units_merged_beta_subset_fort <- left_join(units_merged_beta_subset_fort, 
+  units_merged_beta_subset@data)
+
+multiplot(plot_variable_map(units_merged_beta_subset_fort, 'phyl_gamma_div_resid'), 
+  plot_lisa_map(units_merged_beta_subset, phyl_gamma_div_resid), cols = 2)
+```
+
+###Spatial model
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+phyl_gamma_model_spatial <- spdep::errorsarlm(f_phyl_gamma_model, data = phyl_model_variables, 
+  listw = units_merged_subset_lw, etype = 'error', tol.solve = 1.0e-30, zero.policy = TRUE)
+
+units_merged_beta_subset$phyl_gamma_div_resid <- residuals(phyl_gamma_model_spatial)
+phyl_gamma_model_summary <- summary(phyl_gamma_model_spatial)
+# VIFs are not available for sarlm models so we use the VIFs from the OLS model
+phyl_gamma_model_vif <- car::vif(phyl_gamma_model)
+phyl_gamma_model_summary
+phyl_gamma_model_vif
+```
+
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Get standardised predicted and residual values
+phyl_gamma_standardised_pred <- (predict(phyl_gamma_model_spatial) - mean(predict(phyl_gamma_model_spatial))) / sd(predict(phyl_gamma_model_spatial))
+phyl_gamma_standardised_resid <- (resid(phyl_gamma_model_spatial) - mean(resid(phyl_gamma_model_spatial))) / sd(resid(phyl_gamma_model_spatial))
+# Create standardised residuals plot
+plot(phyl_gamma_standardised_pred, phyl_gamma_standardised_resid, main = "Standardised 
+  phylogenetic gamma residuals plot", xlab = "Standardised predicted values", ylab = "Standardised residuals")
+abline(0, 0)
+abline(h = c(-2, 2), col = 'red')
+
+# Histogram of standardised residuals
+hist(phyl_gamma_standardised_resid, freq = FALSE, main = 'Histogram of phylogenetic gamma 
+  model residuals', xlab = 'Residuals')
+curve(dnorm, add = TRUE)
+
+# Probability- probability plot of standardised residuals
+phyl_gamma_prob_dist <- pnorm(phyl_gamma_standardised_resid)
+plot(ppoints(length(phyl_gamma_standardised_resid)), sort(phyl_gamma_prob_dist), main = "PP Plot", 
+  xlab = "Observed Probability", ylab = "Expected Probability")
+abline(0, 1)
+```
+
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
+# Test for spatial autocorrelation
+moran.test(units_merged_beta_subset$phyl_gamma_div_resid, listw = units_merged_subset_lw, 
+  alternative = 'two.sided', zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$phyl_gamma_div_resid, units_merged_subset_lw, 
+  alternative = 'greater', 999, zero.policy = TRUE)
+moran.mc(units_merged_beta_subset$phyl_gamma_div_resid, units_merged_subset_lw, 
+  alternative = 'less', 999, zero.policy = TRUE)
+
+# Plot variogram
+plot(variogram(phyl_gamma_div_resid ~ 1, locations = coordinates(units_merged_beta_subset), 
+  data = units_merged_beta_subset, cloud = FALSE), type = "b")
+# Print Moran plot
+moran_plot_func(units_merged_beta_subset, phyl_gamma_div_resid)
+```
+
+Let's print a map to show local differences in residual values.
+```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4, echo = FALSE}
+# Plot residual values on map
+units_merged_beta_subset$id <- rownames(units_merged_beta_subset@data)
+units_merged_beta_subset_fort <- fortify(units_merged_beta_subset, region = 'unit')
+units_merged_beta_subset_fort <- left_join(units_merged_beta_subset_fort, 
+  units_merged_beta_subset@data)
+
+multiplot(plot_variable_map(units_merged_beta_subset_fort, 'phyl_gamma_div_resid'), 
+  plot_lisa_map(units_merged_beta_subset, phyl_gamma_div_resid), cols = 2)
 ```
 
 #Prepare data for manuscript
@@ -1625,12 +2658,25 @@ save(units_merged_beta_subset, file = './results/units_merged_beta_subset.rda')
 save(units_merged_beta_subset_fort, file = './results/units_merged_beta_subset_fort.rda')
 save(units_merged_human_impact_subset, file = './results/units_merged_human_impact_subset.rda')
 
-save(tax_model_summary, file = './results/tax_model_summary.rda')
-save(tax_model_vif, file = './results/tax_model_vif.rda')
-save(func_model_summary, file = './results/func_model_summary.rda')
-save(func_model_vif, file = './results/func_model_vif.rda')
-save(phyl_model_summary, file = './results/phyl_model_summary.rda')
-save(phyl_model_vif, file = './results/phyl_model_vif.rda')
+save(tax_beta_model_summary, file = './results/tax_beta_model_summary.rda')
+save(tax_beta_model_vif, file = './results/tax_beta_model_vif.rda')
+save(tax_alpha_model_summary, file = './results/tax_alpha_model_summary.rda')
+save(tax_alpha_model_vif, file = './results/tax_alpha_model_vif.rda')
+save(tax_gamma_model_summary, file = './results/tax_gamma_model_summary.rda')
+save(tax_gamma_model_vif, file = './results/tax_gamma_model_vif.rda')
+save(func_beta_model_summary, file = './results/func_beta_model_summary.rda')
+save(func_beta_model_vif, file = './results/func_beta_model_vif.rda')
+save(func_alpha_model_summary, file = './results/func_alpha_model_summary.rda')
+save(func_alpha_model_vif, file = './results/func_alpha_model_vif.rda')
+save(func_gamma_model_summary, file = './results/func_gamma_model_summary.rda')
+save(func_gamma_model_vif, file = './results/func_gamma_model_vif.rda')
+save(phyl_beta_model_summary, file = './results/phyl_beta_model_summary.rda')
+save(phyl_beta_model_vif, file = './results/phyl_beta_model_vif.rda')
+save(phyl_alpha_model_summary, file = './results/phyl_alpha_model_summary.rda')
+save(phyl_alpha_model_vif, file = './results/phyl_alpha_model_vif.rda')
+save(phyl_gamma_model_summary, file = './results/phyl_gamma_model_summary.rda')
+save(phyl_gamma_model_vif, file = './results/phyl_gamma_model_vif.rda')
+
 ```
 
 ##Create and save maps
