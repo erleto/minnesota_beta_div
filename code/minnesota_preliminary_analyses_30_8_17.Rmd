@@ -2270,7 +2270,7 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'phyl_beta_div_resid'
 ```
 
 ###Spatial model
-```{r, echo = FALSE, message = FALSE, results = 'hold', eval = FALSE}
+```{r, echo = FALSE, message = FALSE, results = 'hold'}
 f_phyl_beta_model <- formula(log(phyl_beta_div) ~ 
     human_footprint + 
     forest_loss + 
@@ -2299,7 +2299,7 @@ phyl_beta_model_vif
 lapply(phyl_beta_model_summary$coefficients, exp)
 ```
 
-```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE, eval = FALSE}
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Get standardised predicted and residual values
 phyl_beta_standardised_pred <- (predict(phyl_beta_model_spatial) - mean(predict(phyl_beta_model_spatial))) / sd(predict(phyl_beta_model_spatial))
 phyl_beta_standardised_resid <- (resid(phyl_beta_model_spatial) - mean(resid(phyl_beta_model_spatial))) / sd(resid(phyl_beta_model_spatial))
@@ -2321,7 +2321,7 @@ plot(ppoints(length(phyl_beta_standardised_resid)), sort(phyl_beta_prob_dist), m
 abline(0, 1)
 ```
 
-```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE, eval = FALSE}
+```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Test for spatial autocorrelation
 moran.test(units_merged_beta_subset$phyl_beta_div_resid, listw = units_merged_subset_lw, 
   alternative = 'two.sided', zero.policy = TRUE)
@@ -2338,7 +2338,7 @@ moran_plot_func(units_merged_beta_subset, phyl_beta_div_resid)
 ```
 
 Let's print a map to show local differences in residual values.
-```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4, echo = FALSE, eval = FALSE}
+```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4, echo = FALSE}
 # Plot residual values on map
 units_merged_beta_subset$id <- rownames(units_merged_beta_subset@data)
 units_merged_beta_subset_fort <- fortify(units_merged_beta_subset, region = 'unit')
