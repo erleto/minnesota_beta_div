@@ -213,6 +213,33 @@ attach('./results/phyl_gamma_model_vif.rda')
 minnesota <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Minnesota_Outline.shp', 'Minnesota_Outline')
 ```
 
+```{r calc_ranges, echo = FALSE, message = FALSE, warning = FALSE, results = 'hide'}
+min_hfp <- round(min(units_merged_beta_subset$human_footprint), digits = 2)
+max_hfp <- round(max(units_merged_beta_subset$human_footprint), digits = 2)
+hfp_range <- round(max(units_merged_beta_subset$human_footprint) - 
+    min(units_merged_beta_subset$human_footprint), digits = 2)
+
+min_forest <- round(min(units_merged_beta_subset$forest_loss), digits = 2)
+max_forest <- round(max(units_merged_beta_subset$forest_loss), digits = 2)
+forest_range <- round(max(units_merged_beta_subset$forest_loss) - 
+    min(units_merged_beta_subset$forest_loss), digits = 2)
+
+min_npp <- round(min(units_merged_beta_subset$net_prim_prod), digits = 2)
+max_npp <- round(max(units_merged_beta_subset$net_prim_prod), digits = 2)
+npp_range <- round(max(units_merged_beta_subset$net_prim_prod) - 
+    min(units_merged_beta_subset$net_prim_prod), digits = 2)
+
+min_hdiv <- round(min(units_merged_beta_subset$habitat_div), digits = 2)
+max_hdiv <- round(max(units_merged_beta_subset$habitat_div), digits = 2)
+hdiv_range <- round(max(units_merged_beta_subset$habitat_div) - 
+    min(units_merged_beta_subset$habitat_div), digits = 2)
+
+min_temp <- round(min(units_merged_beta_subset$mean_temp), digits = 2)
+max_temp <- round(max(units_merged_beta_subset$mean_temp), digits = 2)
+temp_range <- round(max(units_merged_beta_subset$mean_temp) - 
+    min(units_merged_beta_subset$mean_temp), digits = 2)
+```
+
 ```{r set_variables, echo = FALSE, message = FALSE, warning = FALSE, results = 'hide'}
 expl_names_1 <- c('Intercept', 'Human footprint', 'Forest loss', 'Net primary production', 'Habitat diversity', 'Mean temperature')
 expl_names_2 <- c('Intercept', 'Human footprint', 'Forest loss', 'Net primary production', 'Habitat diversity', 'Mean temperature', 'Number forested points')
@@ -308,7 +335,7 @@ rownames(explanatory_summary_table) <- c('Min', 'Median', 'Mean', 'Max', 'SD')
 pander::pander(explanatory_summary_table)
 ```
 
-```{r div_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRef('div_plots', 'Distributions of forest species richness, taxonomic, functional, and phylogenetic beta diversity, and Pearson correlations between diversity measures')}
+```{r beta_div_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRef('div_plots', 'Distributions of forest species richness, taxonomic, functional, and phylogenetic beta diversity, and Pearson correlations between diversity measures')}
 psych::pairs.panels(units_merged_beta_subset@data[c('forest_spp_richness', 
   'tax_beta_div', 'func_beta_div', 'phyl_beta_div')], hist.col = NULL)
 ```
@@ -317,79 +344,63 @@ psych::pairs.panels(units_merged_beta_subset@data[c('forest_spp_richness',
   
 ##Taxonomic beta diversity  
 ```{r tax_beta_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
-set.caption(tabRef('tax_model_summary', 'Summary of spatial error model explaining taxonomic beta diversity'))
-tax_model_coef <- as.data.frame(tax_beta_model_summary$coefficients)
-colnames(tax_model_coef)[4] <- 'p value'
-rownames(tax_model_coef) <- expl_names_2
-pander::pander(tax_model_coef)
+set.caption(tabRef('tax_beta_model_summary', 'Summary of linear model explaining taxonomic beta diversity'))
+tax_beta_model_coef <- as.data.frame(tax_beta_model_summary$coefficients)
+colnames(tax_beta_model_coef)[4] <- 'p value'
+rownames(tax_beta_model_coef) <- expl_names_2
+pander::pander(tax_beta_model_coef)
 
-tax_range <- round(max(units_merged_beta_subset$tax_beta_div) - 
+tax_beta_range <- round(max(units_merged_beta_subset$tax_beta_div) - 
     min(units_merged_beta_subset$tax_beta_div), digits = 3)
 
-min_hdiv <- round(min(units_merged_beta_subset$habitat_div), digits = 2)
-max_hdiv <- round(max(units_merged_beta_subset$habitat_div), digits = 2)
-hdiv_range <- round(max(units_merged_beta_subset$habitat_div) - 
-    min(units_merged_beta_subset$habitat_div), digits = 2)
-tax_hdiv_change <- round(tax_model_coef['Habitat diversity', 'Estimate'] * hdiv_range, digits = 2)
-tax_hdiv_perc <- round((tax_hdiv_change / tax_range) * 100, digits = 2)
+tax_beta_hdiv_change <- round(tax_beta_model_coef['Habitat diversity', 'Estimate'] * hdiv_range, digits = 2)
+tax_beta_hdiv_perc <- round((tax_beta_hdiv_change / tax_beta_range) * 100, digits = 2)
 ```
 
-Taxonomic beta diversity was not impacted by human footprint index (HFI), nor forest loss. Taxonomic beta diversity was positively associated with habitat diversity. Along the range of habitat diversity values (`r tabRef("explanatory_summary")`), taxonomic beta diversity increased by `r tax_hdiv_change` units (`r tax_hdiv_perc`%).
+Taxonomic beta diversity was not impacted by human footprint index (HFI), nor forest loss. Taxonomic beta diversity was positively associated with habitat diversity. Along the range of habitat diversity values (`r tabRef("explanatory_summary")`), taxonomic beta diversity increased by `r tax_beta_hdiv_change` units (`r tax_beta_hdiv_perc`%).
   
 ##Functional beta diversity  
 ```{r func_beta_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
-set.caption(tabRef('func_model_summary', 'Summary of generalised linear model explaining functional beta diversity'))
-func_model_coef <- as.data.frame(func_beta_model_summary$coefficients)
-colnames(func_model_coef)[4] <- 'p value'
-rownames(func_model_coef) <- expl_names_2
-pander::pander(func_model_coef)
+set.caption(tabRef('func_beta_model_summary', 'Summary of generalised linear model explaining functional beta diversity'))
+func_beta_model_coef <- as.data.frame(func_beta_model_summary$coefficients)
+colnames(func_beta_model_coef)[4] <- 'p value'
+rownames(func_beta_model_coef) <- expl_names_2
+pander::pander(func_beta_model_coef)
 
-func_range <- round(max(units_merged_beta_subset$func_beta_div) - 
+func_beta_range <- round(max(units_merged_beta_subset$func_beta_div) - 
     min(units_merged_beta_subset$func_beta_div), digits = 2)
 
-min_hfp <- round(min(units_merged_beta_subset$human_footprint), digits = 2)
-max_hfp <- round(max(units_merged_beta_subset$human_footprint), digits = 2)
-hfp_range <- round(max(units_merged_beta_subset$human_footprint) - 
-    min(units_merged_beta_subset$human_footprint), digits = 2)
-func_hfp_change <- round(func_model_coef['Human footprint', 'Estimate'] * hfp_range, digits = 2)
-func_hfp_perc <- round((func_hfp_change / func_range) * 100, digits = 2)
+func_beta_hfp_change <- round(func_beta_model_coef['Human footprint', 'Estimate'] * hfp_range, digits = 2)
+func_beta_hfp_perc <- round((func_beta_hfp_change / func_beta_range) * 100, digits = 2)
 
-min_npp <- round(min(units_merged_beta_subset$net_prim_prod), digits = 2)
-max_npp <- round(max(units_merged_beta_subset$net_prim_prod), digits = 2)
-npp_range <- round(max(units_merged_beta_subset$net_prim_prod) - 
-    min(units_merged_beta_subset$net_prim_prod), digits = 2)
-func_npp_change <- round(func_model_coef['Net primary production', 'Estimate'] * npp_range, digits = 2)
-func_npp_perc <- round((func_npp_change / func_range) * 100, digits = 2)
+func_beta_npp_change <- round(func_beta_model_coef['Net primary production', 'Estimate'] * npp_range, digits = 2)
+func_beta_npp_perc <- round((func_beta_npp_change / func_beta_range) * 100, digits = 2)
 
-min_temp <- round(min(units_merged_beta_subset$mean_temp), digits = 2)
-max_temp <- round(max(units_merged_beta_subset$mean_temp), digits = 2)
-temp_range <- round(max(units_merged_beta_subset$mean_temp) - 
-    min(units_merged_beta_subset$mean_temp), digits = 2)
-func_temp_change <- round(func_model_coef['Mean temperature', 'Estimate'] * temp_range, digits = 2)
-func_temp_perc <- round((func_temp_change / func_range) * 100, digits = 2)
+func_beta_temp_change <- round(func_beta_model_coef['Mean temperature', 'Estimate'] * temp_range, digits = 2)
+func_beta_temp_perc <- round((func_beta_temp_change / func_beta_range) * 100, digits = 2)
 ```
   
-Functional beta diversity had a statistically significant association with HFI. Along the gradient of HFI in our data (`r tabRef("explanatory_summary")`), functional beta diversity increased strongly (`r func_hfp_change` units, `r func_hfp_perc`%). Forest loss did not appear to influence functional beta diversity. Interestingly, net primary production (NPP) had a strong negative impact on functional beta diversity. Along the range of NPP values (`r tabRef("explanatory_summary")`) functional beta diversity decreased by `r abs(func_npp_change)` units (`r func_npp_perc`%). Similarly, mean annual temperature had a negative impact, decreasing functional beta diversity by `r abs(func_temp_change)` units (`r func_temp_perc`%).
+Functional beta diversity had a statistically significant association with HFI. Along the gradient of HFI in our data (`r tabRef("explanatory_summary")`), functional beta diversity increased strongly (`r func_beta_hfp_change` units, `r func_beta_hfp_perc`%). Forest loss did not appear to influence functional beta diversity. Interestingly, net primary production (NPP) had a strong negative impact on functional beta diversity. Along the range of NPP values functional beta diversity decreased by `r abs(func_beta_npp_change)` units (`r func_beta_npp_perc`%). Similarly, mean annual temperature had a negative impact, decreasing functional beta diversity by `r abs(func_beta_temp_change)` units (`r func_beta_temp_perc`%).
   
 ##Phylogenetic beta diversity  
 ```{r phyl_beta_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
-set.caption(tabRef('phyl_model_summary', 'Summary of generalised linear model explaining phylogenetic beta diversity'))
-phyl_model_coef <- as.data.frame(phyl_beta_model_summary$Coef)
-colnames(phyl_model_coef)[4] <- 'p value'
-rownames(phyl_model_coef) <- expl_names_2
-pander::pander(phyl_model_coef)
+set.caption(tabRef('phyl_beta_model_summary', 'Summary of spatial error model explaining phylogenetic beta diversity'))
+phyl_beta_model_coef <- as.data.frame(phyl_beta_model_summary$Coef)
+colnames(phyl_beta_model_coef)[4] <- 'p value'
+rownames(phyl_beta_model_coef) <- expl_names_2
+pander::pander(phyl_beta_model_coef)
 
-phyl_range <- round(max(units_merged_beta_subset$phyl_beta_div) - 
+phyl_beta_range <- round(max(units_merged_beta_subset$phyl_beta_div) - 
     min(units_merged_beta_subset$phyl_beta_div), digits = 3)
 
-phyl_npp_perc <- 100 - round(exp(phyl_model_coef['Net primary production', 'Estimate'] * npp_range) * 100, digits = 2)
-phyl_npp_change <- round((phyl_npp_perc / 100) * phyl_range, digits = 3)
+phyl_beta_npp_perc <- 100 - round(exp(phyl_beta_model_coef['Net primary production', 'Estimate'] * npp_range) * 100, digits = 2)
+phyl_beta_npp_change <- round((phyl_beta_npp_perc / 100) * phyl_beta_range, digits = 3)
 
-phyl_temp_perc <- 100 - round(exp(phyl_model_coef['Mean temperature', 'Estimate'] * temp_range) * 100, digits = 2)
-phyl_temp_change <- round((phyl_temp_perc / 100) * phyl_range, digits = 3)
+phyl_beta_temp_perc <- 100 - round(exp(phyl_beta_model_coef['Mean temperature', 'Estimate'] * temp_range) * 100, digits = 2)
+phyl_beta_temp_change <- round((phyl_beta_temp_perc / 100) * phyl_beta_range, digits = 3)
 ```
   
-Similar to taxonomic beta diversity, phylogenetic beta diversity was not impacted by HFI, nor forest loss. Phylogenetic beta diversity was negatively associated with NPP and mean temperature, although the biological impacts much stronger. Along the range of NPP values (`r tabRef("explanatory_summary")`) phylogenetic beta diversity decreased by `r abs(phyl_npp_change)` units (-`r phyl_npp_perc`%). Along the range of mean annual temperature values phylogenetic beta diversity decreased by `r abs(phyl_temp_change)` units (-`r phyl_temp_perc`%).
+Similar to taxonomic beta diversity, phylogenetic beta diversity was not impacted by HFI, nor forest loss. Phylogenetic beta diversity was negatively associated with NPP and mean temperature, although the biological impacts much stronger. Along the range of NPP values (`r tabRef("explanatory_summary")`) phylogenetic beta diversity decreased by `r abs(phyl_beta_npp_change)` units (-`r phyl_beta_npp_perc`%). Along the range of mean annual temperature values phylogenetic beta diversity decreased by `r abs(phyl_beta_temp_change)` units (-`r phyl_beta_temp_perc`%).
 <br>
 
 #Discussion  
@@ -413,6 +424,105 @@ Similar to taxonomic beta diversity, phylogenetic beta diversity was not impacte
 <br>
 
 #Appdendix  
+##Taxonomic alpha diversity results
+```{r tax_alpha_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
+set.caption(tabRef('tax_alpha_model_summary', 'Summary of spatial error model explaining taxonomic alpha diversity'))
+tax_alpha_model_coef <- as.data.frame(tax_alpha_model_summary$Coef)
+colnames(tax_alpha_model_coef)[4] <- 'p value'
+rownames(tax_alpha_model_coef) <- expl_names_1
+pander::pander(tax_alpha_model_coef)
+
+tax_alpha_range <- round(max(units_merged_beta_subset$tax_alpha_div) - 
+    min(units_merged_beta_subset$tax_alpha_div), digits = 3)
+```
+
+##Taxonomic gamma diversity results
+```{r tax_gamma_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
+set.caption(tabRef('tax_gamma_model_summary', 'Summary of spatial error model explaining taxonomic gamma diversity'))
+tax_gamma_model_coef <- as.data.frame(tax_gamma_model_summary$Coef)
+colnames(tax_gamma_model_coef)[4] <- 'p value'
+rownames(tax_gamma_model_coef) <- expl_names_2
+pander::pander(tax_gamma_model_coef)
+
+tax_gamma_range <- round(max(units_merged_beta_subset$tax_gamma_div) - 
+    min(units_merged_beta_subset$tax_gamma_div), digits = 3)
+
+tax_gamma_hdiv_change <- round(tax_gamma_model_coef['Habitat diversity', 'Estimate'] * hdiv_range, digits = 2)
+tax_gamma_hdiv_perc <- round((tax_gamma_hdiv_change / tax_gamma_range) * 100, digits = 2)
+```
+
+##Functional alpha diversity results
+```{r func_alpha_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
+set.caption(tabRef('func_alpha_model_summary', 'Summary of spatial error model explaining functional alpha diversity'))
+func_alpha_model_coef <- as.data.frame(func_alpha_model_summary$Coef)
+colnames(func_alpha_model_coef)[4] <- 'p value'
+rownames(func_alpha_model_coef) <- expl_names_1
+pander::pander(func_alpha_model_coef)
+
+func_alpha_range <- round(max(units_merged_beta_subset$func_alpha_div) - 
+    min(units_merged_beta_subset$func_alpha_div), digits = 3)
+
+func_alpha_forest_change <- round(func_alpha_model_coef['Forest loss', 'Estimate'] * forest_range, digits = 2)
+func_alpha_forest_perc <- round((func_alpha_forest_change / func_alpha_range) * 100, digits = 2)
+
+func_alpha_npp_change <- round(func_alpha_model_coef['Net primary production', 'Estimate'] * npp_range, digits = 2)
+func_alpha_npp_perc <- round((func_alpha_npp_change / func_alpha_range) * 100, digits = 2)
+
+func_alpha_temp_change <- round(func_alpha_model_coef['Mean temperature', 'Estimate'] * temp_range, digits = 2)
+func_alpha_temp_perc <- round((func_alpha_temp_change / func_alpha_range) * 100, digits = 2)
+```
+
+##Functional gamma diversity results
+```{r func_gamma_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
+set.caption(tabRef('func_gamma_model_summary', 'Summary of spatial error model explaining functional gamma diversity'))
+func_gamma_model_coef <- as.data.frame(func_gamma_model_summary$Coef)
+colnames(func_gamma_model_coef)[4] <- 'p value'
+rownames(func_gamma_model_coef) <- expl_names_2
+pander::pander(func_gamma_model_coef)
+
+func_gamma_range <- round(max(units_merged_beta_subset$func_gamma_div) - 
+    min(units_merged_beta_subset$func_gamma_div), digits = 3)
+
+func_gamma_forest_change <- round(func_gamma_model_coef['Forest loss', 'Estimate'] * forest_range, digits = 2)
+func_gamma_forest_perc <- round((func_gamma_forest_change / func_gamma_range) * 100, digits = 2)
+
+func_gamma_temp_change <- round(func_gamma_model_coef['Mean temperature', 'Estimate'] * temp_range, digits = 2)
+func_gamma_temp_perc <- round((func_gamma_temp_change / func_gamma_range) * 100, digits = 2)
+```
+
+##Phylogenetic alpha diversity results
+```{r phyl_alpha_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
+set.caption(tabRef('phyl_alpha_model_summary', 'Summary of spatial error model explaining phylogenetic alpha diversity'))
+phyl_alpha_model_coef <- as.data.frame(phyl_alpha_model_summary$Coef)
+colnames(phyl_alpha_model_coef)[4] <- 'p value'
+rownames(phyl_alpha_model_coef) <- expl_names_1
+pander::pander(phyl_alpha_model_coef)
+
+phyl_alpha_range <- round(max(units_merged_beta_subset$phyl_alpha_div) - 
+    min(units_merged_beta_subset$phyl_alpha_div), digits = 3)
+
+phyl_alpha_hfp_change <- round(phyl_alpha_model_coef['Human footprint', 'Estimate'] * hfp_range, digits = 2)
+phyl_alpha_hfp_perc <- round((phyl_alpha_hfp_change / phyl_alpha_range) * 100, digits = 2)
+
+phyl_alpha_forest_change <- round(phyl_alpha_model_coef['Forest loss', 'Estimate'] * forest_range, digits = 2)
+phyl_alpha_forest_perc <- round((phyl_alpha_forest_change / phyl_alpha_range) * 100, digits = 2)
+```
+
+##Phylogenetic gamma diversity results
+```{r phyl_gamma_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
+set.caption(tabRef('phyl_gamma_model_summary', 'Summary of spatial error model explaining phylogenetic gamma diversity'))
+phyl_gamma_model_coef <- as.data.frame(phyl_gamma_model_summary$Coef)
+colnames(phyl_gamma_model_coef)[4] <- 'p value'
+rownames(phyl_gamma_model_coef) <- expl_names_2
+pander::pander(phyl_gamma_model_coef)
+
+phyl_gamma_range <- round(max(units_merged_beta_subset$phyl_gamma_div) - 
+    min(units_merged_beta_subset$phyl_gamma_div), digits = 3)
+
+phyl_gamma_forest_change <- round(phyl_gamma_model_coef['Forest loss', 'Estimate'] * forest_range, digits = 2)
+phyl_gamma_forest_perc <- round((phyl_gamma_forest_change / phyl_gamma_range) * 100, digits = 2)
+```
+
 ##1. Correlations between human footprint and human influence variables in Minnesota data
 ```{r hfp_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('hfp_plots', "Distributions of human footprint and other variables describing human influence, and Spearman's rank correlations between variables")}
 psych::pairs.panels(units_merged_human_impact_subset, hist.col = NULL, method = 'spearman')
