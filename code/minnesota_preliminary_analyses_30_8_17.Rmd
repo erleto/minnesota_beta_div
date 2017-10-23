@@ -1390,6 +1390,7 @@ tax_model_variables <- dplyr::inner_join(units_merged_beta_subset@data[c('unit',
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 f_tax_beta_model <- formula(tax_beta_div ~ 
     human_footprint + 
+    roadless + 
     forest_loss + 
     net_prim_prod + 
     habitat_div + 
@@ -1551,6 +1552,7 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'tax_beta_div_resid')
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 f_tax_alpha_model <- formula(tax_alpha_div ~ 
     human_footprint + 
+    roadless + 
     forest_loss + 
     net_prim_prod + 
     habitat_div + 
@@ -1691,6 +1693,7 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'tax_alpha_div_resid'
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 f_tax_gamma_model <- formula(tax_gamma_div ~ 
     human_footprint + 
+    roadless + 
     forest_loss + 
     net_prim_prod + 
     habitat_div + 
@@ -1839,6 +1842,7 @@ We construct a GLM with a Gamma distribution. More information can be found
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 f_func_beta_model <- formula(func_beta_div ~ 
     human_footprint + 
+    roadless + 
     forest_loss + 
     net_prim_prod + 
     habitat_div +     
@@ -1919,6 +1923,7 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'func_beta_div_resid'
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 f_func_alpha_model <- formula(func_alpha_div ~ 
     human_footprint + 
+    roadless + 
     forest_loss + 
     net_prim_prod + 
     habitat_div +     
@@ -2066,6 +2071,7 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'func_alpha_div_resid
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 f_func_gamma_model <- formula(func_gamma_div ~ 
     human_footprint + 
+    roadless + 
     forest_loss + 
     net_prim_prod + 
     habitat_div +     
@@ -2217,6 +2223,7 @@ We construct a GLM with a Gamma distribution. More information can be found
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 f_phyl_beta_model <- formula(phyl_beta_div ~ 
     human_footprint + 
+    roadless + 
     forest_loss + 
     net_prim_prod + 
     habitat_div +     
@@ -2308,6 +2315,7 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'phyl_beta_div_resid'
 ```{r, echo = FALSE, message = FALSE, results = 'hold'}
 f_phyl_beta_model <- formula(log(phyl_beta_div) ~ 
     human_footprint + 
+    roadless + 
     forest_loss + 
     net_prim_prod + 
     habitat_div +     
@@ -2388,6 +2396,7 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'phyl_beta_div_resid'
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 f_phyl_alpha_model <- formula(phyl_alpha_div ~ 
     human_footprint + 
+    roadless + 
     forest_loss + 
     net_prim_prod + 
     habitat_div +     
@@ -2533,6 +2542,7 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'phyl_alpha_div_resid
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 f_phyl_gamma_model <- formula(phyl_gamma_div ~ 
     human_footprint + 
+    roadless + 
     forest_loss + 
     net_prim_prod + 
     habitat_div +     
