@@ -204,7 +204,7 @@ value per unit, and merge it to the unit- level data
 human_footprint <- raster('./data/last_of_the_wild/human_footprint_2/human_footprint_utm15n.tif')
 units <- units[order(units$unit, decreasing = FALSE), ]
 
-units_hfp <- extract(human_footprint, units, fun = mean, na.rm = T)
+units_hfp <- raster::extract(human_footprint, units, fun = mean, na.rm = T)
 units_hfp <- data.frame(unit = seq(1, 617, 1), human_footprint = units_hfp)
 write.csv(units_hfp, './data/last_of_the_wild/human_footprint_2/units_hfp.csv', 
   row.names = FALSE)
@@ -368,6 +368,39 @@ habitat_div <- Rao(sample = land_fire_3_classes, dfunc = NULL,
   dphyl = NULL, weight = FALSE, Jost = TRUE, structure = NULL)
 #units_habitat_div <- data.frame(unit = units$unit, habitat_div = habitat_div$TD$Alpha)
 units_merged$habitat_div <- habitat_div$TD$Alpha
+```
+
+##Process and calculate roadlessness
+```{r, eval = FALSE}
+roadless_wgs84 <- rgdal::readOGR('./data/roadless_map/NorthAmerica_RLA.shp', 'NorthAmerica_RLA')
+roadless_utm15n <- sp::spTransform(roadless_wgs84, CRS('+init=epsg:26915'))
+roadless_utm15n$roadless <- 1
+roadless_utm15n$ORIG_FID <- NULL
+roadless_utm15n$Shape_Leng <- NULL
+roadless_utm15n$Shape_Area <- NULL
+roadless_utm15n$Area_km. <- NULL
+
+minnesota_extent <- as(extent(minnesota), 'SpatialPolygons')
+crs(minnesota_extent) <- crs(minnesota)
+roadless_minnesota <- crop(roadless_utm15n, minnesota_extent)
+writeOGR(roadless_minnesota, dsn = './data/roadless_map', layer = 'roadless_minnesota', driver = "ESRI Shapefile")
+```
+
+```{bash, eval = FALSE}
+gdal_rasterize -tr 30 30 -burn 1 -l roadless_minnesota ./data/roadless_map/roadless_minnesota.shp ./data/roadless_map/roadless_minnesota.tif
+```
+
+```{r, eval = FALSE}
+roadless_minnesota <- raster('./data/roadless_map/roadless_minnesota.tif')
+units <- units[order(units$unit, decreasing = FALSE), ]
+units_roadless <- raster::extract(roadless_minnesota, units, fun = mean, na.rm = T)
+units_roadless <- data.frame(unit = seq(1, 617, 1), roadless = units_roadless)
+write.csv(units_roadless, './data/roadless_map/units_roadless.csv', row.names = FALSE)
+```
+```{r, echo = FALSE, results = 'hold', message = FALSE}
+# Join human footprint data to units_merged
+units_roadless <- read.csv('./data/roadless_map/units_roadless.csv')
+units_merged <- merge(units_merged, units_roadless, by = 'unit')
 ```
 
 #Calculate BBA points per unit
@@ -548,7 +581,7 @@ data.frame('Min_forested_BBA_points_per_unit' = c(1, 2, 3, 4, 5),
 #Select columns and standardise their names
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 units_merged_human_impact <- dplyr::select(units_merged, unit, human_footprint, 
-  'forest_loss' = allV1, 'total_pop' = censusSUM, 'all_roads' = Dens_All, 
+  roadless, 'forest_loss' = allV1, 'total_pop' = censusSUM, 'all_roads' = Dens_All, 
   HabV15:HabV18, HabV26) %>% 
   dplyr::mutate('human_land_use' = HabV15 + HabV16 + HabV17 + HabV18 + HabV26) %>% 
   dplyr::select(-(HabV15:HabV18), -HabV26)
@@ -556,7 +589,7 @@ units_merged_human_impact <- dplyr::select(units_merged, unit, human_footprint,
 units_merged <- dplyr::select(units_merged, unit, 'forest_loss' = allV1, 
   'other_roads' = Dens_Other, 'mean_prec' = precMN, 'mean_temp' = tempMN, 
   'eco_subsection' = SUBSECNAME, human_footprint, net_prim_prod, 
-  forest_point_freq, habitat_div)
+  forest_point_freq, habitat_div, roadless)
 units_merged <- merge(units, units_merged, by = 'unit')
 ```
 
@@ -882,7 +915,7 @@ Mar;1(1):3–14.
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 # Define explanatory variables
 explanatory_variables <- dplyr::select(units_merged_beta@data, unit, 
-  human_footprint, forest_loss, other_roads, mean_temp, mean_prec, 
+  human_footprint, roadless, forest_loss, other_roads, mean_temp, mean_prec, 
   net_prim_prod, forest_point_freq, habitat_div, eco_subsection)
 ```
 
@@ -1310,6 +1343,7 @@ units_merged_fort <- left_join(units_merged_fort, units_merged@data)
 
 multiplot(plot_variable_map(units_merged_fort, 'human_footprint'), 
   plot_variable_map(units_merged_fort, 'forest_loss'), 
+  plot_variable_map(units_merged_fort, 'roadless'), 
   plot_variable_map(units_merged_fort, 'net_prim_prod'), 
   plot_variable_map(units_merged_fort, 'habitat_div'), 
   plot_variable_map(units_merged_fort, 'forest_point_freq'), 
@@ -1318,6 +1352,7 @@ multiplot(plot_variable_map(units_merged_fort, 'human_footprint'),
   plot_variable_map(units_merged_fort, 'mean_prec'), 
   plot_variable_map(units_merged_fort, 'mean_temp'), 
   plot_lisa_map(units_merged, human_footprint), 
+  plot_lisa_map(units_merged, roadless), 
   plot_lisa_map(units_merged, forest_loss), 
   plot_lisa_map(units_merged, net_prim_prod), 
   plot_lisa_map(units_merged, habitat_div), 
