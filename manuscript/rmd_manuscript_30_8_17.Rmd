@@ -241,8 +241,8 @@ temp_range <- round(max(units_merged_beta_subset$mean_temp) -
 ```
 
 ```{r set_variables, echo = FALSE, message = FALSE, warning = FALSE, results = 'hide'}
-expl_names_1 <- c('Intercept', 'Human footprint', 'Forest loss', 'Net primary production', 'Habitat diversity', 'Mean temperature')
-expl_names_2 <- c('Intercept', 'Human footprint', 'Forest loss', 'Net primary production', 'Habitat diversity', 'Mean temperature', 'Number forested points')
+expl_names_1 <- c('Intercept', 'Human footprint', 'Roadlessness', 'Forest loss', 'Net primary production', 'Habitat diversity', 'Mean temperature')
+expl_names_2 <- c('Intercept', 'Human footprint', 'Roadlessness', 'Forest loss', 'Net primary production', 'Habitat diversity', 'Mean temperature', 'Number forested points')
 ```
 <br>
 
