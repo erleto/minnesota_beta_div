@@ -1390,7 +1390,7 @@ tax_model_variables <- dplyr::inner_join(units_merged_beta_subset@data[c('unit',
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 f_tax_beta_model <- formula(tax_beta_div ~ 
     human_footprint + 
-    roadless +
+    roadless + 
     forest_loss + 
     net_prim_prod + 
     habitat_div + 
