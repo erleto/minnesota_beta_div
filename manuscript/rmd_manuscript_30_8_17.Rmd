@@ -241,8 +241,7 @@ temp_range <- round(max(units_merged_beta_subset$mean_temp) -
 ```
 
 ```{r set_variables, echo = FALSE, message = FALSE, warning = FALSE, results = 'hide'}
-expl_names_1 <- c('Intercept', 'Human footprint', 'Forest loss', 'Net primary production', 'Habitat diversity', 'Mean temperature')
-expl_names_2 <- c('Intercept', 'Human footprint', 'Forest loss', 'Net primary production', 'Habitat diversity', 'Mean temperature', 'Number forested points')
+expl_names <- c('Intercept', 'Human footprint', 'Forest loss', 'Net primary production', 'Habitat diversity', 'Mean temperature', 'Number forested points')
 ```
 <br>
 
@@ -330,7 +329,7 @@ set.caption(tabRef('explanatory_summary',
 explanatory_variables <- units_merged_beta_subset@data[c('human_footprint', 
   'forest_loss', 'net_prim_prod', 'habitat_div', 'mean_temp', 'forest_point_freq')]
 explanatory_summary_table <- as.data.frame(sapply(explanatory_variables, summary_fun))
-colnames(explanatory_summary_table) <- expl_names_2[2:7]
+colnames(explanatory_summary_table) <- expl_names[2:7]
 rownames(explanatory_summary_table) <- c('Min', 'Median', 'Mean', 'Max', 'SD')
 pander::pander(explanatory_summary_table)
 ```
@@ -347,7 +346,7 @@ psych::pairs.panels(units_merged_beta_subset@data[c('forest_spp_richness',
 set.caption(tabRef('tax_beta_model_summary', 'Summary of linear model explaining taxonomic beta diversity'))
 tax_beta_model_coef <- as.data.frame(tax_beta_model_summary$coefficients)
 colnames(tax_beta_model_coef)[4] <- 'p value'
-rownames(tax_beta_model_coef) <- expl_names_2
+rownames(tax_beta_model_coef) <- expl_names
 pander::pander(tax_beta_model_coef)
 
 tax_beta_range <- round(max(units_merged_beta_subset$tax_beta_div) - 
@@ -364,7 +363,7 @@ Taxonomic beta diversity was not impacted by human footprint index (HFI), nor fo
 set.caption(tabRef('func_beta_model_summary', 'Summary of generalised linear model explaining functional beta diversity'))
 func_beta_model_coef <- as.data.frame(func_beta_model_summary$coefficients)
 colnames(func_beta_model_coef)[4] <- 'p value'
-rownames(func_beta_model_coef) <- expl_names_2
+rownames(func_beta_model_coef) <- expl_names
 pander::pander(func_beta_model_coef)
 
 func_beta_range <- round(max(units_merged_beta_subset$func_beta_div) - 
@@ -387,7 +386,7 @@ Functional beta diversity had a statistically significant association with HFI. 
 set.caption(tabRef('phyl_beta_model_summary', 'Summary of spatial error model explaining phylogenetic beta diversity'))
 phyl_beta_model_coef <- as.data.frame(phyl_beta_model_summary$Coef)
 colnames(phyl_beta_model_coef)[4] <- 'p value'
-rownames(phyl_beta_model_coef) <- expl_names_2
+rownames(phyl_beta_model_coef) <- expl_names
 pander::pander(phyl_beta_model_coef)
 
 phyl_beta_range <- round(max(units_merged_beta_subset$phyl_beta_div) - 
@@ -429,7 +428,7 @@ Similar to taxonomic beta diversity, phylogenetic beta diversity was not impacte
 set.caption(tabRef('tax_alpha_model_summary', 'Summary of spatial error model explaining taxonomic alpha diversity'))
 tax_alpha_model_coef <- as.data.frame(tax_alpha_model_summary$Coef)
 colnames(tax_alpha_model_coef)[4] <- 'p value'
-rownames(tax_alpha_model_coef) <- expl_names_1
+rownames(tax_alpha_model_coef) <- expl_names
 pander::pander(tax_alpha_model_coef)
 
 tax_alpha_range <- round(max(units_merged_beta_subset$tax_alpha_div) - 
@@ -441,7 +440,7 @@ tax_alpha_range <- round(max(units_merged_beta_subset$tax_alpha_div) -
 set.caption(tabRef('tax_gamma_model_summary', 'Summary of spatial error model explaining taxonomic gamma diversity'))
 tax_gamma_model_coef <- as.data.frame(tax_gamma_model_summary$Coef)
 colnames(tax_gamma_model_coef)[4] <- 'p value'
-rownames(tax_gamma_model_coef) <- expl_names_2
+rownames(tax_gamma_model_coef) <- expl_names
 pander::pander(tax_gamma_model_coef)
 
 tax_gamma_range <- round(max(units_merged_beta_subset$tax_gamma_div) - 
@@ -456,7 +455,7 @@ tax_gamma_hdiv_perc <- round((tax_gamma_hdiv_change / tax_gamma_range) * 100, di
 set.caption(tabRef('func_alpha_model_summary', 'Summary of spatial error model explaining functional alpha diversity'))
 func_alpha_model_coef <- as.data.frame(func_alpha_model_summary$Coef)
 colnames(func_alpha_model_coef)[4] <- 'p value'
-rownames(func_alpha_model_coef) <- expl_names_1
+rownames(func_alpha_model_coef) <- expl_names
 pander::pander(func_alpha_model_coef)
 
 func_alpha_range <- round(max(units_merged_beta_subset$func_alpha_div) - 
@@ -477,7 +476,7 @@ func_alpha_temp_perc <- round((func_alpha_temp_change / func_alpha_range) * 100,
 set.caption(tabRef('func_gamma_model_summary', 'Summary of spatial error model explaining functional gamma diversity'))
 func_gamma_model_coef <- as.data.frame(func_gamma_model_summary$Coef)
 colnames(func_gamma_model_coef)[4] <- 'p value'
-rownames(func_gamma_model_coef) <- expl_names_2
+rownames(func_gamma_model_coef) <- expl_names
 pander::pander(func_gamma_model_coef)
 
 func_gamma_range <- round(max(units_merged_beta_subset$func_gamma_div) - 
@@ -495,7 +494,7 @@ func_gamma_temp_perc <- round((func_gamma_temp_change / func_gamma_range) * 100,
 set.caption(tabRef('phyl_alpha_model_summary', 'Summary of spatial error model explaining phylogenetic alpha diversity'))
 phyl_alpha_model_coef <- as.data.frame(phyl_alpha_model_summary$Coef)
 colnames(phyl_alpha_model_coef)[4] <- 'p value'
-rownames(phyl_alpha_model_coef) <- expl_names_1
+rownames(phyl_alpha_model_coef) <- expl_names
 pander::pander(phyl_alpha_model_coef)
 
 phyl_alpha_range <- round(max(units_merged_beta_subset$phyl_alpha_div) - 
@@ -513,7 +512,7 @@ phyl_alpha_forest_perc <- round((phyl_alpha_forest_change / phyl_alpha_range) * 
 set.caption(tabRef('phyl_gamma_model_summary', 'Summary of spatial error model explaining phylogenetic gamma diversity'))
 phyl_gamma_model_coef <- as.data.frame(phyl_gamma_model_summary$Coef)
 colnames(phyl_gamma_model_coef)[4] <- 'p value'
-rownames(phyl_gamma_model_coef) <- expl_names_2
+rownames(phyl_gamma_model_coef) <- expl_names
 pander::pander(phyl_gamma_model_coef)
 
 phyl_gamma_range <- round(max(units_merged_beta_subset$phyl_gamma_div) - 
@@ -540,7 +539,7 @@ psych::pairs.panels(units_merged_beta_subset@data[c('human_footprint',
 set.caption(tabRefApp('vif', 'Variance inflation factors of explanatory variables in models explaining taxonomic, functional, and phylogenetic beta diversity'))
 vif_table <- as.data.frame(rbind(t(tax_beta_model_vif), t(func_beta_model_vif), t(phyl_beta_model_vif)))
 rownames(vif_table) <- c('Taxonomic', 'Functional', 'Phylogenetic')
-colnames(vif_table) <- expl_names_2[2:7]
+colnames(vif_table) <- expl_names[2:7]
 pander::pander(vif_table)
 ```
   
