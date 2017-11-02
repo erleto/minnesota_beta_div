@@ -1552,12 +1552,12 @@ f_tax_alpha_model <- formula(tax_alpha_div ~
     forest_loss + 
     net_prim_prod + 
     habitat_div + 
-    mean_temp# + 
+    mean_temp + 
     #mean_prec + 
     #other_roads + 
     #x + 
     #y + 
-    #forest_point_freq
+    forest_point_freq
     )
 tax_alpha_model <- lm(f_tax_alpha_model, data = tax_model_variables)
 #tax_model <- glm(f_tax_model, family = Gamma(link = "identity"), 
@@ -1920,12 +1920,12 @@ f_func_alpha_model <- formula(func_alpha_div ~
     forest_loss + 
     net_prim_prod + 
     habitat_div +     
-    mean_temp #+ 
+    mean_temp + 
     #mean_prec + 
     #other_roads + 
     #x + 
     #y + 
-    #forest_point_freq
+    forest_point_freq
     )
 func_alpha_model <- lm(f_func_alpha_model, data = func_model_variables)
 #func_alpha_model <- glm(f_func_alpha_model, family = Gamma(link = "identity"), 
@@ -2389,12 +2389,12 @@ f_phyl_alpha_model <- formula(phyl_alpha_div ~
     forest_loss + 
     net_prim_prod + 
     habitat_div +     
-    mean_temp #+ 
+    mean_temp + 
     #mean_prec + 
     #other_roads + 
     #x + 
     #y + 
-    #forest_point_freq
+    forest_point_freq
     )
 
 phyl_alpha_model <- lm(f_phyl_alpha_model, data = phyl_model_variables)
