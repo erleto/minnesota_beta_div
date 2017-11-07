@@ -246,6 +246,8 @@ expl_names <- c('Intercept', 'Human footprint', 'Forest loss', 'Net primary prod
 <br>
 
 #Introduction  
+* Discuss beta's relation to alpha and gamma!
+
 * We are facing a biodiversity crisis
 * Alpha, beta and gamma diversities are decreasing
 * What the loss of beta diversity tells us
@@ -404,19 +406,26 @@ Similar to taxonomic beta diversity, phylogenetic beta diversity was not impacte
 
 #Discussion  
 
-* Summary of results
+* Human influence did not clearly impact beta diversity in our study
+* No impact of human influence on taxonomic and phylogenetic beta diversity
+* Positive impact of human footprint index (HFI) on functional beta diversity
 
-* Why did human footprint have a positive impact?
-* Habitat diversity was taken into account, so increased beta diversity due increased habitat diversity caused by increased human influence is not the answer
+* Why did HFI have a positive impact on functional beta diversity?
+* Habitat diversity was taken into account, so increased beta diversity due increased habitat diversity caused by increased human influence should not be the case
+* Could HFI cause increases in habitat diversity at scales finer than the environmental data?
 * Bird counts were conducted from road sides, so bird communities were not in pristine areas
+* Increased beta diversity as a consequence of HFI could be due to decreased alpha or increased gamma, but neither was statistically significant. Based on the results, it is possible that HFI had a statistically non-significant negative impact on functional alpha diversity, which was significant in the model explaining functional beta diversity.
+
+* Forest loss did not impact any of the beta diversity measures
+* Forest loss had a consistently negative impact on functional and phylogenetic alpha and gamma diversities
+* Since forest loss had a negative impact on both alpha and gamma diversities, the method of calculating beta diversity (gamma divided by alpha) canceled the impact of forest loss on beta diversity. 
   
-* Why did forest loss not impact beta diversity?
-  
-* What do our results say about the impacts of human influence on biotic homogenisation?
-  
-* Species richness is not a driver of beta-diversity in our data
 * Beta-diversity indices were not positive functions of net primary productivity or ambient temperature.
 * We found that beta-diversities were negatively related to NPP and mean temperature. **Why is this?**
+
+* What do our results say about the impacts of human influence on biotic homogenisation?
+* 
+
 <br>
 
 #Conclusion  
@@ -469,6 +478,9 @@ func_alpha_npp_perc <- round((func_alpha_npp_change / func_alpha_range) * 100, d
 
 func_alpha_temp_change <- round(func_alpha_model_coef['Mean temperature', 'Estimate'] * temp_range, digits = 2)
 func_alpha_temp_perc <- round((func_alpha_temp_change / func_alpha_range) * 100, digits = 2)
+
+func_alpha_hfp_change <- round(func_alpha_model_coef['Human footprint', 'Estimate'] * hfp_range, digits = 2)
+func_alpha_hfp_perc <- round((func_alpha_hfp_change / func_alpha_range) * 100, digits = 2)
 ```
 
 ##Functional gamma diversity results
@@ -487,6 +499,9 @@ func_gamma_forest_perc <- round((func_gamma_forest_change / func_gamma_range) * 
 
 func_gamma_temp_change <- round(func_gamma_model_coef['Mean temperature', 'Estimate'] * temp_range, digits = 2)
 func_gamma_temp_perc <- round((func_gamma_temp_change / func_gamma_range) * 100, digits = 2)
+
+func_gamma_hfp_change <- round(func_gamma_model_coef['Human footprint', 'Estimate'] * hfp_range, digits = 4)
+func_gamma_hfp_perc <- round((func_gamma_hfp_change / func_alpha_range) * 100, digits = 2)
 ```
 
 ##Phylogenetic alpha diversity results
