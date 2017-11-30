@@ -183,6 +183,35 @@ mytheme <- theme(axis.text = element_text(colour = 'black', size = 14),
   axis.title.x = element_text(colour = 'black', size = 16, vjust = -0.1), 
   axis.line.x = element_line(color = 'black', size = 0.5), 
   axis.line.y = element_line(color = 'black', size = 0.5))
+
+multiplot <- function(..., plotlist=NULL, file, cols = 1, layout = NULL) {
+  require(grid)
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  numPlots = length(plots)
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots / cols)),
+                    ncol = cols, nrow = ceiling(numPlots / cols))
+  }
+ if (numPlots == 1) {
+    print(plots[[1]])
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
 ```
 
 ```{r load_data, echo = FALSE, message = FALSE, warning = FALSE, results = 'hide'}
@@ -242,7 +271,7 @@ temp_range <- round(max(units_merged_beta_subset$mean_temp) -
 ```
 
 ```{r set_variables, echo = FALSE, message = FALSE, warning = FALSE, results = 'hide'}
-expl_names <- c('Intercept', 'Human footprint', 'Forest loss (%)', 'Net primary production (kg C/m^2/Year)', 'Habitat diversity', 'Mean temperature (\u2103)', 'Number forested points')
+expl_names <- c('Intercept', 'Human footprint', 'Forest loss (%)', 'Net primary production (kg C/m^2/Year)', 'Habitat diversity', 'Mean temperature (\u2103 )', 'Number forested points')
 ```
 <br>
 
@@ -253,7 +282,7 @@ The disrepancy between trends in local and global biodiversity can be explained 
 
 A decrease in beta diversity, increasing similarity between local sites, is a process known as biotic homogenisation (Olden 2006), which has gained increasing attention recently. Human activities causing species invasions and extinctions have the potential to cause species composition in different sites to become more similar. Local species extinctions often target specialists with narrow dietary and habitat preferences, and they are often replaced by generalists that can withstand fluctuating environments (Clavel et al. 2011). Since specialists, by definition, possess specialised functions, their loss in a community decreases functional diversity. Functional diversity is of special concern for human well-being as it is an important component of ecosystem functioning, which is the basis of the ecosystem services that humans depend on (Cardinale et al. 2012). There is already evidence that the loss of biodiversity is creating an ecosystem services debt that will be exacerbated by continuing biodiversity loss (Isbell et al. 2015), with potential decrease in the resilience of ecosystem functions (Oliver et al. 2015). In addition, specialised species have unique phylogenetic histories, the loss of which decreases the phylogenetic diversity of communities. Since biotic homogensiation, and many other phenomena related to biodiversity, has been studied mainly from the aspect of the number of species (taxonomic diversity) we still have a limited understanding of how different facets of biodiversity respond to human activities. 
 
-Forest ecosystems have been heavily impacted by human activities, showing a decrease in area of over 3% during the last 25 years (FAO 2016) mainly due to forest fires and human activities, including forest harvesting and forest clearing for agriculture. There are signs that the rate of forest loss is decreasing but concurrently the proportion of forest plantations is increasing at the expense of natural forest cover (FAO 2016). An increasing threat to forest worldwide is harvesting forests for bioenergy (ref). Thus, even though the land cover class does not change, the loss of natural forests has negative impacts on biodiversity. Natural forests harbour high levels of terrestrial biodiversity and (ecosystem services). Thus, decreases in their cover have the potential to have significant negative impacts on biodiversity and ecosystem services.  This has the potential to decrease the cover of old forests, which are habitat for many specialist species. 
+Forest ecosystems have been heavily impacted by human activities, showing a decrease in area of over 3% during the last 25 years (FAO 2016) mainly due to forest fires and human activities, including forest harvesting and forest clearing for agriculture. There are signs that the rate of forest loss is decreasing but concurrently the proportion of managed forests is increasing at the expense of natural forest cover (FAO 2016). An increasing threat to forest worldwide is harvesting forests for bioenergy (ref). Thus, even though the land cover class does not change, the loss of natural forests has negative impacts on biodiversity. Natural forests harbour high levels of terrestrial biodiversity and (ecosystem services). Thus, decreases in their cover have the potential to have significant negative impacts on biodiversity and ecosystem services. 
 
 We studied how land-use change caused by human actions causes biotic homogenisation in forested habitats in the state of Minnesota, USA. Our aim was to study if increasing human footprint, which includes human population, transport infrastructure, and forest loss, causes sites to become more similar to each other (decreased beta diversity). We also controlled for factors known to impact biodiversity, habitat diversity, net primary productivity, and temperature (refs). We studied this phenomenon from the taxonomic, functional and phylogenetic viewpoints. We hypothesised that increased human footprint and forest loss would lead to decreased diversity between bird count sites, visible as decreased beta diversity. We also hypothesised that taxonomic, functional, and phylogenetic diversity would show different sensitivities to human influence.
 <br>
@@ -367,8 +396,55 @@ func_beta_temp_perc <- round((func_beta_temp_change / func_beta_range) * 100, di
   
 Functional beta diversity had a statistically significant association with HFI. Along the gradient of HFI in our data (`r tabRef("explanatory_summary")`), functional beta diversity increased strongly (`r func_beta_hfp_change` units, `r func_beta_hfp_perc`%). Forest loss did not appear to influence functional beta diversity. Interestingly, net primary production (NPP) had a strong negative impact on functional beta diversity. Along the range of NPP values functional beta diversity decreased by `r abs(func_beta_npp_change)` units (`r func_beta_npp_perc`%). Similarly, mean annual temperature had a negative impact, decreasing functional beta diversity by `r abs(func_beta_temp_change)` units (`r func_beta_temp_perc`%).
   
-hfp vs functional beta diversities plots (alpha, beta, gamma)
-floss vs functional beta diversities plots (alpha, beta, gamma)
+```{r, echo = FALSE, message = FALSE, warning = FALSE, fig.width = 12, fig.height = 4}
+func_alpha_hfp_plot <- ggplot(units_merged_beta_subset@data, 
+  aes(x = human_footprint, y = func_alpha_div)) + 
+  geom_point(shape = 1) + 
+  labs(x = '', y = 'Functional alpha diversity') + 
+  mytheme
+
+func_beta_hfp_plot <- ggplot(units_merged_beta_subset@data, 
+  aes(x = human_footprint, y = func_beta_div)) + 
+  geom_point(shape = 1) + 
+  geom_smooth(method = lm, se = FALSE, fullrange = TRUE, col = 1) + 
+  geom_abline(intercept = 10.4, slope = 0.0447, linetype = 'dashed', col = 'red') + 
+  labs(x = 'Human Footprint Index', y = 'Functional beta diversity') + 
+  mytheme
+
+func_gamma_hfp_plot <- ggplot(units_merged_beta_subset@data, 
+  aes(x = human_footprint, y = func_gamma_div)) + 
+  geom_point(shape = 1) + 
+  labs(x = '', y = 'Functional gamma diversity') + 
+  mytheme
+
+multiplot(func_alpha_hfp_plot, func_beta_hfp_plot, func_gamma_hfp_plot, cols = 3)
+```
+  
+```{r, echo = FALSE, message = FALSE, warning = FALSE, fig.width = 12, fig.height = 4}
+func_alpha_floss_plot <- ggplot(units_merged_beta_subset@data, 
+  aes(x = forest_loss, y = func_alpha_div)) + 
+  geom_point(shape = 1) + 
+  geom_smooth(method = lm, se = FALSE, fullrange = TRUE, col = 1) + 
+  geom_abline(intercept = 1.44, slope = -0.00344, linetype = 'dashed', col = 'red') + 
+  labs(x = '', y = 'Functional alpha diversity') + 
+  mytheme
+
+func_beta_floss_plot <- ggplot(units_merged_beta_subset@data, 
+  aes(x = forest_loss, y = func_beta_div)) + 
+  geom_point(shape = 1) + 
+  labs(x = 'Forest loss (%)', y = 'Functional beta diversity') + 
+  mytheme
+
+func_gamma_floss_plot <- ggplot(units_merged_beta_subset@data, 
+  aes(x = forest_loss, y = func_gamma_div)) + 
+  geom_point(shape = 1) + 
+  geom_smooth(method = lm, se = FALSE, fullrange = TRUE, col = 1) + 
+  geom_abline(intercept = 1.59, slope = -0.00286, linetype = 'dashed', col = 'red') + 
+  labs(x = '', y = 'Functional gamma diversity') + 
+  mytheme
+
+multiplot(func_alpha_floss_plot, func_beta_floss_plot, func_gamma_floss_plot, cols = 3)
+```
   
 ##Phylogenetic beta diversity  
 ```{r phyl_beta_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
@@ -390,7 +466,55 @@ phyl_beta_temp_change <- round((phyl_beta_temp_perc / 100) * phyl_beta_range, di
   
 Similar to taxonomic beta diversity, phylogenetic beta diversity was not impacted by HFI, nor forest loss. Phylogenetic beta diversity was negatively associated with NPP and mean temperature, although the biological impacts much stronger. Along the range of NPP values (`r tabRef("explanatory_summary")`) phylogenetic beta diversity decreased by `r abs(phyl_beta_npp_change)` units (-`r phyl_beta_npp_perc`%). Along the range of mean annual temperature values phylogenetic beta diversity decreased by `r abs(phyl_beta_temp_change)` units (-`r phyl_beta_temp_perc`%).
   
-floss vs phylogenetic beta diversities plots (alpha, beta, gamma)
+```{r, echo = FALSE, message = FALSE, warning = FALSE, fig.width = 12, fig.height = 4}
+phyl_alpha_hfp_plot <- ggplot(units_merged_beta_subset@data, 
+  aes(x = human_footprint, y = phyl_alpha_div)) + 
+  geom_point(shape = 1) + 
+  geom_smooth(method = lm, se = FALSE, fullrange = TRUE, col = 1) + 
+  geom_abline(intercept = 1.6, slope = -0.00161, linetype = 'dashed', col = 'red') + 
+  labs(x = '', y = 'Phylogenetic alpha diversity') + 
+  mytheme
+
+phyl_beta_hfp_plot <- ggplot(units_merged_beta_subset@data, 
+  aes(x = human_footprint, y = phyl_beta_div)) + 
+  geom_point(shape = 1) + 
+  labs(x = 'Human Footprint Index', y = 'Phylogenetic beta diversity') + 
+  mytheme
+
+phyl_gamma_hfp_plot <- ggplot(units_merged_beta_subset@data, 
+  aes(x = human_footprint, y = phyl_gamma_div)) + 
+  geom_point(shape = 1) + 
+  labs(x = '', y = 'Phylogenetic gamma diversity') + 
+  mytheme
+
+multiplot(phyl_alpha_hfp_plot, phyl_beta_hfp_plot, phyl_gamma_hfp_plot, cols = 3)
+```
+  
+```{r, echo = FALSE, message = FALSE, warning = FALSE, fig.width = 12, fig.height = 4}
+phyl_alpha_floss_plot <- ggplot(units_merged_beta_subset@data, 
+  aes(x = forest_loss, y = phyl_alpha_div)) + 
+  geom_point(shape = 1) + 
+  geom_smooth(method = lm, se = FALSE, fullrange = TRUE, col = 1) + 
+  geom_abline(intercept = 1.6, slope = -0.00577, linetype = 'dashed', col = 'red') + 
+  labs(x = '', y = 'Phylogenetic alpha diversity') + 
+  mytheme
+
+phyl_beta_floss_plot <- ggplot(units_merged_beta_subset@data, 
+  aes(x = forest_loss, y = phyl_beta_div)) + 
+  geom_point(shape = 1) + 
+  labs(x = 'Forest loss (%)', y = 'Phylogenetic beta diversity') + 
+  mytheme
+
+phyl_gamma_floss_plot <- ggplot(units_merged_beta_subset@data, 
+  aes(x = forest_loss, y = phyl_gamma_div)) + 
+  geom_point(shape = 1) + 
+  geom_smooth(method = lm, se = FALSE, fullrange = TRUE, col = 1) + 
+  geom_abline(intercept = 1.85 , slope = -0.00752, linetype = 'dashed', col = 'red') + 
+  labs(x = '', y = 'Phylogenetic gamma diversity') + 
+  mytheme
+
+multiplot(phyl_alpha_floss_plot, phyl_beta_floss_plot, phyl_gamma_floss_plot, cols = 3)
+```
 <br>
 
 #Discussion  
