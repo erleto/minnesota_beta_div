@@ -518,13 +518,9 @@ multiplot(phyl_alpha_floss_plot, phyl_beta_floss_plot, phyl_gamma_floss_plot, co
 <br>
 
 #Discussion  
+Human pressure, measured bu the human footprint index and forest loss, did not cause biotic homogenisation in our study site. Increased human footprint index did not cause taxonomic or phylogenetic homogenisation and, interestingly, appeared to caused functional heterogenisation --- increased diversity between sites. This result appears to be at odds with previous studies that have shown that activities such as farming and forest management can decrease beta diversity, causing biotic homogenisation.
+Forest loss did not appear to cause biotic homogenisation in any of the response variables.
 
-* Human influence did not clearly impact beta diversity in our study
-* HFI does not cause biotic homogenisation
-  + Positive impact of HFI on functional beta diversity
-  + No impact of HFI on taxonomic or phylogenetic diversity
-* Forest loss did not impact any of the beta diversity measures
- 
 * Why did HFI have a positive impact on functional beta diversity?
 * Habitat diversity was taken into account, so increased beta diversity due increased habitat diversity caused by increased human influence should not be the case
 * Could HFI cause increases in habitat diversity at scales finer than the environmental data?
