@@ -396,56 +396,6 @@ func_beta_temp_perc <- round((func_beta_temp_change / func_beta_range) * 100, di
   
 Functional beta diversity had a statistically significant association with HFI. Along the gradient of HFI in our data (`r tabRef("explanatory_summary")`), functional beta diversity increased strongly (`r func_beta_hfp_change` units, `r func_beta_hfp_perc`%). Forest loss did not appear to influence functional beta diversity. Interestingly, net primary production (NPP) had a strong negative impact on functional beta diversity. Along the range of NPP values functional beta diversity decreased by `r abs(func_beta_npp_change)` units (`r func_beta_npp_perc`%). Similarly, mean annual temperature had a negative impact, decreasing functional beta diversity by `r abs(func_beta_temp_change)` units (`r func_beta_temp_perc`%).
   
-```{r, echo = FALSE, message = FALSE, warning = FALSE, fig.width = 12, fig.height = 4}
-func_alpha_hfp_plot <- ggplot(units_merged_beta_subset@data, 
-  aes(x = human_footprint, y = func_alpha_div)) + 
-  geom_point(shape = 1) + 
-  labs(x = '', y = 'Functional alpha diversity') + 
-  mytheme
-
-func_beta_hfp_plot <- ggplot(units_merged_beta_subset@data, 
-  aes(x = human_footprint, y = func_beta_div)) + 
-  geom_point(shape = 1) + 
-  geom_smooth(method = lm, se = FALSE, fullrange = TRUE, col = 1) + 
-  geom_abline(intercept = 10.4, slope = 0.0447, linetype = 'dashed', col = 'red') + 
-  labs(x = 'Human Footprint Index', y = 'Functional beta diversity') + 
-  mytheme
-
-func_gamma_hfp_plot <- ggplot(units_merged_beta_subset@data, 
-  aes(x = human_footprint, y = func_gamma_div)) + 
-  geom_point(shape = 1) + 
-  labs(x = '', y = 'Functional gamma diversity') + 
-  mytheme
-
-multiplot(func_alpha_hfp_plot, func_beta_hfp_plot, func_gamma_hfp_plot, cols = 3)
-```
-  
-```{r, echo = FALSE, message = FALSE, warning = FALSE, fig.width = 12, fig.height = 4}
-func_alpha_floss_plot <- ggplot(units_merged_beta_subset@data, 
-  aes(x = forest_loss, y = func_alpha_div)) + 
-  geom_point(shape = 1) + 
-  geom_smooth(method = lm, se = FALSE, fullrange = TRUE, col = 1) + 
-  geom_abline(intercept = 1.44, slope = -0.00344, linetype = 'dashed', col = 'red') + 
-  labs(x = '', y = 'Functional alpha diversity') + 
-  mytheme
-
-func_beta_floss_plot <- ggplot(units_merged_beta_subset@data, 
-  aes(x = forest_loss, y = func_beta_div)) + 
-  geom_point(shape = 1) + 
-  labs(x = 'Forest loss (%)', y = 'Functional beta diversity') + 
-  mytheme
-
-func_gamma_floss_plot <- ggplot(units_merged_beta_subset@data, 
-  aes(x = forest_loss, y = func_gamma_div)) + 
-  geom_point(shape = 1) + 
-  geom_smooth(method = lm, se = FALSE, fullrange = TRUE, col = 1) + 
-  geom_abline(intercept = 1.59, slope = -0.00286, linetype = 'dashed', col = 'red') + 
-  labs(x = '', y = 'Functional gamma diversity') + 
-  mytheme
-
-multiplot(func_alpha_floss_plot, func_beta_floss_plot, func_gamma_floss_plot, cols = 3)
-```
-  
 ## Phylogenetic beta diversity  
 ```{r phyl_beta_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
 set.caption(tabRef('phyl_beta_model_summary', 'Summary of spatial error model explaining phylogenetic beta diversity'))
@@ -465,56 +415,7 @@ phyl_beta_temp_change <- round((phyl_beta_temp_perc / 100) * phyl_beta_range, di
 ```
   
 Similar to taxonomic beta diversity, phylogenetic beta diversity was not impacted by HFI, nor forest loss. Phylogenetic beta diversity was negatively associated with NPP and mean temperature, although the biological impacts much stronger. Along the range of NPP values (`r tabRef("explanatory_summary")`) phylogenetic beta diversity decreased by `r abs(phyl_beta_npp_change)` units (-`r phyl_beta_npp_perc`%). Along the range of mean annual temperature values phylogenetic beta diversity decreased by `r abs(phyl_beta_temp_change)` units (-`r phyl_beta_temp_perc`%).
-  
-```{r, echo = FALSE, message = FALSE, warning = FALSE, fig.width = 12, fig.height = 4}
-phyl_alpha_hfp_plot <- ggplot(units_merged_beta_subset@data, 
-  aes(x = human_footprint, y = phyl_alpha_div)) + 
-  geom_point(shape = 1) + 
-  geom_smooth(method = lm, se = FALSE, fullrange = TRUE, col = 1) + 
-  geom_abline(intercept = 1.6, slope = -0.00161, linetype = 'dashed', col = 'red') + 
-  labs(x = '', y = 'Phylogenetic alpha diversity') + 
-  mytheme
 
-phyl_beta_hfp_plot <- ggplot(units_merged_beta_subset@data, 
-  aes(x = human_footprint, y = phyl_beta_div)) + 
-  geom_point(shape = 1) + 
-  labs(x = 'Human Footprint Index', y = 'Phylogenetic beta diversity') + 
-  mytheme
-
-phyl_gamma_hfp_plot <- ggplot(units_merged_beta_subset@data, 
-  aes(x = human_footprint, y = phyl_gamma_div)) + 
-  geom_point(shape = 1) + 
-  labs(x = '', y = 'Phylogenetic gamma diversity') + 
-  mytheme
-
-multiplot(phyl_alpha_hfp_plot, phyl_beta_hfp_plot, phyl_gamma_hfp_plot, cols = 3)
-```
-  
-```{r, echo = FALSE, message = FALSE, warning = FALSE, fig.width = 12, fig.height = 4}
-phyl_alpha_floss_plot <- ggplot(units_merged_beta_subset@data, 
-  aes(x = forest_loss, y = phyl_alpha_div)) + 
-  geom_point(shape = 1) + 
-  geom_smooth(method = lm, se = FALSE, fullrange = TRUE, col = 1) + 
-  geom_abline(intercept = 1.6, slope = -0.00577, linetype = 'dashed', col = 'red') + 
-  labs(x = '', y = 'Phylogenetic alpha diversity') + 
-  mytheme
-
-phyl_beta_floss_plot <- ggplot(units_merged_beta_subset@data, 
-  aes(x = forest_loss, y = phyl_beta_div)) + 
-  geom_point(shape = 1) + 
-  labs(x = 'Forest loss (%)', y = 'Phylogenetic beta diversity') + 
-  mytheme
-
-phyl_gamma_floss_plot <- ggplot(units_merged_beta_subset@data, 
-  aes(x = forest_loss, y = phyl_gamma_div)) + 
-  geom_point(shape = 1) + 
-  geom_smooth(method = lm, se = FALSE, fullrange = TRUE, col = 1) + 
-  geom_abline(intercept = 1.85 , slope = -0.00752, linetype = 'dashed', col = 'red') + 
-  labs(x = '', y = 'Phylogenetic gamma diversity') + 
-  mytheme
-
-multiplot(phyl_alpha_floss_plot, phyl_beta_floss_plot, phyl_gamma_floss_plot, cols = 3)
-```
 <br>
 
 # Discussion  
