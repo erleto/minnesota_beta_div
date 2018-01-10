@@ -20,8 +20,8 @@ Date: `r Sys.Date()`
 # set global chunk options
 knitr::opts_knit$set(root.dir = normalizePath('/Users/Eric/Dropbox/Eric/Work/JKL/Theses/Matti_Hakkila/paper_4/'))
 ```
-#Setup
-##Load necessary packages
+# Setup
+## Load necessary packages
 ```{r, echo = FALSE, message = FALSE, warning = FALSE}
 #install.packages(c('knitr', 'rgdal', 'gstat', 'raster', 'maptools', 'spdep', 'nlme', 'reshape2', 'tidyverse', 'maptools', 'rgeos', 'psych', 'lattice', 'car', 'cluster', 'ape', 'adephylo', 'DBI', 'moments'))
 library(reshape2)
@@ -123,7 +123,7 @@ multiplot <- function(..., plotlist=NULL, file, cols = 1, layout = NULL) {
 }
 ```
 
-##Set values
+## Set values
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 # Set minimum number of forested unique BBA points per unit
 ################
@@ -136,8 +136,8 @@ count_radius <- 100
 ################
 ```
 
-#Prepare landscape data
-##Join unit-level data
+# Prepare landscape data
+## Join unit-level data
 We prepare the vector data by joining all unit- level data together
 ```{r, echo = FALSE, results = 'hide', message = FALSE, warning = FALSE}
 # Read the different unit- level shapefiles
@@ -162,7 +162,7 @@ units_merged <- merge(units_merged, units_land_fire@data, by = 'unit')
 units_merged <- merge(units_merged, units_prism@data, by = 'unit')
 ```
 
-##Load other data
+## Load other data
 ```{r, echo = FALSE, results = 'hide', message = FALSE, warning = FALSE}
 mnn_bba_points <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/bird_data/MNBBA_Surveys_DominantHabitat_Final.shp', 'MNBBA_Surveys_DominantHabitat_Final')
 mnn_bba_points$Date <- as.Date(mnn_bba_points$Date , "%Y/%m/%d")
@@ -170,7 +170,7 @@ minnesota <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_
 land_fire_3 <- raster('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/landfire/landfire3.tif')
 ```
 
-##Process and calculate human footprint index
+## Process and calculate human footprint index
 We continue by looking into calculating an index describing the intensity of 
 the human footprint.
 
@@ -232,7 +232,7 @@ units_merged$human_pca <- human_gradient_pca$scores[, 1]
 human_gradient_pca
 ```
 
-##Process and calculate forest loss
+## Process and calculate forest loss
 In addition to the index describing human land use we want to study if forest 
 loss has an impact on beta diversity. We have forest loss data from Minnesota, 
 which is derived from Hansen et al. 2013 *. The data has proportion 
@@ -245,7 +245,7 @@ data has previously been joined to the unit- level data.
 al. High-Resolution Global Maps of 21st-Century Forest Cover Change. Science. 
 2013 Nov 15;342(6160):850–3. 
 
-##Process and calculate mean net primary productivity
+## Process and calculate mean net primary productivity
 The code underneath is written in python, utilising Google Earth Engine. It 
 selects and calculates mean net primary productivity per unit. The NPP estimates 
 are based on satellite data from the Modis programme, and are available at 1km 
@@ -338,7 +338,7 @@ npp <- read.csv('./data/npp/mean_npp_unit.csv')
 units_merged$net_prim_prod <- npp$npp
 ```
 
-##Calculate habitat diversity
+## Calculate habitat diversity
 ```{r, eval = FALSE}
 land_fire_3_classes <- data.frame(class = c(2:51))
 for (unit in as.vector(units$unit)) {
@@ -370,7 +370,7 @@ habitat_div <- Rao(sample = land_fire_3_classes, dfunc = NULL,
 units_merged$habitat_div <- habitat_div$TD$Alpha
 ```
 
-##Process and calculate roadlessness
+## Process and calculate roadlessness
 ```{r, eval = FALSE}
 roadless_wgs84 <- rgdal::readOGR('./data/roadless_map/NorthAmerica_RLA.shp', 'NorthAmerica_RLA')
 roadless_utm15n <- sp::spTransform(roadless_wgs84, CRS('+init=epsg:26915'))
@@ -403,7 +403,7 @@ units_roadless <- read.csv('./data/roadless_map/units_roadless.csv')
 units_merged <- merge(units_merged, units_roadless, by = 'unit')
 ```
 
-#Calculate BBA points per unit
+# Calculate BBA points per unit
 Later on we will need to determine how many forested BBA points there are per 
 unit. There are three ways of doing this:
 
@@ -578,7 +578,7 @@ data.frame('Min_forested_BBA_points_per_unit' = c(1, 2, 3, 4, 5),
     nrow(units_merged[units_merged$forest_point_freq >= 5, ])))
 ```
 
-#Select columns and standardise their names
+# Select columns and standardise their names
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 units_merged_human_impact <- dplyr::select(units_merged, unit, human_footprint, 
   'forest_loss' = allV1, 'total_pop' = censusSUM, 'all_roads' = Dens_All, 
@@ -593,7 +593,7 @@ units_merged <- dplyr::select(units_merged, unit, 'forest_loss' = allV1,
 units_merged <- merge(units, units_merged, by = 'unit')
 ```
 
-#Prepare bird data
+# Prepare bird data
 Before doing anything else, we subset the data by setting a minumum number of 
 forested BBA points per unit.
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
@@ -782,7 +782,7 @@ phylo_distance <- as.matrix(adephylo::distTips(consensus_tree, method = 'patrist
 phylo_distance <- phylo_distance / max(phylo_distance)
 ```
 
-#Calculate beta diversity
+# Calculate beta diversity
 Next we calculate beta diversity from the BBA points with the Rao quadratic 
 entropy index. The Jost correction is used to correct lower than expected beta 
 diversity values. We us the the Rao function, written by Francesco Bello et al. *  
@@ -903,7 +903,7 @@ rownames(whole_area_div_summary) <- c('Taxonomic', 'Functional', 'Phylogenetic')
 whole_area_div_summary
 ```
 
-#Data exploration
+# Data exploration
 Before starting the analyses we do some data exploration to make sure we don't 
 have outliers, colinearity etc. These explanatory analyses are from Zuur et. al 
 2010 *  
@@ -919,7 +919,7 @@ explanatory_variables <- dplyr::select(units_merged_beta@data, unit,
   net_prim_prod, forest_point_freq, habitat_div, eco_subsection)
 ```
 
-##1. Outliers
+## 1. Outliers
 ```{r, echo = FALSE, message = FALSE, fig.width = 10, fig.height = 10}
 explanatory_variables_long <- dplyr::select(explanatory_variables, -unit, -eco_subsection) %>% 
   tidyr::gather()
@@ -962,62 +962,62 @@ because they are heavily urbanised, but they also have at least `r min_points`
 forested BBA points. Since we do not have any clear reason to drop them we 
 probably just keep them.
 
-##2. Check distributions of reponse variables
-###Taxonomic beta diversity
+## 2. Check distributions of reponse variables
+### Taxonomic beta diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 hist(units_merged_beta$tax_beta_div, main = 'Distribution of taxonomic beta values', 
   xlab = 'Mean taxonomic beta per unit')
 ```
 
-###Taxonomic alpha diversity
+### Taxonomic alpha diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 hist(units_merged_beta$tax_alpha_div, main = 'Distribution of taxonomic alpha values', 
   xlab = 'Mean taxonomic alpha per unit')
 ```
 
-###Taxonomic gamma diversity
+### Taxonomic gamma diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 hist(units_merged_beta$tax_gamma_div, main = 'Distribution of taxonomic gamma values', 
   xlab = 'Mean taxonomic gamma per unit')
 ```
 
-###Functional beta diversity
+### Functional beta diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 hist(units_merged_beta$func_beta_div, main = 'Distribution of functional beta values', 
   xlab = 'Mean functional beta per unit')
 ```
 
-###Functional alpha diversity
+### Functional alpha diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 hist(units_merged_beta$func_alpha_div, main = 'Distribution of functional alpha values', 
   xlab = 'Mean functional alpha per unit')
 ```
 
-###Functional gamma diversity
+### Functional gamma diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 hist(units_merged_beta$func_gamma_div, main = 'Distribution of functional gamma values', 
   xlab = 'Mean functional gamma per unit')
 ```
 
-###Phylogenetic beta diversity
+### Phylogenetic beta diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 hist(units_merged_beta$phyl_beta_div, main = 'Distribution of phylogenetic beta values', 
   xlab = 'Mean phylogenetic beta per unit')
 ```
 
-###Phylogenetic alpha diversity
+### Phylogenetic alpha diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 hist(units_merged_beta$phyl_alpha_div, main = 'Distribution of phylogenetic alpha values', 
   xlab = 'Mean phylogenetic alpha per unit')
 ```
 
-###Phylogenetic gamma diversity
+### Phylogenetic gamma diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 hist(units_merged_beta$phyl_gamma_div, main = 'Distribution of phylogenetic gamma values', 
   xlab = 'Mean phylogenetic gamma per unit')
 ```
 
-##3. Colinearity of explanatory variables
+## 3. Colinearity of explanatory variables
 Let's start by having a look at how correlated the human footprint variable is 
 with variables describing human impact in Minnesota:
 ```{r, echo = FALSE, fig.show = 'hold', results = 'asis', fig.width = 10, fig.height = 10}
@@ -1035,8 +1035,8 @@ psych::pairs.panels(as.data.frame(dplyr::select(explanatory_variables, -unit, -e
 
 We can see that there is a strongish correlation between a few of the variables.
 
-##4. Relationships between response and explanatory variables
-###Taxonomic beta diversity
+## 4. Relationships between response and explanatory variables
+### Taxonomic beta diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 # Explanatory variables in vector format
 x <- as.vector(as.matrix(dplyr::select(explanatory_variables, -unit, -eco_subsection)))
@@ -1062,7 +1062,7 @@ lattice::xyplot(y ~ x | x_id, col = 1,
     })
 ```
 
-###Taxonomic alpha diversity
+### Taxonomic alpha diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 # Explanatory variables in vector format
 x <- as.vector(as.matrix(dplyr::select(explanatory_variables, -unit, -eco_subsection)))
@@ -1088,7 +1088,7 @@ lattice::xyplot(y ~ x | x_id, col = 1,
     })
 ```
 
-###Taxonomic gamma diversity
+### Taxonomic gamma diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 # Explanatory variables in vector format
 x <- as.vector(as.matrix(dplyr::select(explanatory_variables, -unit, -eco_subsection)))
@@ -1114,7 +1114,7 @@ lattice::xyplot(y ~ x | x_id, col = 1,
     })
 ```
 
-###Functional beta diversity
+### Functional beta diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 # Explanatory variables in vector format
 x <- as.vector(as.matrix(dplyr::select(explanatory_variables, -unit, -eco_subsection)))
@@ -1140,7 +1140,7 @@ lattice::xyplot(y ~ x | x_id, col = 1,
     })
 ```
 
-###Functional alpha diversity
+### Functional alpha diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 # Explanatory variables in vector format
 x <- as.vector(as.matrix(dplyr::select(explanatory_variables, -unit, -eco_subsection)))
@@ -1166,7 +1166,7 @@ lattice::xyplot(y ~ x | x_id, col = 1,
     })
 ```
 
-###Functional gamma diversity
+### Functional gamma diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 # Explanatory variables in vector format
 x <- as.vector(as.matrix(dplyr::select(explanatory_variables, -unit, -eco_subsection)))
@@ -1192,7 +1192,7 @@ lattice::xyplot(y ~ x | x_id, col = 1,
     })
 ```
 
-###Phylogenetic beta diversity
+### Phylogenetic beta diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 # Explanatory variables in vector format
 x <- as.vector(as.matrix(dplyr::select(explanatory_variables, -unit, -eco_subsection)))
@@ -1218,7 +1218,7 @@ lattice::xyplot(y ~ x | x_id, col = 1,
     })
 ```
 
-###Phylogenetic alpha diversity
+### Phylogenetic alpha diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 # Explanatory variables in vector format
 x <- as.vector(as.matrix(dplyr::select(explanatory_variables, -unit, -eco_subsection)))
@@ -1244,7 +1244,7 @@ lattice::xyplot(y ~ x | x_id, col = 1,
     })
 ```
 
-###Phylogenetic gamma diversity
+### Phylogenetic gamma diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 # Explanatory variables in vector format
 x <- as.vector(as.matrix(dplyr::select(explanatory_variables, -unit, -eco_subsection)))
@@ -1270,7 +1270,7 @@ lattice::xyplot(y ~ x | x_id, col = 1,
     })
 ```
 
-##5. Spatial distribution of variables
+## 5. Spatial distribution of variables
 ```{r, echo = FALSE, message = FALSE, warning = FALSE}
 response_variables <- c('id', 'unit', 
   'tax_beta_div', 'func_beta_div', 'phyl_beta_div', 'forest_spp_richness')
@@ -1282,7 +1282,7 @@ units_merged_nb <- poly2nb(units_merged_beta)
 units_merged_lw <- nb2listw(units_merged_nb, zero.policy = TRUE)
 ```
 
-###Taxonomic beta diversity
+### Taxonomic beta diversity
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
 # Test for spatial autocorrelation
 moran.test(units_merged_beta$tax_beta_div, listw = units_merged_lw, 
@@ -1295,7 +1295,7 @@ multiplot(plot_variable_map(units_merged_beta_fort, 'tax_beta_div'),
   plot_lisa_map(units_merged_beta, tax_beta_div), cols = 2)
 ```
 
-###Functional beta diversity
+### Functional beta diversity
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
 # Test for spatial autocorrelation
 moran.test(units_merged_beta$func_beta_div, listw = units_merged_lw, 
@@ -1308,7 +1308,7 @@ multiplot(plot_variable_map(units_merged_beta_fort, 'func_beta_div'),
   plot_lisa_map(units_merged_beta, func_beta_div), cols = 2)
 ```
 
-###Phylogenetic beta diversity
+### Phylogenetic beta diversity
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
 # Test for spatial autocorrelation
 moran.test(units_merged_beta$phyl_beta_div, listw = units_merged_lw, 
@@ -1321,7 +1321,7 @@ multiplot(plot_variable_map(units_merged_beta_fort, 'phyl_beta_div'),
   plot_lisa_map(units_merged_beta, phyl_beta_div), cols = 2)
 ```
 
-###Forest species richness
+### Forest species richness
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
 # Test for spatial autocorrelation
 moran.test(units_merged_beta$forest_spp_richness, listw = units_merged_lw, 
@@ -1334,7 +1334,7 @@ multiplot(plot_variable_map(units_merged_beta_fort, 'forest_spp_richness'),
   plot_lisa_map(units_merged_beta, forest_spp_richness), cols = 2)
 ```
 
-###Explanatory variables
+### Explanatory variables
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, fig.width = 8, fig.height = 16}
 # Plot beta diversity and local Moran's I values on map
 units_merged$id <- rownames(units_merged@data)
@@ -1378,13 +1378,13 @@ are diversity measures per unit, and the explanatory variables are, for
 example, human footprint, forest loss etc. We also take the number of forest 
 points per unit into account as a covariate.
 
-#Analyse taxonomic diversity
+# Analyse taxonomic diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 tax_model_variables <- dplyr::inner_join(units_merged_beta_subset@data[c('unit', 
   'tax_alpha_div', 'tax_beta_div', 'tax_gamma_div')], explanatory_variables)
 ```
 
-##Taxonomic beta diversity
+## Taxonomic beta diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 f_tax_beta_model <- formula(tax_beta_div ~ 
     human_footprint + 
@@ -1408,8 +1408,8 @@ tax_beta_model_summary
 tax_beta_model_vif
 ```
 
-##Check taxonomic beta residuals
-###1. Homogeneity of residuals
+## Check taxonomic beta residuals
+### 1. Homogeneity of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Get standardised predicted and residual values
 tax_beta_standardised_pred <- (predict(tax_beta_model) - mean(predict(tax_beta_model))) / sd(predict(tax_beta_model))
@@ -1420,7 +1420,7 @@ abline(0, 0)
 abline(h = c(-2, 2), col = 'red')
 ```
 
-###2. Normality of residuals
+### 2. Normality of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Histogram of standardised residuals
 hist(tax_beta_standardised_resid, freq = FALSE, main = 'Histogram of taxonomic beta residuals', xlab = 'Residuals')
@@ -1432,7 +1432,7 @@ plot(ppoints(length(tax_beta_standardised_resid)), sort(tax_beta_prob_dist), mai
 abline(0, 1)
 ```
 
-###3. Independence of residuals
+### 3. Independence of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Test for spatial autocorrelation
 moran.test(units_merged_beta_subset$tax_beta_div_resid, listw = units_merged_subset_lw, 
@@ -1468,7 +1468,7 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'tax_beta_div_resid')
   plot_lisa_map(units_merged_beta_subset, tax_beta_div_resid), cols = 2)
 ```
 
-###Spatial model
+### Spatial model
 ~~Oh no! We have clear spatial autocorrelation in the residuals of the model~~
 ~~explaining taxonomic beta diversity. Let's analyse taxonomic beta diversity~~
 ~~with a spatial regression model.~~
@@ -1545,7 +1545,7 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'tax_beta_div_resid')
   plot_lisa_map(units_merged_beta_subset, tax_beta_div_resid), cols = 2)
 ```
 
-##Taxonomic alpha diversity
+## Taxonomic alpha diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 f_tax_alpha_model <- formula(tax_alpha_div ~ 
     human_footprint + 
@@ -1569,8 +1569,8 @@ tax_alpha_model_summary
 tax_alpha_model_vif
 ```
 
-##Check taxonomic alpha residuals
-###1. Homogeneity of residuals
+## Check taxonomic alpha residuals
+### 1. Homogeneity of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Get standardised predicted and residual values
 tax_alpha_standardised_pred <- (predict(tax_alpha_model) - mean(predict(tax_alpha_model))) / sd(predict(tax_alpha_model))
@@ -1581,7 +1581,7 @@ abline(0, 0)
 abline(h = c(-2, 2), col = 'red')
 ```
 
-###2. Normality of residuals
+### 2. Normality of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Histogram of standardised residuals
 hist(tax_alpha_standardised_resid, freq = FALSE, main = 'Histogram of taxonomic alpha residuals', xlab = 'Residuals')
@@ -1593,7 +1593,7 @@ plot(ppoints(length(tax_alpha_standardised_resid)), sort(tax_alpha_prob_dist), m
 abline(0, 1)
 ```
 
-###3. Independence of residuals
+### 3. Independence of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Test for spatial autocorrelation
 moran.test(units_merged_beta_subset$tax_alpha_div_resid, listw = units_merged_subset_lw, 
@@ -1622,7 +1622,7 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'tax_alpha_div_resid'
   plot_lisa_map(units_merged_beta_subset, tax_alpha_div_resid), cols = 2)
 ```
 
-###Spatial model
+### Spatial model
 ```{r, echo = FALSE, message = FALSE, results = 'hold'}
 tax_alpha_model_spatial <- spdep::errorsarlm(f_tax_alpha_model, data = tax_model_variables, listw = units_merged_subset_lw, 
   etype = 'error', tol.solve = 1.0e-30, zero.policy = TRUE)
@@ -1685,7 +1685,7 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'tax_alpha_div_resid'
   plot_lisa_map(units_merged_beta_subset, tax_alpha_div_resid), cols = 2)
 ```
 
-##Taxonomic gamma diversity
+## Taxonomic gamma diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 f_tax_gamma_model <- formula(tax_gamma_div ~ 
     human_footprint + 
@@ -1709,8 +1709,8 @@ tax_gamma_model_summary
 tax_gamma_model_vif
 ```
 
-##Check taxonomic gamma residuals
-###1. Homogeneity of residuals
+## Check taxonomic gamma residuals
+### 1. Homogeneity of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Get standardised predicted and residual values
 tax_gamma_standardised_pred <- (predict(tax_gamma_model) - mean(predict(tax_gamma_model))) / sd(predict(tax_gamma_model))
@@ -1721,7 +1721,7 @@ abline(0, 0)
 abline(h = c(-2, 2), col = 'red')
 ```
 
-###2. Normality of residuals
+### 2. Normality of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Histogram of standardised residuals
 hist(tax_gamma_standardised_resid, freq = FALSE, main = 'Histogram of taxonomic gamma residuals', xlab = 'Residuals')
@@ -1733,7 +1733,7 @@ plot(ppoints(length(tax_gamma_standardised_resid)), sort(tax_gamma_prob_dist), m
 abline(0, 1)
 ```
 
-###3. Independence of residuals
+### 3. Independence of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Test for spatial autocorrelation
 moran.test(units_merged_beta_subset$tax_gamma_div_resid, listw = units_merged_subset_lw, 
@@ -1762,7 +1762,7 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'tax_gamma_div_resid'
   plot_lisa_map(units_merged_beta_subset, tax_gamma_div_resid), cols = 2)
 ```
 
-###Spatial model
+### Spatial model
 ```{r, echo = FALSE, message = FALSE, results = 'hold'}
 tax_gamma_model_spatial <- spdep::errorsarlm(f_tax_gamma_model, data = tax_model_variables, listw = units_merged_subset_lw, 
   etype = 'error', tol.solve = 1.0e-30, zero.policy = TRUE)
@@ -1825,13 +1825,13 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'tax_gamma_div_resid'
   plot_lisa_map(units_merged_beta_subset, tax_gamma_div_resid), cols = 2)
 ```
 
-#Analyse functional diversity
+# Analyse functional diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 func_model_variables <- dplyr::inner_join(units_merged_beta_subset@data[c('unit', 
   'func_alpha_div', 'func_beta_div', 'func_gamma_div')], explanatory_variables)
 ```
 
-##Functional beta diversity
+## Functional beta diversity
 We construct a GLM with a Gamma distribution. More information can be found 
 [here](http://seananderson.ca/2014/04/08/gamma-glms.html)
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
@@ -1860,8 +1860,8 @@ func_beta_model_summary
 func_beta_model_vif
 ```
 
-##Check functional beta residuals
-###1. Homogeneity of residuals
+## Check functional beta residuals
+### 1. Homogeneity of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Get standardised predicted and residual values
 func_beta_standardised_pred <- (predict(func_beta_model) - mean(predict(func_beta_model))) / sd(predict(func_beta_model))
@@ -1872,7 +1872,7 @@ abline(0, 0)
 abline(h = c(-2, 2), col = 'red')
 ```
 
-###2. Normality of residuals
+### 2. Normality of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Histogram of standardised residuals
 hist(func_beta_standardised_resid, freq = FALSE, main = 'Histogram of functional beta model residuals', xlab = 'Residuals')
@@ -1884,7 +1884,7 @@ plot(ppoints(length(func_beta_standardised_resid)), sort(func_beta_prob_dist), m
 abline(0, 1)
 ```
 
-###3. Independence of residuals
+### 3. Independence of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Test for spatial autocorrelation
 moran.test(units_merged_beta_subset$func_beta_div_resid, listw = units_merged_subset_lw, 
@@ -1913,7 +1913,7 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'func_beta_div_resid'
   plot_lisa_map(units_merged_beta_subset, func_beta_div_resid), cols = 2)
 ```
 
-##Functional alpha diversity
+## Functional alpha diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 f_func_alpha_model <- formula(func_alpha_div ~ 
     human_footprint + 
@@ -1939,8 +1939,8 @@ func_alpha_model_summary
 func_alpha_model_vif
 ```
 
-##Check functional alpha residuals
-###1. Homogeneity of residuals
+## Check functional alpha residuals
+### 1. Homogeneity of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Get standardised predicted and residual values
 func_alpha_standardised_pred <- (predict(func_alpha_model) - mean(predict(func_alpha_model))) / sd(predict(func_alpha_model))
@@ -1951,7 +1951,7 @@ abline(0, 0)
 abline(h = c(-2, 2), col = 'red')
 ```
 
-###2. Normality of residuals
+### 2. Normality of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Histogram of standardised residuals
 hist(func_alpha_standardised_resid, freq = FALSE, main = 'Histogram of functional alpha model residuals', xlab = 'Residuals')
@@ -1963,7 +1963,7 @@ plot(ppoints(length(func_alpha_standardised_resid)), sort(func_alpha_prob_dist),
 abline(0, 1)
 ```
 
-###3. Independence of residuals
+### 3. Independence of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Test for spatial autocorrelation
 moran.test(units_merged_beta_subset$func_alpha_div_resid, listw = units_merged_subset_lw, 
@@ -1992,7 +1992,7 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'func_alpha_div_resid
   plot_lisa_map(units_merged_beta_subset, func_alpha_div_resid), cols = 2)
 ```
 
-###Spatial model
+### Spatial model
 ```{r, echo = FALSE, message = FALSE, results = 'hold'}
 func_alpha_model_spatial <- spdep::errorsarlm(f_func_alpha_model, data = func_model_variables, 
   listw = units_merged_subset_lw, etype = 'error', tol.solve = 1.0e-30, zero.policy = TRUE)
@@ -2060,7 +2060,7 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'func_alpha_div_resid
   plot_lisa_map(units_merged_beta_subset, func_alpha_div_resid), cols = 2)
 ```
 
-##Functional gamma diversity
+## Functional gamma diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 f_func_gamma_model <- formula(func_gamma_div ~ 
     human_footprint + 
@@ -2086,8 +2086,8 @@ func_gamma_model_summary
 func_gamma_model_vif
 ```
 
-##Check functional gamma residuals
-###1. Homogeneity of residuals
+## Check functional gamma residuals
+### 1. Homogeneity of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Get standardised predicted and residual values
 func_gamma_standardised_pred <- (predict(func_gamma_model) - mean(predict(func_gamma_model))) / sd(predict(func_gamma_model))
@@ -2098,7 +2098,7 @@ abline(0, 0)
 abline(h = c(-2, 2), col = 'red')
 ```
 
-###2. Normality of residuals
+### 2. Normality of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Histogram of standardised residuals
 hist(func_gamma_standardised_resid, freq = FALSE, main = 'Histogram of functional gamma model residuals', xlab = 'Residuals')
@@ -2110,7 +2110,7 @@ plot(ppoints(length(func_gamma_standardised_resid)), sort(func_gamma_prob_dist),
 abline(0, 1)
 ```
 
-###3. Independence of residuals
+### 3. Independence of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Test for spatial autocorrelation
 moran.test(units_merged_beta_subset$func_gamma_div_resid, listw = units_merged_subset_lw, 
@@ -2139,7 +2139,7 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'func_gamma_div_resid
   plot_lisa_map(units_merged_beta_subset, func_gamma_div_resid), cols = 2)
 ```
 
-###Spatial model
+### Spatial model
 ```{r, echo = FALSE, message = FALSE, results = 'hold'}
 func_gamma_model_spatial <- spdep::errorsarlm(f_func_gamma_model, data = func_model_variables, 
   listw = units_merged_subset_lw, etype = 'error', tol.solve = 1.0e-30, zero.policy = TRUE)
@@ -2203,13 +2203,13 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'func_gamma_div_resid
   plot_lisa_map(units_merged_beta_subset, func_gamma_div_resid), cols = 2)
 ```
 
-#Analyse phylogenetic diversity
+# Analyse phylogenetic diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 phyl_model_variables <- dplyr::inner_join(units_merged_beta_subset@data[c('unit', 
   'phyl_beta_div', 'phyl_alpha_div', 'phyl_gamma_div')], explanatory_variables)
 ```
 
-##Phylogenetic beta diversity
+## Phylogenetic beta diversity
 We construct a GLM with a Gamma distribution. More information can be found 
 [here](http://seananderson.ca/2014/04/08/gamma-glms.html)
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
@@ -2246,8 +2246,8 @@ phyl_beta_model_summary
 phyl_beta_model_vif
 ```
 
-##Check phylogenetic beta residuals
-###1. Homogeneity of residuals
+## Check phylogenetic beta residuals
+### 1. Homogeneity of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Get standardised predicted and residual values
 phyl_beta_standardised_pred <- (predict(phyl_beta_model) - mean(predict(phyl_beta_model))) / sd(predict(phyl_beta_model))
@@ -2259,7 +2259,7 @@ abline(0, 0)
 abline(h = c(-2, 2), col = 'red')
 ```
 
-###2. Normality of residuals
+### 2. Normality of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Histogram of standardised residuals
 hist(phyl_beta_standardised_resid, freq = FALSE, main = 'Histogram of phylogenetic beta 
@@ -2273,7 +2273,7 @@ plot(ppoints(length(phyl_beta_standardised_resid)), sort(phyl_beta_prob_dist), m
 abline(0, 1)
 ```
 
-###3. Independence of residuals
+### 3. Independence of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Test for spatial autocorrelation
 moran.test(units_merged_beta_subset$phyl_beta_div_resid, listw = units_merged_subset_lw, 
@@ -2302,7 +2302,7 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'phyl_beta_div_resid'
   plot_lisa_map(units_merged_beta_subset, phyl_beta_div_resid), cols = 2)
 ```
 
-###Spatial model
+### Spatial model
 ```{r, echo = FALSE, message = FALSE, results = 'hold'}
 f_phyl_beta_model <- formula(log(phyl_beta_div) ~ 
     human_footprint + 
@@ -2382,7 +2382,7 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'phyl_beta_div_resid'
   plot_lisa_map(units_merged_beta_subset, phyl_beta_div_resid), cols = 2)
 ```
 
-##Phylogenetic alpha diversity
+## Phylogenetic alpha diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 f_phyl_alpha_model <- formula(phyl_alpha_div ~ 
     human_footprint + 
@@ -2408,8 +2408,8 @@ phyl_alpha_model_summary
 phyl_alpha_model_vif
 ```
 
-##Check phylogenetic alpha residuals
-###1. Homogeneity of residuals
+## Check phylogenetic alpha residuals
+### 1. Homogeneity of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Get standardised predicted and residual values
 phyl_alpha_standardised_pred <- (predict(phyl_alpha_model) - mean(predict(phyl_alpha_model))) / sd(predict(phyl_alpha_model))
@@ -2421,7 +2421,7 @@ abline(0, 0)
 abline(h = c(-2, 2), col = 'red')
 ```
 
-###2. Normality of residuals
+### 2. Normality of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Histogram of standardised residuals
 hist(phyl_alpha_standardised_resid, freq = FALSE, main = 'Histogram of phylogenetic beta 
@@ -2435,7 +2435,7 @@ plot(ppoints(length(phyl_alpha_standardised_resid)), sort(phyl_alpha_prob_dist),
 abline(0, 1)
 ```
 
-###3. Independence of residuals
+### 3. Independence of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Test for spatial autocorrelation
 moran.test(units_merged_beta_subset$phyl_alpha_div_resid, listw = units_merged_subset_lw, 
@@ -2464,7 +2464,7 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'phyl_alpha_div_resid
   plot_lisa_map(units_merged_beta_subset, phyl_alpha_div_resid), cols = 2)
 ```
 
-###Spatial model
+### Spatial model
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 phyl_alpha_model_spatial <- spdep::errorsarlm(f_phyl_alpha_model, data = phyl_model_variables, 
   listw = units_merged_subset_lw, etype = 'error', tol.solve = 1.0e-30, zero.policy = TRUE)
@@ -2527,7 +2527,7 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'phyl_alpha_div_resid
   plot_lisa_map(units_merged_beta_subset, phyl_alpha_div_resid), cols = 2)
 ```
 
-##Phylogenetic gamma diversity
+## Phylogenetic gamma diversity
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 f_phyl_gamma_model <- formula(phyl_gamma_div ~ 
     human_footprint + 
@@ -2553,8 +2553,8 @@ phyl_gamma_model_summary
 phyl_gamma_model_vif
 ```
 
-##Check phylogenetic gamma residuals
-###1. Homogeneity of residuals
+## Check phylogenetic gamma residuals
+### 1. Homogeneity of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Get standardised predicted and residual values
 phyl_gamma_standardised_pred <- (predict(phyl_gamma_model) - mean(predict(phyl_gamma_model))) / sd(predict(phyl_gamma_model))
@@ -2566,7 +2566,7 @@ abline(0, 0)
 abline(h = c(-2, 2), col = 'red')
 ```
 
-###2. Normality of residuals
+### 2. Normality of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Histogram of standardised residuals
 hist(phyl_gamma_standardised_resid, freq = FALSE, main = 'Histogram of phylogenetic gamma 
@@ -2580,7 +2580,7 @@ plot(ppoints(length(phyl_gamma_standardised_resid)), sort(phyl_gamma_prob_dist),
 abline(0, 1)
 ```
 
-###3. Independence of residuals
+### 3. Independence of residuals
 ```{r, echo = FALSE, results = 'hold', fig.show = 'hold', message = FALSE}
 # Test for spatial autocorrelation
 moran.test(units_merged_beta_subset$phyl_gamma_div_resid, listw = units_merged_subset_lw, 
@@ -2609,7 +2609,7 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'phyl_gamma_div_resid
   plot_lisa_map(units_merged_beta_subset, phyl_gamma_div_resid), cols = 2)
 ```
 
-###Spatial model
+### Spatial model
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 phyl_gamma_model_spatial <- spdep::errorsarlm(f_phyl_gamma_model, data = phyl_model_variables, 
   listw = units_merged_subset_lw, etype = 'error', tol.solve = 1.0e-30, zero.policy = TRUE)
@@ -2672,8 +2672,8 @@ multiplot(plot_variable_map(units_merged_beta_subset_fort, 'phyl_gamma_div_resid
   plot_lisa_map(units_merged_beta_subset, phyl_gamma_div_resid), cols = 2)
 ```
 
-#Prepare data for manuscript
-##Save data
+# Prepare data for manuscript
+## Save data
 ```{r, message = FALSE, warning = FALSE, echo = FALSE}
 response_summary <- summary(units_merged_beta_subset@data[c('forest_spp_richness', 'tax_alpha_div', 'func_alpha_div', 'phyl_alpha_div', 'tax_beta_div', 'func_beta_div', 'phyl_beta_div', 'tax_gamma_div', 'func_gamma_div', 'phyl_gamma_div')])
 
@@ -2712,7 +2712,7 @@ save(phyl_gamma_model_vif, file = './results/phyl_gamma_model_vif.rda')
 
 ```
 
-##Create and save maps
+## Create and save maps
 ```{r, results = 'hold', fig.show = 'hold', message = FALSE, warning = FALSE, eval = FALSE}
 ggplot(data = units_merged_beta_subset_fort, 
   aes_string(x = 'long', y = 'lat', fill = 'forest_spp_richness', group = 'group')) + 
