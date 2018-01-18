@@ -1367,6 +1367,7 @@ recalculate diversity measures.
 ```{r, echo = FALSE, results = 'hold', message = FALSE}
 units_merged_beta_subset <- units_merged_beta[!(units_merged_beta$unit %in% 
     c(39, 12, 38, 559)), ]
+units_merged_beta_subset <- units_merged_beta
 units_merged_subset_nb <- poly2nb(units_merged_beta_subset)
 units_merged_subset_lw <- nb2listw(units_merged_subset_nb, zero.policy = TRUE)
 ```
