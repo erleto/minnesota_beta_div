@@ -1,18 +1,22 @@
 ---
-title: 'Does human land-use lead to biotic homogenisation of forest bird communities in northern USA?'
-author: Eric Le Tortorec, Matti Häkkilä, Edmund Zlonis, Gerald Niemi, Mikko Mönkkönen
+title: Does human land-use lead to biotic homogenisation of forest bird communities
+  in northern USA?
+author: "Eric Le Tortorec, Matti Häkkilä, Edmund Zlonis, Gerald Niemi, Mikko Mönkkönen"
 date: "`r format(Sys.time(), '%d-%m-%Y')`"
+documentclass: "article"
 output:
   word_document:
-    toc: true
-    toc_depth: 4
-    fig_width: 6
     fig_height: 6
+    fig_width: 6
+    pandoc_args: -smart
     reference_docx: manuscript_style.docx
-    pandoc_args: ["-smart"]
-  html_notebook:
-    toc: true
+    toc: yes
     toc_depth: 4
+  html_notebook:
+    toc: yes
+    toc_depth: 4
+csl: ecography.csl
+bibliography: manuscript.bib
 ---
  
 ```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
@@ -281,7 +285,7 @@ expl_names <- c('Intercept', 'Human footprint', 'Forest loss (%)', 'Net primary 
 # Introduction  
 Global studies have shown that human-caused land-use changes and their
 associated pressures have led to strong, consistent and accumulating negative
-impacts on biodiversity (Haddad et al. 2015). Human pressures such as land
+impacts on biodiversity [@haddad_habitat_2015]. Human pressures such as land
 expansion for agriculture, timber harvesting, and urbanisation have
 significantly modified ecosystems worldwide (Foley et al. 2005). Of these,
 forest ecosystems have been especially heavily impacted by human activities,
@@ -968,3 +972,5 @@ for (package in sort(.packages())) {
   #cat(paste(package, ' ', packageVersion(package), '\n'))
 }
 ```
+
+# References
