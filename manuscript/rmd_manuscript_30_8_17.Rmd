@@ -883,103 +883,49 @@ ggplot(units_merged_beta_subset@data, aes(x = forest_point_freq)) +
   
 ## 5. Spatial distribution of response variables and species richness
 ### a) Taxonomic beta diversity
-```{r tax_div_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('tax_div_plot', 'Map showing the spatial distribution of taxonomic beta diversity in the state of Minnesota')}
-ggplot(data = units_merged_beta_subset_fort, 
-  aes_string(x = 'long', y = 'lat', fill = 'tax_beta_div', group = 'group')) + 
-  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
-  geom_polygon(color = 'black', size = .05) + 
-  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Taxonomic \nbeta diversity') + 
-  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = 'black') + 
-  coord_equal() + theme_void()
+```{r tax_div_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.height = 10, fig.width = 10, fig.cap = figRefApp('tax_div_plot', 'Map showing the spatial distribution of taxonomic beta diversity in the state of Minnesota')}
+knitr::include_graphics('../figures/tax_beta_map.png')
 ```
   
 ### b) Functional beta diversity
-```{r func_div_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('func_div_plot', 'Map showing the spatial distribution of functional beta diversity in the state of Minnesota')}
-ggplot(data = units_merged_beta_subset_fort, 
-  aes_string(x = 'long', y = 'lat', fill = 'func_beta_div', group = 'group')) + 
-  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
-  geom_polygon(color = 'black', size = .05) + 
-  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Functional \nbeta diversity') + 
-  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = 'black') + 
-  coord_equal() + theme_void()
+```{r func_div_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.height = 2, fig.width = 2, fig.cap = figRefApp('func_div_plot', 'Map showing the spatial distribution of functional beta diversity in the state of Minnesota')}
+knitr::include_graphics('../figures/func_beta_map.png')
 ```
   
 ### c) Phylogenetic beta diversity
 ```{r phyl_div_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('phyl_div_plot', 'Map showing the spatial distribution of phylogenetic beta diversity in the state of Minnesota')}
-ggplot(data = units_merged_beta_subset_fort, 
-  aes_string(x = 'long', y = 'lat', fill = 'phyl_beta_div', group = 'group')) + 
-  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
-  geom_polygon(color = 'black', size = .05) + 
-  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Phylogenetic \nbeta diversity') + 
-  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = 'black') + 
-  coord_equal() + theme_void()
+knitr::include_graphics('../figures/phyl_beta_map.png')
 ```
   
 ### d) Forest species richness
 ```{r spp_richness_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('spp_richness_plot', 'Map showing the spatial distribution of species richness in the state of Minnesota')}
-ggplot(data = units_merged_beta_subset_fort, #units_merged_beta_subset_fort
-  aes_string(x = 'long', y = 'lat', fill = 'forest_spp_richness', group = 'group')) + 
-  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
-  geom_polygon(color = 'black', size = .05) + 
-  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Forest species \nrichness') + 
-  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = 'black') + 
-  coord_equal() + theme_void()
+knitr::include_graphics('../figures/spp_rich_map.png')
 ```
   
 ## 6. Spatial distribution of explanatory variables  
 ### a) Human footprint  
 ```{r hfp_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('hfp_plot', 'Map showing the spatial distribution of human footprint values in the state of Minnesota')}
-ggplot(data = units_merged_fort, 
-  aes_string(x = 'long', y = 'lat', fill = 'human_footprint', group = 'group')) + 
-  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
-  geom_polygon(color = 'black', size = .05) + 
-  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Human \nfootprint') + 
-  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = 'black') + 
-  coord_equal() + theme_void()
+knitr::include_graphics('../figures/hfp_map.png')
 ```
   
 ### b) Forest loss  
 ```{r for_loss_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('for_loss_plot', 'Map showing the spatial distribution of forest loss values in the state of Minnesota')}
-ggplot(data = units_merged_fort, #units_merged_beta_subset_fort
-  aes_string(x = 'long', y = 'lat', fill = 'forest_loss', group = 'group')) + 
-  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
-  geom_polygon(color = 'black', size = .05) + 
-  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Forest \nloss') + 
-  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = 'black') + 
-  coord_equal() + theme_void()
+knitr::include_graphics('../figures/f_loss_map.png')
 ```
   
 ### c) Habitat diversity  
 ```{r hab_div_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('hab_div_plot', 'Map showing the spatial distribution of habitat diversity values in the state of Minnesota')}
-ggplot(data = units_merged_fort, 
-  aes_string(x = 'long', y = 'lat', fill = 'habitat_div', group = 'group')) + 
-  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
-  geom_polygon(color = 'black', size = .05) + 
-  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Habitat \ndiversity') + 
-  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = 'black') + 
-  coord_equal() + theme_void()
+knitr::include_graphics('../figures/hab_div_map.png')
 ```
   
 ### d) Net primary production  
 ```{r npp_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('npp_plot', 'Map showing the spatial distribution of net primary productivity values in the state of Minnesota')}
-ggplot(data = units_merged_fort, 
-  aes_string(x = 'long', y = 'lat', fill = 'net_prim_prod', group = 'group')) + 
-  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
-  geom_polygon(color = 'black', size = .05) + 
-  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Net primary \nproduction') + 
-  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = 'black') + 
-  coord_equal() + theme_void()
+knitr::include_graphics('../figures/npp_map.png')
 ```
    
 ### e) Mean temperature  
 ```{r mean_temp_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('mean_temp_plot', 'Map showing the spatial distribution of mean temperature values in the state of Minnesota')}
-ggplot(data = units_merged_fort, 
-  aes_string(x = 'long', y = 'lat', fill = 'mean_temp', group = 'group')) + 
-  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
-  geom_polygon(color = 'black', size = .05) + 
-  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Mean \ntemperature') + 
-  geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = 'black') + 
-  coord_equal() + theme_void()
+knitr::include_graphics('../figures/mean_temp_map.png')
 ```
   
 ## 7. List of used R packages and their versions  
