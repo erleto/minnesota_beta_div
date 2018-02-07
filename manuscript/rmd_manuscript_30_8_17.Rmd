@@ -519,8 +519,8 @@ rownames(explanatory_summary_table) <- c('Min', 'Median', 'Mean', 'Max', 'SD')
 pander::pander(explanatory_summary_table)
 ```
 
-```{r beta_div_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRef('div_plots', 'Distributions of forest species richness, taxonomic, functional, and phylogenetic beta diversity, and Pearson correlations between diversity measures')}
-knitr::include_graphics('./figures/beta_div_plots.png')
+```{r beta_div_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRef('div_plots', 'Distributions of taxonomic, functional and phylogenetic beta diversity, and forest species richness, and Pearson correlations between the diversity measures')}
+knitr::include_graphics('../figures/beta_div_plots.png')
 ```
   
 `r figRef("div_plots")` shows that none of the response variables was strongly
@@ -542,7 +542,7 @@ tax_beta_range <- round(max(units_merged_beta_subset$tax_beta_div) -
 tax_beta_hdiv_change <- round(tax_beta_model_coef['Habitat diversity', 'Estimate'] * hdiv_range, digits = 2)
 tax_beta_hdiv_perc <- round((tax_beta_hdiv_change / tax_beta_range) * 100, digits = 2)
 ```
-
+  
 Taxonomic beta diversity was not impacted by human footprint index (HFI), nor
 forest loss. Taxonomic beta diversity was positively associated with habitat
 diversity. Along the range of habitat diversity values 
