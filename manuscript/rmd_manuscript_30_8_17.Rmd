@@ -528,8 +528,7 @@ pander::pander(explanatory_summary_table)
 ```
 
 ```{r beta_div_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRef('div_plots', 'Distributions of forest species richness, taxonomic, functional, and phylogenetic beta diversity, and Pearson correlations between diversity measures')}
-psych::pairs.panels(units_merged_beta_subset@data[c('forest_spp_richness', 
-  'tax_beta_div', 'func_beta_div', 'phyl_beta_div')], hist.col = NULL)
+knitr::include_graphics('./figures/beta_div_plots.png')
 ```
   
 `r figRef("div_plots")` shows that none of the response variables was strongly
@@ -812,14 +811,12 @@ phyl_gamma_forest_perc <- round((phyl_gamma_forest_change / phyl_gamma_range) * 
 
 ## 1. Correlations between human footprint and human influence variables in Minnesota data
 ```{r hfp_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('hfp_plots', "Distributions of human footprint and other variables describing human influence, and Spearman's rank correlations between variables")}
-psych::pairs.panels(units_merged_human_impact_subset, hist.col = NULL, method = 'spearman')
+knitr::include_graphics('../figures/human_impact_plots.png')
 ```
   
 ## 2. Correlations between explanatory variables and their distributions
 ```{r explanatory_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('explanatory_plots', "Distributions of explanatory variables, and Spearman's rank correlations between variables")}
-psych::pairs.panels(units_merged_beta_subset@data[c('human_footprint', 
-  'forest_loss', 'habitat_div', 'net_prim_prod', 'mean_temp', 'forest_point_freq')], 
-  hist.col = NULL, method = 'spearman')
+knitr::include_graphics('../figures/explanatory_plots.png')
 ```
   
 ## 3. Variance inflation factors from models  
@@ -833,13 +830,7 @@ pander::pander(vif_table)
   
 ## 4. Histogram of number of forest MNBBA points per unit
 ```{r for_point_hist, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('for_point_hist', 'Histrogram of the number of forested MNBBA points per unit')}
-ggplot(units_merged_beta_subset@data, aes(x = forest_point_freq)) + 
-  geom_histogram(binwidth = 1,  fill = "grey", colour = "black") + 
-  xlab('Number of forested points') + 
-  ylab('Count') + 
-  scale_x_continuous(limits = c(3, 20.1), expand = c(0, 0)) + 
-  scale_y_continuous(limits = c(0, 40), expand = c(0, 0)) + 
-  mytheme
+knitr::include_graphics('../figures/for_point_hist.png')
 ```
   
 ## 5. Spatial distribution of response variables and species richness
