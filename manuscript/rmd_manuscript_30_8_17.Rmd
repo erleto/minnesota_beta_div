@@ -183,13 +183,10 @@ summary_fun <- function(x,...){
 ```
 
 ```{r load_data, echo = FALSE, message = FALSE, warning = FALSE, results = 'hide'}
-attach('./results/units_merged_fort.rda')
 attach('./results/units_merged_beta_subset.rda')
-attach('./results/units_merged_beta_subset_fort.rda')
 attach('./results/min_points_radius.rda')
 attach('./results/bba_forest_point_count.rda')
 attach('./results/forest_unit_count.rda')
-attach('./results/units_merged_human_impact_subset.rda')
 attach('./results/tax_beta_model_summary.rda')
 attach('./results/tax_alpha_model_summary.rda')
 attach('./results/tax_gamma_model_summary.rda')
@@ -208,7 +205,6 @@ attach('./results/func_gamma_model_vif.rda')
 attach('./results/phyl_beta_model_vif.rda')
 attach('./results/phyl_alpha_model_vif.rda')
 attach('./results/phyl_gamma_model_vif.rda')
-minnesota <- readOGR('./data/minnesota_bird_data/mnbba_homogenization_data_9_22_2015/units_spatial_data/Minnesota_Outline.shp', 'Minnesota_Outline')
 ```
 
 ```{r calc_ranges, echo = FALSE, message = FALSE, warning = FALSE, results = 'hide'}
@@ -388,17 +384,17 @@ were located and marked with a GPS device, cover type of vegetation visually
 estimated, and pictures taken in the two directions perpendicular to the road.  
 
 A total of 7070 MNBBA counts were performed between May 2009 and June 2014.
-Abundances of birds identified to the species level within 100m of the MNBBA
+Abundances of birds identified to the species level within `r count_radius`m of the MNBBA
 point were used since the habitat classification was conducted at the same
 spatial scale (see below). For those MNBBA points that had been counted more
 than once we selected the earlier observation. We used MNBBA points located at
-least 200m from each other (twice the distance of the bird count radius) in
+least `r 2 * count_radius`m from each other (twice the distance of the bird count radius) in
 order to avoid overlap between bird counts. From pairs of MNBBA points located
-under 200m from each other we selected the earlier observation, and if both
+under `r 2 * count_radius`m from each other we selected the earlier observation, and if both
 points had the same date one was chosen randomly. For the analyses in this study
 we used MNBBA points located in forested land cover classes. In order to ensure
 that the dominant habitat being sampled was forest, we first calculated the
-proportion of landcover types within 100m of each MNBBA count location using the
+proportion of landcover types within `r count_radius`m of each MNBBA count location using the
 ‘isectpolyrst’ tool in Geospatial Modelling Environment version 0.7.3.0
 [@BeyerGeospatialmodellingenvironment2012]. Landcover classes were derived from
 the LANDFIRE dataset [@RollinsoverviewLANDFIREPrototype2006]. One hundred and
@@ -410,8 +406,8 @@ following dominant landcover classes were considered forested; lowland deciduous
 forest, northern hardwoods, pine forest, boreal deciduous, oak forest, parkland
 deciduous forest, boreal coniferous, lowland coniferous, rural and urban
 developed forest, pine-oak barrens and oak savannah. For calculating bird
-community diversities, we only used units that had at least 3 MNBBA points
-located in a forested land use class (2217 forested MNBBA points in 287 units).
+community diversities, we only used units that had at least `r min_points` MNBBA points
+located in a forested land use class (`r bba_forest_point_count` forested mnbba points in `r forest_unit_count` units).
 We determined 3 points to be the minimum number of communities to reliably
 estimate beta diversity.  
   
