@@ -241,35 +241,36 @@ expl_names <- c('Intercept', 'Human footprint', 'Forest change (%)', 'Net primar
 # Introduction  
 Global studies have shown that human-caused land-use changes and their
 associated pressures have led to strong, consistent and accumulating negative
-impacts on biodiversity [@HaddadHabitatfragmentationits2015]. Human pressures 
-that contribute to land use change such as agriculture, timber harvesting, and urbanisation have
-significantly modified ecosystems worldwide [@FoleyGlobalConsequencesLand2005].
-Of these, forest ecosystems have been especially heavily impacted by human
-activities, showing a decrease in area of over 3% during just the last 25 years
-[@FAOGlobalforestresources2016]. There
-are signs that the rate of forest loss is decreasing but the proportion of
-managed forests is increasing at the expense of natural forest cover
-[@FAOGlobalforestresources2016]. In addition, an increasing threat to forests worldwide is
-harvesting forests for bioenergy (ref). Natural forests harbour high levels of
-productivity, biomass, and biodiversity [@FoleyGlobalConsequencesLand2005] and
-decreases in their cover have the potential to have significant negative impacts
-on biodiversity and ecosystem services.  
+impacts on biodiversity [@HaddadHabitatfragmentationits2015]. Human pressures
+that contribute to land use change such as agriculture, timber harvesting, and
+urbanisation have significantly modified ecosystems worldwide
+[@FoleyGlobalConsequencesLand2005]. Of these, forest ecosystems have been
+especially heavily impacted by human activities, showing a decrease in area of
+over 3% during just the last 25 years [@FAOGlobalforestresources2016]. There are
+signs that the rate of forest loss is decreasing but the proportion of managed
+forests is increasing at the expense of natural forest cover
+[@FAOGlobalforestresources2016]. In addition, an increasing threat to forests
+worldwide is harvesting forests for bioenergy (ref). Natural forests harbour
+high levels of productivity, biomass, and biodiversity
+[@FoleyGlobalConsequencesLand2005] and decreases in their cover have the
+potential to have significant negative impacts on biodiversity and ecosystem
+services.  
 
-Human activities appear to impact different scales of
-biodiversity in different ways [@McGillFifteenformsbiodiversity2015]. Studies have shown that
-biodiversity at the local scale (alpha diversity) has not changed significantly
-through time, whereas biodiversity at the global scale has decreased. For
-example, @VellendGlobalmetaanalysisreveals2013
-[-@VellendGlobalmetaanalysisreveals2013] showed that plant species diversity has
-not significantly changed through time, and that species increases are as common
-as species decreases. Similarly, @DornelasAssemblageTimeSeries2014
-[-@DornelasAssemblageTimeSeries2014] showed that time series of local species
-richness did not show a systematic loss, although community composition did
-change. However, @NewboldGlobaleffectsland2015 [-@NewboldGlobaleffectsland2015]
-inferred from models based on empirical data that at a global scale, local
-assemblages have lost over 13% of their species richness due to human pressures.
-The discrepancy between trends in local and global biodiversity can be explained
-by a spatial measure of biodiversity --- beta diversity.  
+Human activities appear to impact different scales of biodiversity in different
+ways [@McGillFifteenformsbiodiversity2015]. Studies have shown that biodiversity
+at the local scale (alpha diversity) has not changed significantly through time,
+whereas biodiversity at the global scale has decreased. For example,
+@VellendGlobalmetaanalysisreveals2013 [-@VellendGlobalmetaanalysisreveals2013]
+showed that plant species diversity has not significantly changed through time,
+and that species increases are as common as species decreases. Similarly,
+@DornelasAssemblageTimeSeries2014 [-@DornelasAssemblageTimeSeries2014] showed
+that time series of local species richness did not show a systematic loss,
+although community composition did change. However,
+@NewboldGlobaleffectsland2015 [-@NewboldGlobaleffectsland2015] inferred from
+models based on empirical data that at a global scale, local assemblages have
+lost over 13% of their species richness due to human pressures. The discrepancy
+between trends in local and global biodiversity can be explained by a spatial
+measure of biodiversity --- beta diversity.  
 
 Beta diversity measures variation in biodiversity in space and, since it cannot
 be measured directly, is derived from the total diversity of a region (gamma
@@ -282,22 +283,23 @@ composition of local sites is different from each other than in a region with a
 lower level of beta diversity. Thus, even though local diversity might not show
 a decrease, the total diversity of a region could decrease if the individual
 sites became more similar. However, in a conservation setting, maximising beta
-diversity is not necessarily the only goal [@SocolarHowShouldBetaDiversity2016]. For
-example, uneven losses in species between sites can lead to decreased mean alpha
-diversity, which will increase the beta diversity of a region. On the other
-hand, the colonisation of specialists into new sites can increase mean alpha
-diversity [@McCuneGainsnativespecies2013], leading to a decrease in the beta
-diversity of a region.  
+diversity is not necessarily the only goal [@SocolarHowShouldBetaDiversity2016].
+For example, uneven losses in species between sites can lead to decreased mean
+alpha diversity, which will increase the beta diversity of a region. On the
+other hand, the colonisation of specialists into new sites can increase mean
+alpha diversity [@McCuneGainsnativespecies2013], leading to a decrease in the
+beta diversity of a region.  
 
 Increasing similarity between local sites (decreased beta diversity), is a
 process known as biotic homogenisation [@OldenBiotichomogenizationnew2006].
 Biotic homogenisation has been shown to be a global phenomenon, occurring in
 almost all taxonomic groups [@BaiserPatternprocessbiotic2012]. Human activities
-causing the introduction of exotic and invasive species and extinctions of native species have the potential to cause species
-composition in different sites to become more similar
-[@BaiserPatternprocessbiotic2012]. Local species extinctions often involve 
-specialists with narrow dietary and habitat preferences, and they are often
-replaced by generalists that can withstand fluctuating environmental conditions and human-built environments
+causing the introduction of exotic and invasive species and extinctions of
+native species have the potential to cause species composition in different
+sites to become more similar [@BaiserPatternprocessbiotic2012]. Local species
+extinctions often involve specialists with narrow dietary and habitat
+preferences, and they are often replaced by generalists that can withstand
+fluctuating environmental conditions and human-built environments
 [@McKinneyBiotichomogenizationfew1999; @ClavelWorldwidedeclinespecialist2011].
 These generalists have often been described as species with global ranges but
 there is evidence that they are often native species
@@ -310,25 +312,26 @@ There is already evidence that the loss of biodiversity is creating an ecosystem
 services debt that will be exacerbated by continuing biodiversity loss
 [@Isbellbiodiversitydependentecosystemservice2015], with potential decrease in
 the resilience of ecosystem functions
-[@OliverBiodiversityResilienceEcosystem2015]. In addition, specialised species often 
-have unique phylogenetic histories, the loss of which decreases the phylogenetic
-diversity of communities. Since biotic homogenisation, and many other phenomena
-related to biodiversity, has been studied mainly from the aspect of the number
-of species (taxonomic diversity) we still have a limited understanding of how
-different facets of biodiversity respond to human activities.  
+[@OliverBiodiversityResilienceEcosystem2015]. In addition, specialised species
+often have unique phylogenetic histories, the loss of which decreases the
+phylogenetic diversity of communities. Since biotic homogenisation, and many
+other phenomena related to biodiversity, has been studied mainly from the aspect
+of the number of species (taxonomic diversity) we still have a limited
+understanding of how different facets of biodiversity respond to human
+activities.  
 
-We studied how land-use change due to human actions causes biotic
-homogenisation in bird communities of forested habitats in the state of
-Minnesota, USA. Our aim was to study if an increasing human footprint, which
-includes human population, transport infrastructure, and forest change, causes
-sites to become more similar to each other (decreased beta diversity). We also
-controlled for factors known to impact biodiversity, including habitat
-diversity, net primary productivity, and temperature (refs). We studied this
-phenomenon from the taxonomic, functional and phylogenetic viewpoints. We
-predicted that increased human footprint and forest change would lead to decreased
-diversity between bird count sites, visible as decreased beta diversity. We also
-expected taxonomic, functional, and phylogenetic diversity to show different
-sensitivities to human influence.  
+We studied how land-use change due to human actions causes biotic homogenisation
+in bird communities of forested habitats in the state of Minnesota, USA. Our aim
+was to study if an increasing human footprint, which includes human population,
+transport infrastructure, and forest change, causes sites to become more similar
+to each other (decreased beta diversity). We also controlled for factors known
+to impact biodiversity, including habitat diversity, net primary productivity,
+and temperature (refs). We studied this phenomenon from the taxonomic,
+functional and phylogenetic viewpoints. We predicted that increased human
+footprint and forest change would lead to decreased diversity between bird count
+sites, visible as decreased beta diversity. We also expected taxonomic,
+functional, and phylogenetic diversity to show different sensitivities to human
+influence.  
 
 # Methods  
 ## Study design
@@ -339,21 +342,22 @@ systematically sample breeding birds across the state by collecting data in each
 township of the state.  Townships measure approximately 93 km^2^ (6 x 6 miles)
 and were developed by the Public Land Survey System
 ([PLSS](https://nationalmap.gov/small_scale/a_plss.html)).  Within each
-township, three point locations were selected. The first point was placed in a random land use class, 
-the second point represented the most common land use class in the township, and the last point was 
-placed in the second most common land use class in the township. Land use data were derived from the 2001 National Land Cover
-Database [@HomerDevelopment2001national2004]. Counts were conducted primarily on
-secondary roads; large, paved roads such as state or federal highways were
-avoided. Townships in roadless areas such as the Boundary Waters Canoe Area
-Wilderness, Voyageurs National Park, and the Red Lake Peatland were sampled from
-trails, portages, and water by hiking, biking, boat, or canoe. For the purposes
-of this study, the townships in Minnesota were combined into 617 units, each
-comprising four townships and measuring roughly 19.3 x 19.3 km (12 x 12 miles).
-Each unit formed a square, except for a few specific areas where irregular units
-constructed from one to four townships were used. Units were developed by
-selecting a random township, which was used as the north-eastern square of the
-first unit. Subsequent units were then formed using the first unit as a
-reference point until the entire state was covered.  
+township, three point locations were selected. The first point was placed in a
+random land use class, the second point represented the most common land use
+class in the township, and the last point was placed in the second most common
+land use class in the township. Land use data were derived from the 2001
+National Land Cover Database [@HomerDevelopment2001national2004]. Counts were
+conducted primarily on secondary roads; large, paved roads such as state or
+federal highways were avoided. Townships in roadless areas such as the Boundary
+Waters Canoe Area Wilderness, Voyageurs National Park, and the Red Lake Peatland
+were sampled from trails, portages, and water by hiking, biking, boat, or canoe.
+For the purposes of this study, the townships in Minnesota were combined into
+617 units, each comprising four townships and measuring roughly 19.3 x 19.3 km
+(12 x 12 miles). Each unit formed a square, except for a few specific areas
+where irregular units constructed from one to four townships were used. Units
+were developed by selecting a random township, which was used as the
+north-eastern square of the first unit. Subsequent units were then formed using
+the first unit as a reference point until the entire state was covered.
 
 The primary objective of the MNBBA point counts was to insure equal and
 consistent sampling of the bird community across the state of Minnesota. This
@@ -465,17 +469,21 @@ and the cell with the largest value got a value of 100. The HFI data was clipped
 to the state of Minnesota, and the average HFI value for each unit was
 calculated.  
 
-In addition to studying the impact of general human influence we also wanted to study how changes in forest cover influence biodiversity. We quantified forest change from the global forest change dataset developed by @HansenHighResolutionGlobalMaps2013 [-@HansenHighResolutionGlobalMaps2013]. The
+In addition to studying the impact of general human influence we also wanted to
+study how changes in forest cover influence biodiversity. We quantified forest
+change from the global forest change dataset developed by
+@HansenHighResolutionGlobalMaps2013 [-@HansenHighResolutionGlobalMaps2013]. The
 dataset uses Landsat data to quantify gross forest loss and gain at an annual
-frequency between 2000 and 2014. For each unit, we calculated the percent
-cover of forest change between 2000 and 2014. However, there was no reliable way of
+frequency between 2000 and 2014. For each unit, we calculated the percent cover
+of forest change between 2000 and 2014. However, there was no reliable way of
 systematically separating forest change caused by humans from change caused by
-natural events such as forest fires and storms. 
-There were four units that had been significantly impacted by
-three large forest fires (Pagami Creek (2011), Cavity Lake (2006) and Ham Lake
-(2007) fires). Since the results from models run with and without the affected units did not change significantly, we decided to keep these units in the analyses. Habitat diversity for each unit was quantified by calculating
-the mean alpha diversity of habitat classes within units. Habitat classes were
-derived from the LANDFIRE reclassification described above.
+natural events such as forest fires and storms. There were four units that had
+been significantly impacted by three large forest fires (Pagami Creek (2011),
+Cavity Lake (2006) and Ham Lake (2007) fires). Since the results from models run
+with and without the affected units did not change significantly, we decided to
+keep these units in the analyses. Habitat diversity for each unit was quantified
+by calculating the mean alpha diversity of habitat classes within units. Habitat
+classes were derived from the LANDFIRE reclassification described above.  
 
 We calculated net primary production (NPP)...(to be continued)  
   
@@ -608,17 +616,18 @@ phylogenetic beta diversity decreased by `r abs(phyl_beta_temp_change)` units
 (-`r phyl_beta_temp_perc`%).  
 
 # Discussion  
-Elevated human pressure did not appear to be related with increased biotic homogenisation in our
-study site. An Increase in the human footprint index (HFI), which measured the impact of
-increased population density, land transformation, accessibility, and electrical
-power infrastructure, did not cause biotic homogenisation in taxonomic,
-functional or phylogenetic diversity. Instead, increased human footprint
-appeared to cause functional heterogenisation by increasing functional diversity
-between sites. Forest change did not appear to cause biotic homogenisation in any
-of the response variables. As such, our results appear to be at odds with
-previous studies that have shown homogenising impacts of increased human
-pressure. For example, urbanisation has been shown to homogenise environments
-and, consequently, biological communities [@McKinneyUrbanizationmajorcause2006;
+Elevated human pressure did not appear to be related with increased biotic
+homogenisation in our study site. An Increase in the human footprint index
+(HFI), which measured the impact of increased population density, land
+transformation, accessibility, and electrical power infrastructure, did not
+cause biotic homogenisation in taxonomic, functional or phylogenetic diversity.
+Instead, increased human footprint appeared to cause functional heterogenisation
+by increasing functional diversity between sites. Forest change did not appear
+to cause biotic homogenisation in any of the response variables. As such, our
+results appear to be at odds with previous studies that have shown homogenising
+impacts of increased human pressure. For example, urbanisation has been shown to
+homogenise environments and, consequently, biological communities
+[@McKinneyUrbanizationmajorcause2006;
 @SolUrbanisationlossphylogenetic2017], and agricultural expansion and
 intensification have been shown to homogenise bacterial
 [@RodriguesConversionAmazonrainforest2013] and beetle communities
@@ -637,9 +646,9 @@ diversity between sites is contrary to the results of many previous studies
 [@McKinneyUrbanizationmajorcause2006]. One potential reason for this could be
 that increased human impact raised habitat diversity by adding new land classes,
 which in turn added new species into some sites resulting in increased diversity
-between sites. Although we considered the diversity of land classes within each unit, 
-it is possible that increased human impact diversified habitats at
-finer scales. Another potential reason that beta diversity increases in response to
+between sites. Although we considered the diversity of land classes within each
+unit, it is possible that increased human impact diversified habitats at finer
+scales. Another potential reason that beta diversity increases in response to
 increased human impact could be related to the way that beta diversity was
 calculated. Beta diversity was calculated as gamma diversity (regional diversity
 of a unit) minus mean alpha diversity (mean local diversity of individual MNBBA
@@ -655,22 +664,23 @@ Similar to human footprint, forest change did not appear to cause biotic
 homogenisation in any of the responses studied here even though it has been
 shown to homogenise biological communities especially in the tropics
 [@LoboForestfragmentationdrives2011; @KitchingDistancedrivenspeciesturnover2013;
-@IbarraBiotichomogenizationLoss2015]. It is possible that the forests in this 
-region, which have experienced heavy logging of natural forests over the past 100-150
-years [@SchulteHomogenizationnorthernGreat2007], have already been homogenised in
-terms of species composition and forest structure to such an extent that current forest
-management activities occuring have limited impact on the composition of bird communities.
-Indeed, forests in the area still bear a clear signature of previous land use
-change [@SchulteHomogenizationnorthernGreat2007]. On the other hand, forest change
-did have a clear impact on local and regional diversity. A loss in the cover of mature forest
-coverage did, however, appear to decrease functional and phylogenetic diversity
-at the local and regional scales, although the impact on regional functional
-diversity was not statistically significant. Since forest change had a negative impact at both local
-and regional scales, the method of calculating between-site diversity canceled
-out the impact of forest change on between-site diversity, meaning that no
-homogenising impact could be seen. This suggests that even though units lost
-local and regional diversity in response to forest change, MNBBA sites did not
-become more alike.  
+@IbarraBiotichomogenizationLoss2015]. It is possible that the forests in this
+region, which have experienced heavy logging of natural forests over the past
+100-150 years [@SchulteHomogenizationnorthernGreat2007], have already been
+homogenised in terms of species composition and forest structure to such an
+extent that current forest management activities occuring have limited impact on
+the composition of bird communities. Indeed, forests in the area still bear a
+clear signature of previous land use change
+[@SchulteHomogenizationnorthernGreat2007]. On the other hand, forest change did
+have a clear impact on local and regional diversity. A loss in the cover of
+mature forest coverage did, however, appear to decrease functional and
+phylogenetic diversity at the local and regional scales, although the impact on
+regional functional diversity was not statistically significant. Since forest
+change had a negative impact at both local and regional scales, the method of
+calculating between-site diversity canceled out the impact of forest change on
+between-site diversity, meaning that no homogenising impact could be seen. This
+suggests that even though units lost local and regional diversity in response to
+forest change, MNBBA sites did not become more alike.  
 
 * Interpret results of biogeographic variables on beta diversities 
 * Beta-diversity indices were not positive functions of net primary productivity
