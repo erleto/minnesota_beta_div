@@ -235,7 +235,7 @@ temp_range <- round(max(units_merged_beta_subset$mean_temp) -
 ```
 
 ```{r set_variables, echo = FALSE, message = FALSE, warning = FALSE, results = 'hide'}
-expl_names <- c('Intercept', 'Human footprint', 'Forest change (%)', 'Net primary production (kg C/m^2/Year)', 'Habitat diversity', 'Mean temperature (\u2103 )', 'Number forested points')
+expl_names <- c('Intercept', 'Human footprint', 'Forest change (%)', 'Net primary production (kg C/m^2^/Year)', 'Habitat diversity', 'Mean temperature (\u2103 )', 'Number forested points')
 ```
   
 # Introduction  
@@ -250,8 +250,9 @@ over 3% during just the last 25 years [@FAOGlobalforestresources2016]. There are
 signs that the rate of forest loss is decreasing but the proportion of managed
 forests is increasing at the expense of natural forest cover
 [@FAOGlobalforestresources2016]. In addition, an increasing threat to forests
-worldwide is harvesting forests for bioenergy (ref). Natural forests harbour
-high levels of productivity, biomass, and biodiversity
+worldwide is harvesting forests for bioenergy
+[@SheppardBiosecuritysustainabilitygrowing2011]. Natural forests harbour high
+levels of productivity, biomass, and biodiversity
 [@FoleyGlobalConsequencesLand2005] and decreases in their cover have the
 potential to have significant negative impacts on biodiversity and ecosystem
 services.  
@@ -326,12 +327,12 @@ was to study if an increasing human footprint, which includes human population,
 transport infrastructure, and forest change, causes sites to become more similar
 to each other (decreased beta diversity). We also controlled for factors known
 to impact biodiversity, including habitat diversity, net primary productivity,
-and temperature (refs). We studied this phenomenon from the taxonomic,
-functional and phylogenetic viewpoints. We predicted that increased human
-footprint and forest change would lead to decreased diversity between bird count
-sites, visible as decreased beta diversity. We also expected taxonomic,
-functional, and phylogenetic diversity to show different sensitivities to human
-influence.  
+and temperature [@QianEnvironmentrichnessrelationships2010]. We studied this
+phenomenon from the taxonomic, functional and phylogenetic viewpoints. We
+predicted that increased human footprint and forest change would lead to
+decreased diversity between bird count sites, visible as decreased beta
+diversity. We also expected taxonomic, functional, and phylogenetic diversity to
+show different sensitivities to human influence.
 
 # Methods  
 ## Study design
@@ -413,9 +414,6 @@ mnbba points in `r forest_unit_count` units). We determined 3 points to be the
 minimum number of communities to reliably estimate beta diversity.  
   
 ## Calculation of beta diversities
-Biotic homogenisation, being a temporal process, is usually measured as the
-pairwise similarity of a site between two time points.  
-
 Within each unit we calculated taxonomic, functional, and phylogenetic beta
 ($\beta$) diversities with Rao’s quadratic entropy using R functions developed
 by @deBellopartitioningdiversityshowing2010
@@ -427,7 +425,7 @@ between pairs of species [@deBellopartitioningdiversityshowing2010].
 
 We calculated $\beta_{\text{eqv}}$ as the total diversity of a unit
 ($\gamma_{\text{eqv}}$) minus the average diversity of MNBBA points
-($\alpha_{\text{eqv}}$) within a unit and calculated $\beta_{\text{prop}}$ as
+($\alpha_{\text{eqv}}$) within a unit. We then calculated $\beta_{\text{prop}}$ as
 the proportion of $\gamma_{\text{eqv}}$ explained by $\beta_{\text{eqv}}$. By
 taking the number of forested bird count points into account, we were able to
 compare the proportion of $\gamma_{\text{eqv}}$ explained by
@@ -473,7 +471,9 @@ In addition to studying the impact of general human influence we also wanted to
 study how changes in forest cover influence biodiversity. We quantified forest
 change from the global forest change dataset developed by
 @HansenHighResolutionGlobalMaps2013 [-@HansenHighResolutionGlobalMaps2013]. The
-dataset uses Landsat data to quantify gross forest loss and gain at an annual
+dataset uses Landsat data to identify stand-replacing disturbances or the total 
+removal of tree canopy cover within each pixel. Using this data we were able to
+quantify gross forest loss and gain at an annual 
 frequency between 2000 and 2014. For each unit, we calculated the percent cover
 of forest change between 2000 and 2014. However, there was no reliable way of
 systematically separating forest change caused by humans from change caused by
@@ -481,21 +481,61 @@ natural events such as forest fires and storms. There were four units that had
 been significantly impacted by three large forest fires (Pagami Creek (2011),
 Cavity Lake (2006) and Ham Lake (2007) fires). Since the results from models run
 with and without the affected units did not change significantly, we decided to
-keep these units in the analyses. Habitat diversity for each unit was quantified
-by calculating the mean alpha diversity of habitat classes within units. Habitat
-classes were derived from the LANDFIRE reclassification described above.  
+keep these units in the analyses.  
 
-We calculated net primary production (NPP)...(to be continued)  
+In addition to variables describing human-caused changes in the environment, we
+also took into account abiotic variables also known to impact biological
+diversity [@QianEnvironmentrichnessrelationships2010]. Habitat diversity for
+each unit was quantified by calculating the mean alpha diversity of habitat
+classes within units. Habitat classes were derived from the LANDFIRE
+reclassification described above. Temperature and precipitation are both know to
+impact biodiversity but due to high variance inflation
+[@ZuurAnalysingecologicaldata2007] in the models where both variables were
+included we decided to include only temperature. For each unit, we calculated
+the mean temperature measured between 1980 and 2010 from data created by the
+PRISM Climate Group [@PRISMClimateGroupOregonStateUniversity]. Information about
+net primary production (NPP) was obtained from remotely sensed data collected by
+the MODIS instrument at a 1km resolution. The algorithm that produces NPP values
+takes into account vegetation characteristics, meteorological measurements and
+land cover class and estimates NPP as kg of carbon sequestered in the form of 
+biomass per square metre per year [@ZhaoImprovementsMODISterrestrial2005]. For 
+each unit, we averaged NPP values between 2004 and 2014.
   
 ## Statistical models  
-Linear models and generalised linear models We chose the explanatory variables
-so that the variance inflation factors (VIF) were under 3
-[@ZuurAnalysingecologicaldata2007]. VIF values can be found in chapter 3 of the
-appendix.  
+We constructed linear models to analyse the influence of human footprint, forest
+change, habitat diversity, temperature, NPP, and the number of forested MNBBA
+count locations on taxonomic, functional, and phylogenetic beta diversity. In
+addition, to aid in interpreting the results, we also analysed the influence of
+the explanatory variables on alpha and gamma diversity of the three facets of
+biodiversity. The results for alpha and gamma diversities can be found in
+appendix 1. We checked all models to ensure that the variance inflation factors
+(VIF) of the explanatory variables were under 3
+[@ZuurAnalysingecologicaldata2007]. VIF values for all models can be found in
+appendix 4.
 
-Spatial autocorrelation  
-
-All analyses were performed with `r R.Version()$version.string`.  
+We visually inspected the residuals of all models to ensure that they were
+normally distributed, and tested residuals for spatial autocorrelation. Spatial
+autocorrelation of residuals was tested with a permutation test for the Moran's
+I statistic using 1000 permutations. All of the residuals from models explaining
+taxonomic diversity and models explaining alpha and gamma diversity for
+functional and phylogenetic diversity were normally distributed. The residuals
+for functional and phylogenetic diversity were right skewed and were thus
+modeled appropriately. In the case of functional beta diversity, we used a
+generalised linear model with Gamma family and an identity link. In the case of
+phylogenetic beta diversity we detected spatial autcorrelation and we had to
+log-transform the response variable since the spatially autoregressive model
+that we used was not able to utilise the generalised linear model framework. The
+log-transformed values have been back-transformed in the results table. We also
+detected spatial autocorrelation in the residuals of the models explaining alpha
+and gamma diversity of all facets of biodiversity studied here. The residuals
+from these models were normally distributed. For cases where residuals were
+spatially autocorrelated, we utilised spatial error models, which is a type of
+autoregressive model. Spatial error models assume that spatial autocorrelation
+is due to missing spatial covariates
+[@ivandComparingimplementationsestimation2015]. We did not detect spatial
+autocorrelation in any of the residuals from the spatial error models. All
+analyses were performed with `r R.Version()$version.string`.  A list of used R
+packages and their versions can be found in Appendix 8.
 
 # Results  
 ## Summary statistics  
@@ -701,7 +741,8 @@ between-site diversity (refs).
   
 
 # Appendix  
-## Taxonomic alpha diversity results
+## 1. Results of alpha and gamma diversities
+### a) Taxonomic alpha diversity results
 ```{r tax_alpha_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
 set.caption(tabRef('tax_alpha_model_summary', 'Summary of spatial error model explaining taxonomic alpha diversity'))
 tax_alpha_model_coef <- as.data.frame(tax_alpha_model_summary$Coef)
@@ -713,7 +754,7 @@ tax_alpha_range <- round(max(units_merged_beta_subset$tax_alpha_div) -
     min(units_merged_beta_subset$tax_alpha_div), digits = 3)
 ```
 
-## Taxonomic gamma diversity results
+### b) Taxonomic gamma diversity results
 ```{r tax_gamma_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
 set.caption(tabRef('tax_gamma_model_summary', 'Summary of spatial error model explaining taxonomic gamma diversity'))
 tax_gamma_model_coef <- as.data.frame(tax_gamma_model_summary$Coef)
@@ -728,7 +769,7 @@ tax_gamma_hdiv_change <- round(tax_gamma_model_coef['Habitat diversity', 'Estima
 tax_gamma_hdiv_perc <- round((tax_gamma_hdiv_change / tax_gamma_range) * 100, digits = 2)
 ```
 
-## Functional alpha diversity results
+### c) Functional alpha diversity results
 ```{r func_alpha_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
 set.caption(tabRef('func_alpha_model_summary', 'Summary of spatial error model explaining functional alpha diversity'))
 func_alpha_model_coef <- as.data.frame(func_alpha_model_summary$Coef)
@@ -752,7 +793,7 @@ func_alpha_hfp_change <- round(func_alpha_model_coef['Human footprint', 'Estimat
 func_alpha_hfp_perc <- round((func_alpha_hfp_change / func_alpha_range) * 100, digits = 2)
 ```
 
-## Functional gamma diversity results
+### d) Functional gamma diversity results
 ```{r func_gamma_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
 set.caption(tabRef('func_gamma_model_summary', 'Summary of spatial error model explaining functional gamma diversity'))
 func_gamma_model_coef <- as.data.frame(func_gamma_model_summary$Coef)
@@ -773,7 +814,7 @@ func_gamma_hfp_change <- round(func_gamma_model_coef['Human footprint', 'Estimat
 func_gamma_hfp_perc <- round((func_gamma_hfp_change / func_alpha_range) * 100, digits = 2)
 ```
 
-## Phylogenetic alpha diversity results
+### e) Phylogenetic alpha diversity results
 ```{r phyl_alpha_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
 set.caption(tabRef('phyl_alpha_model_summary', 'Summary of spatial error model explaining phylogenetic alpha diversity'))
 phyl_alpha_model_coef <- as.data.frame(phyl_alpha_model_summary$Coef)
@@ -791,7 +832,7 @@ phyl_alpha_forest_change <- round(phyl_alpha_model_coef['Forest change', 'Estima
 phyl_alpha_forest_perc <- round((phyl_alpha_forest_change / phyl_alpha_range) * 100, digits = 2)
 ```
 
-## Phylogenetic gamma diversity results
+### f) Phylogenetic gamma diversity results
 ```{r phyl_gamma_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
 set.caption(tabRef('phyl_gamma_model_summary', 'Summary of spatial error model explaining phylogenetic gamma diversity'))
 phyl_gamma_model_coef <- as.data.frame(phyl_gamma_model_summary$Coef)
@@ -806,17 +847,17 @@ phyl_gamma_forest_change <- round(phyl_gamma_model_coef['Forest change', 'Estima
 phyl_gamma_forest_perc <- round((phyl_gamma_forest_change / phyl_gamma_range) * 100, digits = 2)
 ```
 
-## 1. Correlations between human footprint and human influence variables in Minnesota data
+## 2. Correlations between human footprint and human influence variables in Minnesota data
 ```{r hfp_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('hfp_plots', "Distributions of human footprint and other variables describing human influence, and Spearman's rank correlations between variables")}
 knitr::include_graphics('../figures/human_impact_plots.png')
 ```
   
-## 2. Correlations between explanatory variables and their distributions
+## 3. Correlations between explanatory variables and their distributions
 ```{r explanatory_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('explanatory_plots', "Distributions of explanatory variables, and Spearman's rank correlations between variables")}
 knitr::include_graphics('../figures/explanatory_plots.png')
 ```
   
-## 3. Variance inflation factors from models  
+## 4. Variance inflation factors from models  
 ```{r vif, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
 set.caption(tabRefApp('vif', 'Variance inflation factors of explanatory variables in models explaining taxonomic, functional, and phylogenetic beta diversity'))
 vif_table <- as.data.frame(rbind(t(tax_beta_model_vif), t(func_beta_model_vif), t(phyl_beta_model_vif)))
@@ -825,12 +866,12 @@ colnames(vif_table) <- expl_names[2:7]
 pander::pander(vif_table)
 ```
   
-## 4. Histogram of number of forest MNBBA points per unit
+## 5. Histogram of number of forest MNBBA points per unit
 ```{r for_point_hist, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('for_point_hist', 'Histrogram of the number of forested MNBBA points per unit')}
 knitr::include_graphics('../figures/for_point_hist.png')
 ```
   
-## 5. Spatial distribution of response variables and species richness
+## 6. Spatial distribution of response variables and species richness
 ### a) Taxonomic beta diversity
 ```{r tax_div_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.height = 10, fig.width = 10, fig.cap = figRefApp('tax_div_plot', 'Map showing the spatial distribution of taxonomic beta diversity in the state of Minnesota')}
 knitr::include_graphics('../figures/tax_beta_map.png')
@@ -851,7 +892,7 @@ knitr::include_graphics('../figures/phyl_beta_map.png')
 knitr::include_graphics('../figures/spp_rich_map.png')
 ```
   
-## 6. Spatial distribution of explanatory variables  
+## 7. Spatial distribution of explanatory variables  
 ### a) Human footprint  
 ```{r hfp_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('hfp_plot', 'Map showing the spatial distribution of human footprint values in the state of Minnesota')}
 knitr::include_graphics('../figures/hfp_map.png')
@@ -877,7 +918,7 @@ knitr::include_graphics('../figures/npp_map.png')
 knitr::include_graphics('../figures/mean_temp_map.png')
 ```
   
-## 7. List of used R packages and their versions  
+## 8. List of used R packages and their versions  
 ```{r list_packages, echo = FALSE, comment = NA}
 for (package in sort(.packages())) {
   #print(paste(package, packageVersion(package), sep = ' '))
