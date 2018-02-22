@@ -2865,7 +2865,7 @@ f_loss_map <- ggplot(data = units_merged_fort, #units_merged_beta_subset_fort
   aes_string(x = 'long', y = 'lat', fill = 'forest_loss', group = 'group')) + 
   geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
   geom_polygon(color = 'black', size = .05) + 
-  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Forest \nloss') + 
+  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Forest \nchange (%)') + 
   geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = 'black') + 
   coord_equal() + theme_void()
 ggsave('f_loss_map.png', plot = f_loss_map, device = 'png', path = './figures/',
@@ -2885,9 +2885,11 @@ npp_map <- ggplot(data = units_merged_fort,
   aes_string(x = 'long', y = 'lat', fill = 'net_prim_prod', group = 'group')) + 
   geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
   geom_polygon(color = 'black', size = .05) + 
-  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Net primary \nproduction') + 
+  scale_fill_gradientn(colours = rev(terrain.colors(10)), 
+      name = expression(atop("Net primary\nproductivity", 
+                             paste('(C kg/m'^{2}, '/year)')))) + 
   geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = 'black') + 
-  coord_equal() + theme_void()
+  coord_equal() + theme_void() 
 ggsave('npp_map.png', plot = npp_map, device = 'png', path = './figures/',
   scale = 1, width = fig_width, height = fig_height, units = 'cm', dpi = fig_dpi)
 
@@ -2895,9 +2897,19 @@ mean_temp_map <- ggplot(data = units_merged_fort,
   aes_string(x = 'long', y = 'lat', fill = 'mean_temp', group = 'group')) + 
   geom_polygon(data = minnesota, aes(long, lat, group = group), fill = 'lightgray', color = NA) + 
   geom_polygon(color = 'black', size = .05) + 
-  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Mean \ntemperature') + 
+  scale_fill_gradientn(colours = rev(terrain.colors(10)), name = 'Mean \ntemperature (°C)') + 
   geom_polygon(data = minnesota, aes(long, lat, group = group), fill = NA, color = 'black') + 
   coord_equal() + theme_void()
 ggsave('mean_temp_map.png', plot = mean_temp_map, device = 'png', path = './figures/',
   scale = 1, width = fig_width, height = fig_height, units = 'cm', dpi = fig_dpi)
 ```
+
+# Relevant links
+[Modeling skewed continuous outcome using Gamma family in glm()](https://rstudio-pubs-static.s3.amazonaws.com/5691_192685385fc445c9b3fb1619960a20e2.html)  
+[Analysing spatial data in R: Spatial autocorrelation](http://www.bias-project.org.uk/ASDARcourse/unit6_slides.pdf)  
+[Spatial Regression Analysis in R](http://www.csiss.org/gispopsci/workshops/2011/PSU/readings/W15_Anselin2007.pdf)  
+[Spatial regression models](http://rspatial.org/analysis/rst/7-spregression.html)  
+[Spatially Autoregressive Models 1](https://rpubs.com/corey_sparks/246342)  
+[Spatially Autoregressive Models 2](https://rpubs.com/corey_sparks/250314)  
+[Exploratory Spatial Data Analysis](https://rpubs.com/corey_sparks/242698)
+[Fitting Gamma GLMs in Multiple Ways](http://seananderson.ca/2014/04/08/gamma-glms.html)
