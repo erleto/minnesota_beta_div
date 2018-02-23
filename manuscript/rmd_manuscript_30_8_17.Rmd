@@ -107,7 +107,7 @@ figRefApp <- local({
         }
         if (!missing(caption)) {
             created[label] <<- TRUE
-            paste0(prefix.highlight, prefix, ' ', i, sep, prefix.highlight, 
+            paste0(prefix.highlight, prefix, i, sep, prefix.highlight, 
                 ' ', caption)
         } else {
             used[label] <<- TRUE
@@ -163,7 +163,7 @@ tabRefApp <- local({
         }
         if (!missing(caption)) {
             created[label] <<- TRUE
-            paste0(prefix.highlight, prefix, ' ', i, sep, prefix.highlight, 
+            paste0(prefix.highlight, prefix, i, sep, prefix.highlight, 
                 ' ', caption)
         } else {
             used[label] <<- TRUE
@@ -341,10 +341,10 @@ func_gamma_hfp_change <- round(func_gamma_model_coef['Human footprint', 'Estimat
 func_gamma_hfp_perc <- round((func_gamma_hfp_change / func_alpha_range) * 100, digits = 2)
 
 phyl_beta_npp_perc <- 100 - round(exp(phyl_beta_model_coef['Net primary production', 'Estimate'] * npp_range) * 100, digits = 2)
-phyl_beta_npp_change <- round((phyl_beta_npp_perc / 100) * phyl_beta_range, digits = 3)
+phyl_beta_npp_change <- round((phyl_beta_npp_perc / 100) * phyl_beta_range, digits = 2)
 
 phyl_beta_temp_perc <- 100 - round(exp(phyl_beta_model_coef['Mean temperature', 'Estimate'] * temp_range) * 100, digits = 2)
-phyl_beta_temp_change <- round((phyl_beta_temp_perc / 100) * phyl_beta_range, digits = 3)
+phyl_beta_temp_change <- round((phyl_beta_temp_perc / 100) * phyl_beta_range, digits = 2)
 
 phyl_alpha_hfp_change <- round(phyl_alpha_model_coef['Human footprint', 'Estimate'] * hfp_range, digits = 2)
 phyl_alpha_hfp_perc <- round((phyl_alpha_hfp_change / phyl_alpha_range) * 100, digits = 2)
@@ -354,6 +354,34 @@ phyl_alpha_forest_perc <- round((phyl_alpha_forest_change / phyl_alpha_range) * 
 
 phyl_gamma_forest_change <- round(phyl_gamma_model_coef['Forest change', 'Estimate'] * forest_range, digits = 2)
 phyl_gamma_forest_perc <- round((phyl_gamma_forest_change / phyl_gamma_range) * 100, digits = 2)
+```
+
+```{r set tab_and_fig_ref_order, echo = FALSE, message = FALSE, warning = FALSE, results = 'hide'}
+tabRef('response_summary')
+tabRef('explanatory_summary')
+tabRef('tax_beta_model_summary')
+tabRef('func_beta_model_summary')
+tabRef('phyl_beta_model_summary')
+tabRefApp('tax_alpha_model_summary')
+tabRefApp('tax_gamma_model_summary')
+tabRefApp('func_alpha_model_summary')
+tabRefApp('func_gamma_model_summary')
+tabRefApp('phyl_alpha_model_summary')
+tabRefApp('phyl_gamma_model_summary')
+tabRefApp('vif')
+figRef('div_plots')
+figRefApp('hfp_plots')
+figRefApp('explanatory_plots')
+figRefApp('for_point_hist')
+figRefApp('tax_div_plot')
+figRefApp('func_div_plot')
+figRefApp('phyl_div_plot')
+figRefApp('spp_richness_plot')
+figRefApp('hfp_plot')
+figRefApp('for_loss_plot')
+figRefApp('hab_div_plot')
+figRefApp('npp_plot')
+figRefApp('mean_temp_plot')
 ```
 
 # Introduction  
@@ -823,7 +851,7 @@ sites). Thus, the diversity between sites (beta diversity) could increase in
 response to an increase in total diversity or a decrease in mean local
 diversity. Human footprint did not have a statistically significant impact on
 functional gamma or alpha diversity (see appendix 1 c & d) but the negative
-estimate for local diversity was an order of magnitude stronger than that for
+estimate for local diversity was more than an order of magnitude stronger than that for
 regional diversity, which may have been related to the positive impact on
 between-site diversity. The negative estimate for the impact of human footprint
 on functional alpha diversity suggests that human footprint lead to a loss of
