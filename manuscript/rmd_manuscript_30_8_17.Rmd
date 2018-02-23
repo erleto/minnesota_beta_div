@@ -207,6 +207,48 @@ attach('./results/phyl_alpha_model_vif.rda')
 attach('./results/phyl_gamma_model_vif.rda')
 ```
 
+```{r set_variables, echo = FALSE, message = FALSE, warning = FALSE, results = 'hide'}
+expl_names <- c('Intercept', 'Human footprint', 'Forest change (%)', 'Net primary production (kg C/m^2^/Year)', 'Habitat diversity', 'Mean temperature (\u2103 )', 'Number forested points')
+```
+
+```{r coefficient_tables, echo = FALSE, message = FALSE, warning = FALSE, results = 'hide'}
+tax_beta_model_coef <- as.data.frame(tax_beta_model_summary$coefficients)
+colnames(tax_beta_model_coef)[4] <- 'p value'
+rownames(tax_beta_model_coef) <- expl_names
+
+tax_alpha_model_coef <- as.data.frame(tax_alpha_model_summary$Coef)
+colnames(tax_alpha_model_coef)[4] <- 'p value'
+rownames(tax_alpha_model_coef) <- expl_names
+
+tax_gamma_model_coef <- as.data.frame(tax_gamma_model_summary$Coef)
+colnames(tax_gamma_model_coef)[4] <- 'p value'
+rownames(tax_gamma_model_coef) <- expl_names
+
+func_beta_model_coef <- as.data.frame(func_beta_model_summary$coefficients)
+colnames(func_beta_model_coef)[4] <- 'p value'
+rownames(func_beta_model_coef) <- expl_names
+
+func_alpha_model_coef <- as.data.frame(func_alpha_model_summary$Coef)
+colnames(func_alpha_model_coef)[4] <- 'p value'
+rownames(func_alpha_model_coef) <- expl_names
+
+func_gamma_model_coef <- as.data.frame(func_gamma_model_summary$Coef)
+colnames(func_gamma_model_coef)[4] <- 'p value'
+rownames(func_gamma_model_coef) <- expl_names
+
+phyl_beta_model_coef <- as.data.frame(phyl_beta_model_summary$Coef)
+colnames(phyl_beta_model_coef)[4] <- 'p value'
+rownames(phyl_beta_model_coef) <- expl_names
+
+phyl_alpha_model_coef <- as.data.frame(phyl_alpha_model_summary$Coef)
+colnames(phyl_alpha_model_coef)[4] <- 'p value'
+rownames(phyl_alpha_model_coef) <- expl_names
+
+phyl_gamma_model_coef <- as.data.frame(phyl_gamma_model_summary$Coef)
+colnames(phyl_gamma_model_coef)[4] <- 'p value'
+rownames(phyl_gamma_model_coef) <- expl_names
+```
+
 ```{r calc_ranges, echo = FALSE, message = FALSE, warning = FALSE, results = 'hide'}
 min_hfp <- round(min(units_merged_beta_subset$human_footprint), digits = 2)
 max_hfp <- round(max(units_merged_beta_subset$human_footprint), digits = 2)
@@ -232,12 +274,88 @@ min_temp <- round(min(units_merged_beta_subset$mean_temp), digits = 2)
 max_temp <- round(max(units_merged_beta_subset$mean_temp), digits = 2)
 temp_range <- round(max(units_merged_beta_subset$mean_temp) - 
     min(units_merged_beta_subset$mean_temp), digits = 2)
+
+tax_beta_range <- round(max(units_merged_beta_subset$tax_beta_div) - 
+    min(units_merged_beta_subset$tax_beta_div), digits = 3)
+
+tax_gamma_range <- round(max(units_merged_beta_subset$tax_gamma_div) - 
+    min(units_merged_beta_subset$tax_gamma_div), digits = 3)
+
+tax_alpha_range <- round(max(units_merged_beta_subset$tax_alpha_div) - 
+    min(units_merged_beta_subset$tax_alpha_div), digits = 3)
+
+func_beta_range <- round(max(units_merged_beta_subset$func_beta_div) - 
+    min(units_merged_beta_subset$func_beta_div), digits = 2)
+
+func_alpha_range <- round(max(units_merged_beta_subset$func_alpha_div) - 
+    min(units_merged_beta_subset$func_alpha_div), digits = 3)
+
+func_gamma_range <- round(max(units_merged_beta_subset$func_gamma_div) - 
+    min(units_merged_beta_subset$func_gamma_div), digits = 3)
+
+phyl_beta_range <- round(max(units_merged_beta_subset$phyl_beta_div) - 
+    min(units_merged_beta_subset$phyl_beta_div), digits = 3)
+
+phyl_alpha_range <- round(max(units_merged_beta_subset$phyl_alpha_div) - 
+    min(units_merged_beta_subset$phyl_alpha_div), digits = 3)
+
+phyl_gamma_range <- round(max(units_merged_beta_subset$phyl_gamma_div) - 
+    min(units_merged_beta_subset$phyl_gamma_div), digits = 3)
 ```
 
-```{r set_variables, echo = FALSE, message = FALSE, warning = FALSE, results = 'hide'}
-expl_names <- c('Intercept', 'Human footprint', 'Forest change (%)', 'Net primary production (kg C/m^2^/Year)', 'Habitat diversity', 'Mean temperature (\u2103 )', 'Number forested points')
+```{r calc_changes, echo = FALSE, message = FALSE, warning = FALSE, results = 'hide'}
+tax_beta_hdiv_change <- round(tax_beta_model_coef['Habitat diversity', 'Estimate'] * hdiv_range, digits = 2)
+tax_beta_hdiv_perc <- round((tax_beta_hdiv_change / tax_beta_range) * 100, digits = 2)
+
+tax_gamma_hdiv_change <- round(tax_gamma_model_coef['Habitat diversity', 'Estimate'] * hdiv_range, digits = 2)
+tax_gamma_hdiv_perc <- round((tax_gamma_hdiv_change / tax_gamma_range) * 100, digits = 2)
+
+func_beta_hfp_change <- round(func_beta_model_coef['Human footprint', 'Estimate'] * hfp_range, digits = 2)
+func_beta_hfp_perc <- round((func_beta_hfp_change / func_beta_range) * 100, digits = 2)
+
+func_beta_npp_change <- round(func_beta_model_coef['Net primary production', 'Estimate'] * npp_range, digits = 2)
+func_beta_npp_perc <- round((func_beta_npp_change / func_beta_range) * 100, digits = 2)
+
+func_beta_temp_change <- round(func_beta_model_coef['Mean temperature', 'Estimate'] * temp_range, digits = 2)
+func_beta_temp_perc <- round((func_beta_temp_change / func_beta_range) * 100, digits = 2)
+
+func_alpha_forest_change <- round(func_alpha_model_coef['Forest change', 'Estimate'] * forest_range, digits = 2)
+func_alpha_forest_perc <- round((func_alpha_forest_change / func_alpha_range) * 100, digits = 2)
+
+func_alpha_npp_change <- round(func_alpha_model_coef['Net primary production', 'Estimate'] * npp_range, digits = 2)
+func_alpha_npp_perc <- round((func_alpha_npp_change / func_alpha_range) * 100, digits = 2)
+
+func_alpha_temp_change <- round(func_alpha_model_coef['Mean temperature', 'Estimate'] * temp_range, digits = 2)
+func_alpha_temp_perc <- round((func_alpha_temp_change / func_alpha_range) * 100, digits = 2)
+
+func_alpha_hfp_change <- round(func_alpha_model_coef['Human footprint', 'Estimate'] * hfp_range, digits = 2)
+func_alpha_hfp_perc <- round((func_alpha_hfp_change / func_alpha_range) * 100, digits = 2)
+
+func_gamma_forest_change <- round(func_gamma_model_coef['Forest change', 'Estimate'] * forest_range, digits = 2)
+func_gamma_forest_perc <- round((func_gamma_forest_change / func_gamma_range) * 100, digits = 2)
+
+func_gamma_temp_change <- round(func_gamma_model_coef['Mean temperature', 'Estimate'] * temp_range, digits = 2)
+func_gamma_temp_perc <- round((func_gamma_temp_change / func_gamma_range) * 100, digits = 2)
+
+func_gamma_hfp_change <- round(func_gamma_model_coef['Human footprint', 'Estimate'] * hfp_range, digits = 4)
+func_gamma_hfp_perc <- round((func_gamma_hfp_change / func_alpha_range) * 100, digits = 2)
+
+phyl_beta_npp_perc <- 100 - round(exp(phyl_beta_model_coef['Net primary production', 'Estimate'] * npp_range) * 100, digits = 2)
+phyl_beta_npp_change <- round((phyl_beta_npp_perc / 100) * phyl_beta_range, digits = 3)
+
+phyl_beta_temp_perc <- 100 - round(exp(phyl_beta_model_coef['Mean temperature', 'Estimate'] * temp_range) * 100, digits = 2)
+phyl_beta_temp_change <- round((phyl_beta_temp_perc / 100) * phyl_beta_range, digits = 3)
+
+phyl_alpha_hfp_change <- round(phyl_alpha_model_coef['Human footprint', 'Estimate'] * hfp_range, digits = 2)
+phyl_alpha_hfp_perc <- round((phyl_alpha_hfp_change / phyl_alpha_range) * 100, digits = 2)
+
+phyl_alpha_forest_change <- round(phyl_alpha_model_coef['Forest change', 'Estimate'] * forest_range, digits = 2)
+phyl_alpha_forest_perc <- round((phyl_alpha_forest_change / phyl_alpha_range) * 100, digits = 2)
+
+phyl_gamma_forest_change <- round(phyl_gamma_model_coef['Forest change', 'Estimate'] * forest_range, digits = 2)
+phyl_gamma_forest_perc <- round((phyl_gamma_forest_change / phyl_gamma_range) * 100, digits = 2)
 ```
-  
+
 # Introduction  
 Global studies have shown that human-caused land-use changes and their
 associated pressures have led to strong, consistent and accumulating negative
@@ -584,83 +702,85 @@ pander::pander(explanatory_summary_table)
 ## Taxonomic beta diversity  
 ```{r tax_beta_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
 set.caption(tabRef('tax_beta_model_summary', 'Summary of linear model explaining taxonomic beta diversity'))
-tax_beta_model_coef <- as.data.frame(tax_beta_model_summary$coefficients)
-colnames(tax_beta_model_coef)[4] <- 'p value'
-rownames(tax_beta_model_coef) <- expl_names
 pander::pander(tax_beta_model_coef)
-
-tax_beta_range <- round(max(units_merged_beta_subset$tax_beta_div) - 
-    min(units_merged_beta_subset$tax_beta_div), digits = 3)
-
-tax_beta_hdiv_change <- round(tax_beta_model_coef['Habitat diversity', 'Estimate'] * hdiv_range, digits = 2)
-tax_beta_hdiv_perc <- round((tax_beta_hdiv_change / tax_beta_range) * 100, digits = 2)
 ```
   
 Taxonomic beta diversity was not impacted by human footprint index (HFI), nor
 forest change. Instead, taxonomic beta diversity was positively associated with 
 habitat diversity. Along the range of habitat diversity values 
-(`r tabRef("explanatory_summary")`), taxonomic beta diversity increased by 
+(`r tabRef('explanatory_summary')`), taxonomic beta diversity increased by 
 `r tax_beta_hdiv_change` units, which is a modest increase in biological terms 
-(`r tax_beta_hdiv_perc`%).  
+(`r tax_beta_hdiv_perc`%). This positive association was most likely caused by 
+the positive influence of habitat diversity on taxonomic gamma diversity 
+(`r tabRefApp('tax_alpha_model_summary')`), since beta diversity would be 
+expected to rise with increasing gamma diversity if alpha diversity does not 
+change (like in the case of taxonomic alpha diversity, 
+`r tabRefApp('tax_gamma_model_summary')`) or decreases.
   
 ## Functional beta diversity  
 ```{r func_beta_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
 set.caption(tabRef('func_beta_model_summary', 'Summary of generalised linear model explaining functional beta diversity'))
-func_beta_model_coef <- as.data.frame(func_beta_model_summary$coefficients)
-colnames(func_beta_model_coef)[4] <- 'p value'
-rownames(func_beta_model_coef) <- expl_names
 pander::pander(func_beta_model_coef)
 
-func_beta_range <- round(max(units_merged_beta_subset$func_beta_div) - 
-    min(units_merged_beta_subset$func_beta_div), digits = 2)
-
-func_beta_hfp_change <- round(func_beta_model_coef['Human footprint', 'Estimate'] * hfp_range, digits = 2)
-func_beta_hfp_perc <- round((func_beta_hfp_change / func_beta_range) * 100, digits = 2)
-
-func_beta_npp_change <- round(func_beta_model_coef['Net primary production', 'Estimate'] * npp_range, digits = 2)
-func_beta_npp_perc <- round((func_beta_npp_change / func_beta_range) * 100, digits = 2)
-
-func_beta_temp_change <- round(func_beta_model_coef['Mean temperature', 'Estimate'] * temp_range, digits = 2)
-func_beta_temp_perc <- round((func_beta_temp_change / func_beta_range) * 100, digits = 2)
+func_hfi_alpha_vs_gamma <-  round(abs(func_alpha_model_coef['Human footprint', 'Estimate'] / 
+                              func_gamma_model_coef['Human footprint', 'Estimate']), digits = -1)
 ```
   
 Functional beta diversity had a statistically significant association with HFI.
-Along the gradient of HFI in our data (`r tabRef("explanatory_summary")`),
+Along the gradient of HFI values in our data (`r tabRef("explanatory_summary")`),
 functional beta diversity increased by `r func_beta_hfp_change` units, which 
-was a fairly strong biological impact (`r func_beta_hfp_perc`%). Forest change 
-did not appear to influence functional beta diversity. Interestingly, net primary 
-(NPP) had a strong negative impact on functional beta diversity. Along the range 
-of NPP values, functional beta diversity decreased by `r abs(func_beta_npp_change)` 
-units (`r func_beta_npp_perc`%), which was even stronger than the impact of HFI. 
-Similarly, mean annual temperature had a negative impact, decreasing functional 
-beta diversity by `r abs(func_beta_temp_change)` units (`r func_beta_temp_perc`%).  
+was a fairly strong biological impact (`r func_beta_hfp_perc`%). HFI did not have 
+a clear impact on functional alpha or gamma diversity but the negative estimate for 
+functional alpha diversity was almost `r func_hfi_alpha_vs_gamma` 
+times larger than the positive estimate for functional gamma diversity 
+(`r paste0(tabRefApp('func_alpha_div'), ' & ', stringr::str_sub(paste(tabRefApp('func_gamma_div')), -1))`). 
+This might have caused the positive association of HFI and functional beta
+diversity (see discussion). Forest change did not appear to influence functional
+beta diversity. This was likely caused by forest change negatively impacting
+both functional alpha and gamma diversity, which cancelled out the impact on
+functional beta diversity. Net primary (NPP) had a strong negative impact on functional beta diversity. 
+Along the range of NPP values, functional beta diversity decreased by
+`r abs(func_beta_npp_change)` units (`r func_beta_npp_perc`%), which was even 
+stronger than the impact of HFI. Similarly, mean annual temperature had a negative 
+impact, decreasing functional beta diversity by `r abs(func_beta_temp_change)` 
+units (`r func_beta_temp_perc`%). Interestingly, both the impacts of NPP and 
+temperature on functional beta diversity were not accompanied by straightforward 
+associations on functional alpha and gamma diversity
+(`r paste0(tabRefApp('func_alpha_div'), ' & ', stringr::str_sub(paste(tabRefApp('func_gamma_div')), -1))`). 
+NPP appeared to have a positive but non-significant impact on alpha diversity
+but not impact on gamma diversity, which might be expected to decrease beta
+diversity. On the other hand, mean temperature had a positive and similarly 
+strong influence on both functional alpha and gamma diversity, which would 
+be expected to result in no apparent impact on beta diversity.  
   
 ## Phylogenetic beta diversity  
 ```{r phyl_beta_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
 set.caption(tabRef('phyl_beta_model_summary', 'Summary of spatial error model explaining phylogenetic beta diversity'))
-phyl_beta_model_coef <- as.data.frame(phyl_beta_model_summary$Coef)
-colnames(phyl_beta_model_coef)[4] <- 'p value'
-rownames(phyl_beta_model_coef) <- expl_names
 pander::pander(phyl_beta_model_coef)
 
-phyl_beta_range <- round(max(units_merged_beta_subset$phyl_beta_div) - 
-    min(units_merged_beta_subset$phyl_beta_div), digits = 3)
-
-phyl_beta_npp_perc <- 100 - round(exp(phyl_beta_model_coef['Net primary production', 'Estimate'] * npp_range) * 100, digits = 2)
-phyl_beta_npp_change <- round((phyl_beta_npp_perc / 100) * phyl_beta_range, digits = 3)
-
-phyl_beta_temp_perc <- 100 - round(exp(phyl_beta_model_coef['Mean temperature', 'Estimate'] * temp_range) * 100, digits = 2)
-phyl_beta_temp_change <- round((phyl_beta_temp_perc / 100) * phyl_beta_range, digits = 3)
+phyl_hfi_alpha_vs_gamma <-  round(abs(phyl_alpha_model_coef['Human footprint', 'Estimate'] / 
+                                     phyl_gamma_model_coef['Human footprint', 'Estimate']), digits = 0)
 ```
   
 Similar to taxonomic beta diversity, phylogenetic beta diversity was not
-impacted by HFI, nor forest change. Phylogenetic beta diversity was negatively
-associated with NPP and mean temperature, although the biological impacts were 
-much stronger. Along the range of NPP values (`r tabRef("explanatory_summary")`)
+impacted by HFI, nor forest change. This was despite the negative but 
+non-significant influence of HFI on phylogenetic gamma diversity and no 
+association with alpha diversity 
+(`r paste0(tabRefApp('func_alpha_div'), ' & ', stringr::str_sub(paste(tabRefApp('func_gamma_div')), -1))`. 
+However, the estimate of HFI's influence on phylogenetic alpha diversity 
+was only two times as large as the estimate for phylogenetic gamma diversity. 
+As was the case with functional diversity, forest loss had a negative 
+association with both phylogenetic alpha and gamma diversity, which likely 
+cancelled each other out. Phylogenetic beta diversity was negatively
+associated with NPP and mean temperature. The biological impacts of both 
+variables were very strong. Along the range of NPP values (`r tabRef("explanatory_summary")`),
 phylogenetic beta diversity decreased by `r abs(phyl_beta_npp_change)` units
-(-`r phyl_beta_npp_perc`%). Along the range of mean annual temperature values
+(-`r phyl_beta_npp_perc`%). Along the range of mean annual temperature values,
 phylogenetic beta diversity decreased by `r abs(phyl_beta_temp_change)` units
-(-`r phyl_beta_temp_perc`%).  
+(-`r phyl_beta_temp_perc`%). NPP was not associated with either phlogenetic 
+alpha or gamma diversity, although its association with . However, mean temperature had a positive impact on 
+alpha diversity, which was likely behind the negative impact of temperature on 
+beta diversity.  
 
 # Discussion  
 Elevated human pressure did not appear to be related with increased biotic
@@ -769,107 +889,38 @@ cause of biotic homogenisation in our study site.
 ## 1. Results of alpha and gamma diversities
 ### a) Taxonomic alpha diversity results
 ```{r tax_alpha_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
-set.caption(tabRef('tax_alpha_model_summary', 'Summary of spatial error model explaining taxonomic alpha diversity'))
-tax_alpha_model_coef <- as.data.frame(tax_alpha_model_summary$Coef)
-colnames(tax_alpha_model_coef)[4] <- 'p value'
-rownames(tax_alpha_model_coef) <- expl_names
+set.caption(tabRefApp('tax_alpha_model_summary', 'Summary of spatial error model explaining taxonomic alpha diversity'))
 pander::pander(tax_alpha_model_coef)
-
-tax_alpha_range <- round(max(units_merged_beta_subset$tax_alpha_div) - 
-    min(units_merged_beta_subset$tax_alpha_div), digits = 3)
 ```
 
 ### b) Taxonomic gamma diversity results
 ```{r tax_gamma_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
-set.caption(tabRef('tax_gamma_model_summary', 'Summary of spatial error model explaining taxonomic gamma diversity'))
-tax_gamma_model_coef <- as.data.frame(tax_gamma_model_summary$Coef)
-colnames(tax_gamma_model_coef)[4] <- 'p value'
-rownames(tax_gamma_model_coef) <- expl_names
+set.caption(tabRefApp('tax_gamma_model_summary', 'Summary of spatial error model explaining taxonomic gamma diversity'))
 pander::pander(tax_gamma_model_coef)
-
-tax_gamma_range <- round(max(units_merged_beta_subset$tax_gamma_div) - 
-    min(units_merged_beta_subset$tax_gamma_div), digits = 3)
-
-tax_gamma_hdiv_change <- round(tax_gamma_model_coef['Habitat diversity', 'Estimate'] * hdiv_range, digits = 2)
-tax_gamma_hdiv_perc <- round((tax_gamma_hdiv_change / tax_gamma_range) * 100, digits = 2)
 ```
 
 ### c) Functional alpha diversity results
 ```{r func_alpha_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
-set.caption(tabRef('func_alpha_model_summary', 'Summary of spatial error model explaining functional alpha diversity'))
-func_alpha_model_coef <- as.data.frame(func_alpha_model_summary$Coef)
-colnames(func_alpha_model_coef)[4] <- 'p value'
-rownames(func_alpha_model_coef) <- expl_names
+set.caption(tabRefApp('func_alpha_model_summary', 'Summary of spatial error model explaining functional alpha diversity'))
 pander::pander(func_alpha_model_coef)
-
-func_alpha_range <- round(max(units_merged_beta_subset$func_alpha_div) - 
-    min(units_merged_beta_subset$func_alpha_div), digits = 3)
-
-func_alpha_forest_change <- round(func_alpha_model_coef['Forest change', 'Estimate'] * forest_range, digits = 2)
-func_alpha_forest_perc <- round((func_alpha_forest_change / func_alpha_range) * 100, digits = 2)
-
-func_alpha_npp_change <- round(func_alpha_model_coef['Net primary production', 'Estimate'] * npp_range, digits = 2)
-func_alpha_npp_perc <- round((func_alpha_npp_change / func_alpha_range) * 100, digits = 2)
-
-func_alpha_temp_change <- round(func_alpha_model_coef['Mean temperature', 'Estimate'] * temp_range, digits = 2)
-func_alpha_temp_perc <- round((func_alpha_temp_change / func_alpha_range) * 100, digits = 2)
-
-func_alpha_hfp_change <- round(func_alpha_model_coef['Human footprint', 'Estimate'] * hfp_range, digits = 2)
-func_alpha_hfp_perc <- round((func_alpha_hfp_change / func_alpha_range) * 100, digits = 2)
 ```
 
 ### d) Functional gamma diversity results
 ```{r func_gamma_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
-set.caption(tabRef('func_gamma_model_summary', 'Summary of spatial error model explaining functional gamma diversity'))
-func_gamma_model_coef <- as.data.frame(func_gamma_model_summary$Coef)
-colnames(func_gamma_model_coef)[4] <- 'p value'
-rownames(func_gamma_model_coef) <- expl_names
+set.caption(tabRefApp('func_gamma_model_summary', 'Summary of spatial error model explaining functional gamma diversity'))
 pander::pander(func_gamma_model_coef)
-
-func_gamma_range <- round(max(units_merged_beta_subset$func_gamma_div) - 
-    min(units_merged_beta_subset$func_gamma_div), digits = 3)
-
-func_gamma_forest_change <- round(func_gamma_model_coef['Forest change', 'Estimate'] * forest_range, digits = 2)
-func_gamma_forest_perc <- round((func_gamma_forest_change / func_gamma_range) * 100, digits = 2)
-
-func_gamma_temp_change <- round(func_gamma_model_coef['Mean temperature', 'Estimate'] * temp_range, digits = 2)
-func_gamma_temp_perc <- round((func_gamma_temp_change / func_gamma_range) * 100, digits = 2)
-
-func_gamma_hfp_change <- round(func_gamma_model_coef['Human footprint', 'Estimate'] * hfp_range, digits = 4)
-func_gamma_hfp_perc <- round((func_gamma_hfp_change / func_alpha_range) * 100, digits = 2)
 ```
 
 ### e) Phylogenetic alpha diversity results
 ```{r phyl_alpha_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
-set.caption(tabRef('phyl_alpha_model_summary', 'Summary of spatial error model explaining phylogenetic alpha diversity'))
-phyl_alpha_model_coef <- as.data.frame(phyl_alpha_model_summary$Coef)
-colnames(phyl_alpha_model_coef)[4] <- 'p value'
-rownames(phyl_alpha_model_coef) <- expl_names
+set.caption(tabRefApp('phyl_alpha_model_summary', 'Summary of spatial error model explaining phylogenetic alpha diversity'))
 pander::pander(phyl_alpha_model_coef)
-
-phyl_alpha_range <- round(max(units_merged_beta_subset$phyl_alpha_div) - 
-    min(units_merged_beta_subset$phyl_alpha_div), digits = 3)
-
-phyl_alpha_hfp_change <- round(phyl_alpha_model_coef['Human footprint', 'Estimate'] * hfp_range, digits = 2)
-phyl_alpha_hfp_perc <- round((phyl_alpha_hfp_change / phyl_alpha_range) * 100, digits = 2)
-
-phyl_alpha_forest_change <- round(phyl_alpha_model_coef['Forest change', 'Estimate'] * forest_range, digits = 2)
-phyl_alpha_forest_perc <- round((phyl_alpha_forest_change / phyl_alpha_range) * 100, digits = 2)
 ```
 
 ### f) Phylogenetic gamma diversity results
 ```{r phyl_gamma_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
-set.caption(tabRef('phyl_gamma_model_summary', 'Summary of spatial error model explaining phylogenetic gamma diversity'))
-phyl_gamma_model_coef <- as.data.frame(phyl_gamma_model_summary$Coef)
-colnames(phyl_gamma_model_coef)[4] <- 'p value'
-rownames(phyl_gamma_model_coef) <- expl_names
+set.caption(tabRefApp('phyl_gamma_model_summary', 'Summary of spatial error model explaining phylogenetic gamma diversity'))
 pander::pander(phyl_gamma_model_coef)
-
-phyl_gamma_range <- round(max(units_merged_beta_subset$phyl_gamma_div) - 
-    min(units_merged_beta_subset$phyl_gamma_div), digits = 3)
-
-phyl_gamma_forest_change <- round(phyl_gamma_model_coef['Forest change', 'Estimate'] * forest_range, digits = 2)
-phyl_gamma_forest_perc <- round((phyl_gamma_forest_change / phyl_gamma_range) * 100, digits = 2)
 ```
 
 ## 2. Correlations between human footprint and variables describin human influence
@@ -946,9 +997,7 @@ knitr::include_graphics('../figures/mean_temp_map.png')
 ## 8. List of used R packages and their versions  
 ```{r list_packages, echo = FALSE, comment = NA}
 for (package in sort(.packages())) {
-  #print(paste(package, packageVersion(package), sep = ' '))
   message(package, ' ', packageVersion(package))
-  #cat(paste(package, ' ', packageVersion(package), '\n'))
 }
 ```
   
