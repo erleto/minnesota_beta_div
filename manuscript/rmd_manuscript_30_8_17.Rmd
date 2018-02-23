@@ -462,26 +462,30 @@ between 1995 and 2004: population density, land transformation, accessibility,
 and electrical power infrastructure [@Sandersonhumanfootprintlast2002]. Each
 1km^2^ grid cell in the global dataset was given a value ranging from 0 (low
 level) to 10 (high level) for each dataset. The nine values for each grid cell
-were summed, and for each biome the cell with the lowest value got a value of 0,
+were summed and for each biome, the cell with the lowest value got a value of 0,
 and the cell with the largest value got a value of 100. The HFI data was clipped
 to the state of Minnesota, and the average HFI value for each unit was
-calculated.  
+calculated. HFI values in our study area summarised human influence well, as
+seen in the correlation coefficients between HFI and total population, road
+density, and cover of human lan-use classes (Appendix 2).  
 
 In addition to studying the impact of general human influence we also wanted to
-study how changes in forest cover influence biodiversity. We quantified forest
-change from the global forest change dataset developed by
+study how changes in forest cover influence biodiversity. In the state of
+Minnesota, areas experiencing forest change and those with high human influence
+are clearly separate (Appendix 2, Appendix 7 a & b). We quantified forest change
+from the global forest change dataset developed by
 @HansenHighResolutionGlobalMaps2013 [-@HansenHighResolutionGlobalMaps2013]. The
-dataset uses Landsat data to identify stand-replacing disturbances or the total 
-removal of tree canopy cover within each pixel. Using this data we were able to
-quantify gross forest loss and gain at an annual 
-frequency between 2000 and 2014. For each unit, we calculated the percent cover
-of forest change between 2000 and 2014. However, there was no reliable way of
-systematically separating forest change caused by humans from change caused by
-natural events such as forest fires and storms. There were four units that had
-been significantly impacted by three large forest fires (Pagami Creek (2011),
-Cavity Lake (2006) and Ham Lake (2007) fires). Since the results from models run
-with and without the affected units did not change significantly, we decided to
-keep these units in the analyses.  
+dataset uses Landsat data to identify stand-replacing disturbances or the
+total removal of tree canopy cover within each pixel. Using this data we were
+able to quantify gross forest loss and gain at an annual frequency between
+2000 and 2014. For each unit, we calculated the percent cover of forest change
+between 2000 and 2014. However, there was no reliable way of systematically
+separating forest change caused by humans from change caused by natural events
+such as forest fires and storms. There were four units that had been
+significantly impacted by three large forest fires (Pagami Creek (2011),
+Cavity Lake (2006) and Ham Lake (2007) fires). Since the results from models
+run with and without the affected units did not change significantly, we
+decided to keep these units in the analyses.  
 
 In addition to variables describing human-caused changes in the environment, we
 also took into account abiotic variables also known to impact biological
@@ -499,7 +503,7 @@ the MODIS instrument at a 1km resolution. The algorithm that produces NPP values
 takes into account vegetation characteristics, meteorological measurements and
 land cover class and estimates NPP as kg of carbon sequestered in the form of 
 biomass per square metre per year [@ZhaoImprovementsMODISterrestrial2005]. For 
-each unit, we averaged NPP values between 2004 and 2014.
+each unit, we averaged NPP values between 2004 and 2014.  
   
 ## Statistical models  
 We constructed linear models to analyse the influence of human footprint, forest
@@ -511,7 +515,7 @@ biodiversity. The results for alpha and gamma diversities can be found in
 appendix 1. We checked all models to ensure that the variance inflation factors
 (VIF) of the explanatory variables were under 3
 [@ZuurAnalysingecologicaldata2007]. VIF values for all models can be found in
-appendix 4.
+appendix 4.  
 
 We visually inspected the residuals of all models to ensure that they were
 normally distributed, and tested residuals for spatial autocorrelation. Spatial
@@ -532,10 +536,10 @@ from these models were normally distributed. For cases where residuals were
 spatially autocorrelated, we utilised spatial error models, which is a type of
 autoregressive model. Spatial error models assume that spatial autocorrelation
 is due to missing spatial covariates
-[@ivandComparingimplementationsestimation2015]. We did not detect spatial
+[@BivandComparingimplementationsestimation2015]. We did not detect spatial
 autocorrelation in any of the residuals from the spatial error models. All
 analyses were performed with `r R.Version()$version.string`.  A list of used R
-packages and their versions can be found in Appendix 8.
+packages and their versions can be found in Appendix 8.  
 
 # Results  
 ## Summary statistics  
@@ -555,6 +559,17 @@ was substantially larger than functional and phylogenetic beta diversity,
 reflecting the more limited set of ecological functions and phylogenetic
 backgrounds in comparison to the number of species present.  
 
+```{r beta_div_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRef('div_plots', 'Distributions of taxonomic, functional and phylogenetic beta diversity, and forest species richness, and Pearson correlations between the diversity measures')}
+knitr::include_graphics('../figures/beta_div_plots.png')
+```
+  
+All three beta diversity measures were fairly strongly correlated with each
+other, especially the correlation between functional and phylogenetic beta
+diversity (`r figRef("div_plots")`). On the other hand, none of the response
+variables was strongly correlated with the total number of forest bird species,
+confirming that the patterns seen in this paper are relatively indepedent of 
+just the number of species.
+
 ```{r explanatory_summary_stats, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
 set.caption(tabRef('explanatory_summary', 
   'Summary statistics of explanatory variables used in models'))
@@ -565,15 +580,6 @@ colnames(explanatory_summary_table) <- expl_names[2:7]
 rownames(explanatory_summary_table) <- c('Min', 'Median', 'Mean', 'Max', 'SD')
 pander::pander(explanatory_summary_table)
 ```
-
-```{r beta_div_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRef('div_plots', 'Distributions of taxonomic, functional and phylogenetic beta diversity, and forest species richness, and Pearson correlations between the diversity measures')}
-knitr::include_graphics('../figures/beta_div_plots.png')
-```
-  
-`r figRef("div_plots")` shows that none of the response variables was strongly
-correlated with species richness. All three beta diversity measures were
-positively correlated with each other. The correlation between functional and
-phylogenetic beta diversity was fairly strong.  
   
 ## Taxonomic beta diversity  
 ```{r tax_beta_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
@@ -591,10 +597,11 @@ tax_beta_hdiv_perc <- round((tax_beta_hdiv_change / tax_beta_range) * 100, digit
 ```
   
 Taxonomic beta diversity was not impacted by human footprint index (HFI), nor
-forest change. Taxonomic beta diversity was positively associated with habitat
-diversity. Along the range of habitat diversity values 
+forest change. Instead, taxonomic beta diversity was positively associated with 
+habitat diversity. Along the range of habitat diversity values 
 (`r tabRef("explanatory_summary")`), taxonomic beta diversity increased by 
-`r tax_beta_hdiv_change` units (`r tax_beta_hdiv_perc`%).  
+`r tax_beta_hdiv_change` units, which is a modest increase in biological terms 
+(`r tax_beta_hdiv_perc`%).  
   
 ## Functional beta diversity  
 ```{r func_beta_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
@@ -619,14 +626,14 @@ func_beta_temp_perc <- round((func_beta_temp_change / func_beta_range) * 100, di
   
 Functional beta diversity had a statistically significant association with HFI.
 Along the gradient of HFI in our data (`r tabRef("explanatory_summary")`),
-functional beta diversity increased strongly (`r func_beta_hfp_change` units, 
-`r func_beta_hfp_perc`%). Forest change did not appear to influence functional beta
-diversity. Interestingly, net primary production (NPP) had a strong negative
-impact on functional beta diversity. Along the range of NPP values functional
-beta diversity decreased by `r abs(func_beta_npp_change)` units 
-(`r func_beta_npp_perc`%). Similarly, mean annual temperature had a negative impact,
-decreasing functional beta diversity by `r abs(func_beta_temp_change)` units 
-(`r func_beta_temp_perc`%).  
+functional beta diversity increased by `r func_beta_hfp_change` units, which 
+was a fairly strong biological impact (`r func_beta_hfp_perc`%). Forest change 
+did not appear to influence functional beta diversity. Interestingly, net primary 
+(NPP) had a strong negative impact on functional beta diversity. Along the range 
+of NPP values, functional beta diversity decreased by `r abs(func_beta_npp_change)` 
+units (`r func_beta_npp_perc`%), which was even stronger than the impact of HFI. 
+Similarly, mean annual temperature had a negative impact, decreasing functional 
+beta diversity by `r abs(func_beta_temp_change)` units (`r func_beta_temp_perc`%).  
   
 ## Phylogenetic beta diversity  
 ```{r phyl_beta_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
@@ -648,8 +655,8 @@ phyl_beta_temp_change <- round((phyl_beta_temp_perc / 100) * phyl_beta_range, di
   
 Similar to taxonomic beta diversity, phylogenetic beta diversity was not
 impacted by HFI, nor forest change. Phylogenetic beta diversity was negatively
-associated with NPP and mean temperature, although the biological impacts much
-stronger. Along the range of NPP values (`r tabRef("explanatory_summary")`)
+associated with NPP and mean temperature, although the biological impacts were 
+much stronger. Along the range of NPP values (`r tabRef("explanatory_summary")`)
 phylogenetic beta diversity decreased by `r abs(phyl_beta_npp_change)` units
 (-`r phyl_beta_npp_perc`%). Along the range of mean annual temperature values
 phylogenetic beta diversity decreased by `r abs(phyl_beta_temp_change)` units
@@ -695,10 +702,16 @@ of a unit) minus mean alpha diversity (mean local diversity of individual MNBBA
 sites). Thus, the diversity between sites (beta diversity) could increase in
 response to an increase in total diversity or a decrease in mean local
 diversity. Human footprint did not have a statistically significant impact on
-functional gamma or alpha diversity (see appendix) but the negative estimate for
-local diversity was an order of magnitude stronger than that for regional
-diversity, which may have been related to the positive impact on between-site
-diversity.  
+functional gamma or alpha diversity (see appendix 1 c & d) but the negative
+estimate for local diversity was an order of magnitude stronger than that for
+regional diversity, which may have been related to the positive impact on
+between-site diversity. The negative estimate for the impact of human footprint
+on functional alpha diversity suggests that human footprint lead to a loss of
+functionally distinct species. If this loss occurred randomly, impacting some
+areas but not others, this could lead to MNBBA count locations being more
+different from each other. This loss of species would indicate that the
+nestedness component of beta diversity was impacted, although impacts on
+turnover cannot be ruled out [@BaselgaPartitioningturnovernestedness2010].
 
 Similar to human footprint, forest change did not appear to cause biotic
 homogenisation in any of the responses studied here even though it has been
@@ -717,10 +730,18 @@ mature forest coverage did, however, appear to decrease functional and
 phylogenetic diversity at the local and regional scales, although the impact on
 regional functional diversity was not statistically significant. Since forest
 change had a negative impact at both local and regional scales, the method of
-calculating between-site diversity canceled out the impact of forest change on
-between-site diversity, meaning that no homogenising impact could be seen. This
-suggests that even though units lost local and regional diversity in response to
-forest change, MNBBA sites did not become more alike.  
+calculating between-site diversity would have canceled out the impact of forest
+change on between-site diversity, meaning that no homogenising impact could be
+seen. This suggests that even though units lost local and regional diversity in
+response to forest change, MNBBA sites did not become more alike.  
+
+Forestry might have been expected to increase differences between sites since
+the amount of forest under forest management has been steadily decreasing since
+at least 1990 [@NiemiAnalysislongtermforest]. Indeed, early successional species
+such as the Chestnut-sided Warbler, Mourning Warbler, and Veery have shown clear
+declines, possible due to the lack of young successional forest stands and high
+abundance cover of middle-aged forests in the state
+([MNBBA](https://mnbirdatlas.org/).
 
 * Interpret results of biogeographic variables on beta diversities 
 * Beta-diversity indices were not positive functions of net primary productivity
@@ -728,17 +749,21 @@ or ambient temperature.
 * We found that beta-diversities were negatively related
 to NPP and mean temperature. **Why is this?**
 
--Interpret results from conservation viewpoint Our results suggest that
-increased human footprint and forest change are not a cause of biotic
-homogenisation in our study site. Although our study did not have a temporal
-dimension to it, the spatial replicates (units) that had clearly differing
-levels of human footprint and forest change should have overcome this. Like
-several previous studies have shown, concentrating only on taxonomic diversity
-would not have shown any impact of human influence on local, regional or
-between-site diversity (refs).  
+From a conservation viewpoint, the maximising of beta diversity, increasing
+differences in diversity between sites, might be desireable. This could be
+achieved by increasing total diversity, but if an increase in between-site
+diversity comes at the expense of a decrease in diversity at a local scale, then
+the desireability of such an outcome must be considered critically
+[@SocolarHowShouldBetaDiversity2016]. Our study also highlights the importance
+of taking multiple facets of biodiversity into account. The positive influence
+of increase human footprint on biodiversity in our study region would have been
+missed if we had only focussed on taxonomic diversity, as has often previously
+been the case. Similarly, impacts on between-site and regional diversity would 
+have been missed if we had only studied local diversity.
 
 # Conclusion  
-  
+Our results suggest that increased human footprint and forest change are not a
+cause of biotic homogenisation in our study site.    
 
 # Appendix  
 ## 1. Results of alpha and gamma diversities
@@ -847,12 +872,12 @@ phyl_gamma_forest_change <- round(phyl_gamma_model_coef['Forest change', 'Estima
 phyl_gamma_forest_perc <- round((phyl_gamma_forest_change / phyl_gamma_range) * 100, digits = 2)
 ```
 
-## 2. Correlations between human footprint and human influence variables in Minnesota data
+## 2. Correlations between human footprint and variables describin human influence
 ```{r hfp_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('hfp_plots', "Distributions of human footprint and other variables describing human influence, and Spearman's rank correlations between variables")}
 knitr::include_graphics('../figures/human_impact_plots.png')
 ```
   
-## 3. Correlations between explanatory variables and their distributions
+## 3. Correlations between explanatory variables, and their distributions
 ```{r explanatory_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('explanatory_plots', "Distributions of explanatory variables, and Spearman's rank correlations between variables")}
 knitr::include_graphics('../figures/explanatory_plots.png')
 ```
