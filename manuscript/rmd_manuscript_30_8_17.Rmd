@@ -690,7 +690,7 @@ packages and their versions can be found in Appendix 8.
 # Results  
 ## Summary statistics  
 ```{r response_summary_stats, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
-set.caption(tabRef('response_summary', 
+pander::set.caption(tabRef('response_summary', 
   'Summary statistics of forest bird species richness and response variables per unit'))
 response_variables <- units_merged_beta_subset@data[c('forest_spp_richness', 
   'tax_beta_div', 'func_beta_div', 'phyl_beta_div')]
@@ -717,7 +717,7 @@ confirming that the patterns seen in this paper are relatively indepedent of
 just the number of species.
 
 ```{r explanatory_summary_stats, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
-set.caption(tabRef('explanatory_summary', 
+pander::set.caption(tabRef('explanatory_summary', 
   'Summary statistics of explanatory variables used in models'))
 explanatory_variables <- units_merged_beta_subset@data[c('human_footprint', 
   'forest_loss', 'net_prim_prod', 'habitat_div', 'mean_temp', 'forest_point_freq')]
@@ -729,7 +729,7 @@ pander::pander(explanatory_summary_table)
   
 ## Taxonomic beta diversity  
 ```{r tax_beta_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
-set.caption(tabRef('tax_beta_model_summary', 'Summary of linear model explaining taxonomic beta diversity'))
+pander::set.caption(tabRef('tax_beta_model_summary', 'Summary of linear model explaining taxonomic beta diversity'))
 pander::pander(tax_beta_model_coef)
 ```
   
@@ -747,7 +747,7 @@ change (like in the case of taxonomic alpha diversity,
   
 ## Functional beta diversity  
 ```{r func_beta_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
-set.caption(tabRef('func_beta_model_summary', 'Summary of generalised linear model explaining functional beta diversity'))
+pander::set.caption(tabRef('func_beta_model_summary', 'Summary of generalised linear model explaining functional beta diversity'))
 pander::pander(func_beta_model_coef)
 
 func_hfi_alpha_vs_gamma <-  round(abs(func_alpha_model_coef['Human footprint', 'Estimate'] / 
@@ -783,7 +783,7 @@ be expected to result in no apparent impact on beta diversity.
   
 ## Phylogenetic beta diversity  
 ```{r phyl_beta_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
-set.caption(tabRef('phyl_beta_model_summary', 'Summary of spatial error model explaining phylogenetic beta diversity'))
+pander::set.caption(tabRef('phyl_beta_model_summary', 'Summary of spatial error model explaining phylogenetic beta diversity'))
 pander::pander(phyl_beta_model_coef)
 
 phyl_hfi_alpha_vs_gamma <-  round(abs(phyl_alpha_model_coef['Human footprint', 'Estimate'] / 
@@ -872,24 +872,21 @@ homogenised in terms of species composition and forest structure to such an
 extent that current forest management activities occuring have limited impact on
 the composition of bird communities. Indeed, forests in the area still bear a
 clear signature of previous land use change
-[@SchulteHomogenizationnorthernGreat2007]. On the other hand, forest change did
-have a clear impact on local and regional diversity. A loss in the cover of
-mature forest coverage did, however, appear to decrease functional and
-phylogenetic diversity at the local and regional scales, although the impact on
-regional functional diversity was not statistically significant. Since forest
-change had a negative impact at both local and regional scales, the method of
-calculating between-site diversity would have canceled out the impact of forest
-change on between-site diversity, meaning that no homogenising impact could be
-seen. This suggests that even though units lost local and regional diversity in
-response to forest change, MNBBA sites did not become more alike.  
-
-Forestry might have been expected to increase differences between sites since
-the amount of forest under forest management has been steadily decreasing since
-at least 1990 [@NiemiAnalysislongtermforest]. Indeed, early successional species
-such as the Chestnut-sided Warbler, Mourning Warbler, and Veery have shown clear
-declines, possible due to the lack of young successional forest stands and high
-abundance cover of middle-aged forests in the state
-([MNBBA](https://mnbirdatlas.org/).
+[@SchulteHomogenizationnorthernGreat2007]. A loss in the cover of mature forest
+coverage did, however, appear to decrease functional and phylogenetic diversity
+at the local and regional scales, although the impact on regional functional
+diversity was not statistically significant. Since forest change had a negative
+impact at both local and regional scales, the method of calculating between-site
+diversity would have canceled out the impact of forest change on between-site
+diversity, meaning that no homogenising impact could be seen. This suggests that
+even though units lost local and regional diversity in response to forest
+change, MNBBA sites did not become more alike. Interestingly, forestry could
+potentially increase differences between sites since the amount of forest under
+forest management has been steadily decreasing since at least 1990
+[@NiemiAnalysislongtermforest]. Indeed, early successional species such as the
+Chestnut-sided Warbler, Mourning Warbler, and Veery have shown clear declines,
+possible due to the lack of young successional forest stands and high abundance
+cover of middle-aged forests in the state ([MNBBA](https://mnbirdatlas.org/).
 
 * Interpret results of biogeographic variables on beta diversities 
 * Beta-diversity indices were not positive functions of net primary productivity
@@ -898,16 +895,21 @@ or ambient temperature.
 to NPP and mean temperature. **Why is this?**
 
 From a conservation viewpoint, the maximising of beta diversity, increasing
-differences in diversity between sites, might be desireable. This could be
-achieved by increasing total diversity, but if an increase in between-site
-diversity comes at the expense of a decrease in diversity at a local scale, then
-the desireability of such an outcome must be considered critically
-[@SocolarHowShouldBetaDiversity2016]. Our study also highlights the importance
-of taking multiple facets of biodiversity into account. The positive influence
-of increase human footprint on biodiversity in our study region would have been
-missed if we had only focussed on taxonomic diversity, as has often previously
-been the case. Similarly, impacts on between-site and regional diversity would 
-have been missed if we had only studied local diversity.
+differences in diversity between sites, might be desireable. Ensuring that 
+different areas host different species could safeguard against regional 
+extinctions by providing a number of sources from where e.g. specialists 
+could recolonise suitable habitats. Increasing between-site diversity could be
+achieved by increasing total diversity. However, it would be difficult to argue
+for increasing between-site diversity at the expense of decreasing local
+diversity [@SocolarHowShouldBetaDiversity2016]. Indeed, our study appeared to
+show this outcome. This result highlights the importance of critically
+considering the use of beta diversity in a conservation setting. Our study also
+highlights the importance of taking multiple facets of biodiversity into
+account. The positive influence of increase human footprint on biodiversity in
+our study region would have been missed if we had only focussed on taxonomic
+diversity, as has often previously been the case. Similarly, impacts on
+between-site and regional diversity would have been missed if we had only
+studied local diversity.
 
 # Conclusion  
 Our results suggest that increased human footprint and forest change are not a
@@ -917,37 +919,37 @@ cause of biotic homogenisation in our study site.
 ## 1. Results of alpha and gamma diversities
 ### a) Taxonomic alpha diversity results
 ```{r tax_alpha_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
-set.caption(tabRefApp('tax_alpha_model_summary', 'Summary of spatial error model explaining taxonomic alpha diversity'))
+pander::set.caption(tabRefApp('tax_alpha_model_summary', 'Summary of spatial error model explaining taxonomic alpha diversity'))
 pander::pander(tax_alpha_model_coef)
 ```
 
 ### b) Taxonomic gamma diversity results
 ```{r tax_gamma_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
-set.caption(tabRefApp('tax_gamma_model_summary', 'Summary of spatial error model explaining taxonomic gamma diversity'))
+pander::set.caption(tabRefApp('tax_gamma_model_summary', 'Summary of spatial error model explaining taxonomic gamma diversity'))
 pander::pander(tax_gamma_model_coef)
 ```
 
 ### c) Functional alpha diversity results
 ```{r func_alpha_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
-set.caption(tabRefApp('func_alpha_model_summary', 'Summary of spatial error model explaining functional alpha diversity'))
+pander::set.caption(tabRefApp('func_alpha_model_summary', 'Summary of spatial error model explaining functional alpha diversity'))
 pander::pander(func_alpha_model_coef)
 ```
 
 ### d) Functional gamma diversity results
 ```{r func_gamma_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
-set.caption(tabRefApp('func_gamma_model_summary', 'Summary of spatial error model explaining functional gamma diversity'))
+pander::set.caption(tabRefApp('func_gamma_model_summary', 'Summary of spatial error model explaining functional gamma diversity'))
 pander::pander(func_gamma_model_coef)
 ```
 
 ### e) Phylogenetic alpha diversity results
 ```{r phyl_alpha_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
-set.caption(tabRefApp('phyl_alpha_model_summary', 'Summary of spatial error model explaining phylogenetic alpha diversity'))
+pander::set.caption(tabRefApp('phyl_alpha_model_summary', 'Summary of spatial error model explaining phylogenetic alpha diversity'))
 pander::pander(phyl_alpha_model_coef)
 ```
 
 ### f) Phylogenetic gamma diversity results
 ```{r phyl_gamma_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
-set.caption(tabRefApp('phyl_gamma_model_summary', 'Summary of spatial error model explaining phylogenetic gamma diversity'))
+pander::set.caption(tabRefApp('phyl_gamma_model_summary', 'Summary of spatial error model explaining phylogenetic gamma diversity'))
 pander::pander(phyl_gamma_model_coef)
 ```
 
@@ -963,7 +965,7 @@ knitr::include_graphics('../figures/explanatory_plots.png')
   
 ## 4. Variance inflation factors from models  
 ```{r vif, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
-set.caption(tabRefApp('vif', 'Variance inflation factors of explanatory variables in models explaining taxonomic, functional, and phylogenetic beta diversity'))
+pander::set.caption(tabRefApp('vif', 'Variance inflation factors of explanatory variables in models explaining taxonomic, functional, and phylogenetic beta diversity'))
 vif_table <- as.data.frame(rbind(t(tax_beta_model_vif), t(func_beta_model_vif), t(phyl_beta_model_vif)))
 rownames(vif_table) <- c('Taxonomic', 'Functional', 'Phylogenetic')
 colnames(vif_table) <- expl_names[2:7]
