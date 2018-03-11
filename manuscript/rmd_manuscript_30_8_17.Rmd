@@ -670,8 +670,9 @@ the explanatory variables on alpha and gamma diversity of the three facets of
 biodiversity. The results for alpha and gamma diversities can be found in
 appendix 1. We checked all models to ensure that the variance inflation factors
 (VIF) of the explanatory variables were under 3
-[@ZuurAnalysingecologicaldata2007]. VIF values for all models can be found in
-appendix 4.  
+[@ZuurAnalysingecologicaldata2007]. Correlations between explanatory variables 
+can be found in Appendix 3 and VIF values for all models can be found in
+Appendix 4.  
 
 We visually inspected the residuals of all models to ensure that they were
 normally distributed, and tested residuals for spatial autocorrelation. Spatial
@@ -823,8 +824,8 @@ beta diversity.
 
 # Discussion  
 Elevated human pressure did not appear to be related with increased biotic
-homogenisation in our study site. An increase in the human footprint index
-(HFI), which measured the impact of increased population density, land
+homogenisation in our study site. An increase in the human footprint index, 
+which measured the impact of increased population density, land
 transformation, accessibility, and electrical power infrastructure, did not
 cause biotic homogenisation in taxonomic, functional or phylogenetic diversity.
 Instead, increased human footprint appeared to cause functional heterogenisation
@@ -842,15 +843,21 @@ been shown to cause biotic homogenisation of forest communities, although the
 impacts have often been fairly subtle
 [@KitchingDistancedrivenspeciesturnover2013;
 @IbarraBiotichomogenizationLoss2015;
-@MoriBiotichomogenizationdifferentiation2015]. However, it is important to note
-that some studies have no biotic homogenisation in response to increased human
-pressure [@Lee-CruzImpactLoggingForest2013] or, similar to our study, even an
-increase in between-site diversity [@CatterallLongtermdynamicsbird2010].  
+@MoriBiotichomogenizationdifferentiation2015]. Häkkilä et al. (2018) found signs
+of homogenization in protected areas surrounded by intensively managed forest,
+although the quality the reserves played a bigger role in determining species
+composition. However, it is important to note that some studies have no biotic
+homogenisation in response to increased human pressure
+[@Lee-CruzImpactLoggingForest2013] or, similar to our study, even an increase in
+between-site diversity [@CatterallLongtermdynamicsbird2010].  
 
 The result that increased human footprint appeared to increase functional
 diversity between sites is contrary to the results of many previous studies
-[@McKinneyUrbanizationmajorcause2006]. A potential reason that beta diversity
-increases in response to increased human impact could be related to the very
+[@McKinneyUrbanizationmajorcause2006]. Human footprint clearly summarised 
+human pressures well since it was strongly correlated with total population, 
+density of roads and human land-use cover (Appendix 2). 
+A potential reason that beta diversity
+increases in response to increased human impact is likely related to the very
 nature of beta diversity. Between-site diversity (beta diversity), in both its
 additive and mulitplicative forms, is derived from total regional diversity
 (gamma diversity) and mean local diversity (mean alpha diversity). In this study
@@ -866,14 +873,30 @@ suggests that human footprint lead to a loss of functionally distinct species
 from local communities. If this loss occurred randomly, impacting some areas but
 not others, this could lead to MNBBA count locations being more different from
 each other. This loss of species from local communities with increasing human
-footprint indicates that funtional beta diversity was primarily affected by the
+footprint indicates that functional beta diversity was primarily affected by the
 nestedness component of beta diversity, although impacts on turnover resulting
 from species replacement along the human footprint gradient cannot be ruled out
 [@BaselgaPartitioningturnovernestedness2010].  
 
-Similar to human footprint, forest change did not appear to cause biotic
+The positive response of beta diversity to increasing  human pressure is
+supported by the conceptual trajectory outlined in
+@SocolarHowShouldBetaDiversity2016 [-@SocolarHowShouldBetaDiversity2016]. In
+this model, beta diversity increases in response to subtractive heterogenisation
+caused by some native species becoming rarer and invasive species beginning to
+estblish themselves (additive heterogenisation). Beta diversity then begins to
+decrease as rarer species beging to disappear and invasive species start to
+dominate. Since we only used relatively forested units in our analyse the level
+of human pressure in these units was clearly lower than that of units left out
+of analyses (`r figRefApp('hfi_comparison_hist')`). Therefore, it is possible 
+that human pressure in our study was so low that it increased diversity between 
+MNBBA sites.  
+
+Forest change and human footprint were clearly spatially segragated in the state 
+of Minnesota (Appendices 8 a & b), and thus captured different facets of 
+human pressure in the state (Appendix 2). However, similar to human footprint, 
+forest change did not appear to cause biotic 
 homogenisation in any of the responses studied here even though it has been
-shown to homogenise biological communities especially in the tropics
+shown to homogenise biological communities, especially in the tropics
 [@LoboForestfragmentationdrives2011; @KitchingDistancedrivenspeciesturnover2013;
 @IbarraBiotichomogenizationLoss2015]. It is possible that the forests in this
 region, which have experienced heavy logging of natural forests over the past
@@ -898,11 +921,24 @@ Chestnut-sided Warbler, Mourning Warbler, and Veery have shown clear declines,
 possible due to the lack of young successional forest stands and high abundance
 cover of middle-aged forests in the state ([MNBBA](https://mnbirdatlas.org/).
 
-* Interpret results of biogeographic variables on beta diversities 
-* Beta-diversity indices were not positive functions of net primary productivity
-or ambient temperature. 
-* We found that beta-diversities were negatively related
-to NPP and mean temperature. **Why is this?**
+In addition to studying the impacts of variables that captured human pressures
+on beta diversities, we also took into account three environmental variables
+known to influence patterns of biodiversity: habitat diversity, net primary
+production and average temperature [@QianEnvironmentrichnessrelationships2010].
+Habitat diversity had a clear positive relation with taxonomic beta diversity,
+meaning that units with a higher diversity of land classes tended to have bird
+communities that were different from each other. This influence was due an
+increase in total taxonomic diversity (Appendix 1 b). Net primary productivity
+and average temperature did not influence taxonomic beta diversity but both had
+a negative association with functional and phylogenetic beta diversity. In the
+case of functional beta diversity, both variables appeared to negatively
+influence beta diversity by increasing the diversity within MNBBA sites, which
+would lead to a decrease in beta diversity. In the case of phylogenetic
+diversity these variables did not appear to be associated with an increase in
+diversity within MNBBA sites but the relatively strong correlation between
+functional and phylogenetic beta diversity (`r figRef("div_plots")`) suggests
+that the same cause was behind the negative influence of productivity and
+temperature on phylogenetic beta diversity.  
 
 Ultimately, conservation actions aim at maintaining global and regional
 diversity. High regional diversity can be achieved either by consistently high
@@ -970,7 +1006,7 @@ pander::set.caption(tabRefApp('phyl_gamma_model_summary', 'Summary of spatial er
 pander::pander(phyl_gamma_model_coef)
 ```
 
-## 2. Correlations between human footprint and variables describin human influence
+## 2. Correlations between human footprint and variables describing human influence
 ```{r hfp_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('hfp_plots', "Distributions of human footprint and other variables describing human influence, and Spearman's rank correlations between variables")}
 knitr::include_graphics('../figures/human_impact_plots.png')
 ```
