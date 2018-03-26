@@ -437,8 +437,8 @@ the beta diversity of a region. On the other hand, the colonisation of
 specialists into new sites can increase mean alpha diversity
 [@McCuneGainsnativespecies2013], leading to a decrease in the beta diversity of
 a region. This holds for both the additive and multiplicative forms of beta
-diversity. Thus, in a conservation setting, maximising beta diversity is not
-necessarily a goal to strive for [@SocolarHowShouldBetaDiversity2016].  
+diversity. Thus, in a conservation setting, maximising beta diversity could lead 
+to negative impacts on local biodiversity [@SocolarHowShouldBetaDiversity2016].  
 
 Increasing similarity between local sites (decreased beta diversity), is a
 process known as biotic homogenisation [@OldenBiotichomogenizationnew2006].
@@ -720,7 +720,7 @@ backgrounds in comparison to the number of species present.
 knitr::include_graphics('../figures/beta_div_plots.png')
 ```
   
-All three beta diversity measures were fairly strongly correlated with each
+All three beta diversity measures were clearly correlated with each
 other, especially the correlation between functional and phylogenetic beta
 diversity (`r figRef("div_plots")`). On the other hand, none of the response
 variables was strongly correlated with the total number of forest bird species,
@@ -824,7 +824,7 @@ beta diversity.
 
 # Discussion  
 Elevated human pressure did not appear to be related with increased biotic
-homogenisation in our study site. An increase in the human footprint index, 
+homogenisation in our study region. An increase in the human footprint index, 
 which measured the impact of increased population density, land
 transformation, accessibility, and electrical power infrastructure, did not
 cause biotic homogenisation in taxonomic, functional or phylogenetic diversity.
@@ -840,15 +840,15 @@ intensification have been shown to homogenise bacterial
 [@RodriguesConversionAmazonrainforest2013] and beetle communities
 [@GordonSimplificationcoffeefoliagedwelling2009]. Forest management has also
 been shown to cause biotic homogenisation of forest communities, although the
-impacts have often been fairly subtle
+impacts have often been subtle
 [@KitchingDistancedrivenspeciesturnover2013;
 @IbarraBiotichomogenizationLoss2015;
 @MoriBiotichomogenizationdifferentiation2015]. Häkkilä et al. (2018) found signs
 of homogenization in protected areas surrounded by intensively managed forest,
-although the quality the reserves played a bigger role in determining species
-composition. However, it is important to note that some studies have no biotic
+although the quality of the reserves played a more substantial role in determining species
+composition. However, it is important to note that some studies have shown no biotic
 homogenisation in response to increased human pressure
-[@Lee-CruzImpactLoggingForest2013] or, similar to our study, even an increase in
+[@Lee-CruzImpactLoggingForest2013] or, similar to this study, even an increase in
 between-site diversity [@CatterallLongtermdynamicsbird2010].  
 
 The result that increased human footprint appeared to increase functional
@@ -869,7 +869,7 @@ appendix 1 c & d) but the negative estimate for local diversity was more than an
 order of magnitude stronger than that for regional diversity, which may have
 been related to the positive impact on between-site diversity. The negative
 estimate for the impact of human footprint on functional alpha diversity
-suggests that human footprint lead to a loss of functionally distinct species
+suggests that increased human footprint has lead to a loss of functionally distinct species
 from local communities. If this loss occurred randomly, impacting some areas but
 not others, this could lead to MNBBA count locations being more different from
 each other. This loss of species from local communities with increasing human
@@ -905,8 +905,8 @@ homogenised in terms of species composition and forest structure to such an
 extent that current forest management activities occuring have limited impact on
 the composition of bird communities. Indeed, forests in the area still bear a
 clear signature of previous land use change
-[@SchulteHomogenizationnorthernGreat2007]. A loss in the cover of mature forest
-coverage did, however, appear to decrease functional and phylogenetic diversity
+[@SchulteHomogenizationnorthernGreat2007]. A loss in mature forest cover 
+did, however, appear to decrease functional and phylogenetic diversity
 at the local and regional scales, although the impact on regional functional
 diversity was not statistically significant. Since forest change had a negative
 impact at both local and regional scales, the method of calculating between-site
@@ -914,12 +914,13 @@ diversity would have canceled out the impact of forest change on between-site
 diversity, meaning that no homogenising impact could be seen. This suggests that
 even though units lost local and regional diversity in response to forest
 change, MNBBA sites did not become more alike. Interestingly, forestry could
-potentially increase differences between sites since the amount of forest under
-forest management has been steadily decreasing since at least 1990
-[@NiemiAnalysislongtermforest]. Indeed, early successional species such as the
-Chestnut-sided Warbler, Mourning Warbler, and Veery have shown clear declines,
-possible due to the lack of young successional forest stands and high abundance
-cover of middle-aged forests in the state ([MNBBA](https://mnbirdatlas.org/).
+potentially increase differences between sites since the amount of forest that 
+has been logged in two large national forests has been steadily decreasing 
+since at least 1990 [@NiemiAnalysislongtermforest2016]. Indeed, early successional 
+species such as the Chestnut-sided Warbler, Mourning Warbler, and Veery have 
+shown clear declines, possible due to the lack in availability of early 
+successional forest stands and higher abundance cover of middle-aged forests in 
+the portions of the state [@PfannmullerFirstMinnesotaBreeding2017].
 
 In addition to studying the impacts of variables that captured human pressures
 on beta diversities, we also took into account three environmental variables
@@ -927,7 +928,7 @@ known to influence patterns of biodiversity: habitat diversity, net primary
 production and average temperature [@QianEnvironmentrichnessrelationships2010].
 Habitat diversity had a clear positive relation with taxonomic beta diversity,
 meaning that units with a higher diversity of land classes tended to have bird
-communities that were different from each other. This influence was due an
+communities that were different from each other. This influence was due to an
 increase in total taxonomic diversity (Appendix 1 b). Net primary productivity
 and average temperature did not influence taxonomic beta diversity but both had
 a negative association with functional and phylogenetic beta diversity. In the
@@ -953,14 +954,14 @@ at the expense of decreasing local diversity (Socolar et al. 2016) because
 targeting high average local diversity is a cost-efficient conservation strategy
 particularly when nestedness in community composition is marked. Our results
 indeed suggests that increasing functional beta-diversity with increasing human
-footprint can be due to a loss of functional diveristy from local communities,
+footprint can be due to a loss of functional diversity from local communities,
 i.e nestedness. This highlights the importance of critically considering the use
 of beta diversity in a conservation setting.  
 
 # Conclusion  
 Our study supports earlier findings (e.g.
 @DevictorSpatialmismatchcongruence2010; @HakkilaDegradationlandscapematrix2017)
-that it is important to take multiple facets of biodiversity into account. The
+that it is important to consider multiple facets of biodiversity. The
 positive influence of increase in human footprint on biodiversity in our study
 region would have been missed had we only focussed on taxonomic diversity, as
 has often previously been the case. Similarly, impacts on between-site and
