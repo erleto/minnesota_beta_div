@@ -623,12 +623,12 @@ and the cell with the largest value got a value of 100. The HFI data was clipped
 to the state of Minnesota, and the average HFI value for each unit was
 calculated. HFI values in our study area summarised human influence well, as
 seen in the correlation coefficients between HFI and total population, road
-density, and cover of human lan-use classes (Appendix 2).  
+density, and cover of human land-use classes (Appendix 1).  
 
 In addition to studying the impact of general human influence we also wanted to
 study how changes in forest cover influence biodiversity. In the state of
 Minnesota, areas experiencing forest change and those with high human influence
-are clearly separate (Appendix 2, Appendix 7 a & b). We quantified forest change
+are clearly separate (Appendix 1, Appendix 2 a & b). We quantified forest change
 from the global forest change dataset developed by
 @HansenHighResolutionGlobalMaps2013 [-@HansenHighResolutionGlobalMaps2013]. The
 dataset uses Landsat data to identify stand-replacing disturbances or the
@@ -668,11 +668,11 @@ count locations on taxonomic, functional, and phylogenetic beta diversity. In
 addition, to aid in interpreting the results, we also analysed the influence of
 the explanatory variables on alpha and gamma diversity of the three facets of
 biodiversity. The results for alpha and gamma diversities can be found in
-appendix 1. We checked all models to ensure that the variance inflation factors
+appendix 3. We checked all models to ensure that the variance inflation factors
 (VIF) of the explanatory variables were under 3
 [@ZuurAnalysingecologicaldata2007]. Correlations between explanatory variables 
-can be found in Appendix 3 and VIF values for all models can be found in
-Appendix 4.  
+can be found in Appendix 4 and VIF values for all models can be found in
+Appendix 5.  
 
 We visually inspected the residuals of all models to ensure that they were
 normally distributed, and tested residuals for spatial autocorrelation. Spatial
@@ -696,7 +696,7 @@ is due to missing spatial covariates
 [@BivandComparingimplementationsestimation2015]. We did not detect spatial
 autocorrelation in any of the residuals from the spatial error models. All
 analyses were performed with `r R.Version()$version.string`.  A list of used R
-packages and their versions can be found in Appendix 8.  
+packages and their versions can be found in Appendix 6.  
 
 # Results  
 ## Summary statistics  
@@ -824,38 +824,36 @@ beta diversity.
 
 # Discussion  
 Elevated human pressure did not appear to be related with increased biotic
-homogenisation in our study region. An increase in the human footprint index, 
-which measured the impact of increased population density, land
-transformation, accessibility, and electrical power infrastructure, did not
-cause biotic homogenisation in taxonomic, functional or phylogenetic diversity.
-Instead, increased human footprint appeared to cause functional heterogenisation
-by increasing functional diversity between sites. Forest change did not appear
-to cause biotic homogenisation in any of the response variables. As such, our
+homogenisation in our study region. An increase in the human footprint index,
+which measured the impact of increased population density, land transformation,
+accessibility, and electrical power infrastructure, did not cause biotic
+homogenisation in taxonomic, functional or phylogenetic diversity. Instead,
+increased human footprint appeared to cause functional heterogenisation by
+increasing functional diversity between sites. Forest change did not appear to
+cause biotic homogenisation in any of the response variables. As such, our
 results appear to be at odds with previous studies that have shown homogenising
 impacts of increased human pressure. For example, urbanisation has been shown to
 homogenise environments and, consequently, biological communities
-[@McKinneyUrbanizationmajorcause2006;
-@SolUrbanisationlossphylogenetic2017], and agricultural expansion and
-intensification have been shown to homogenise bacterial
+[@McKinneyUrbanizationmajorcause2006; @SolUrbanisationlossphylogenetic2017], 
+and agricultural expansion and intensification have been shown to homogenise bacterial
 [@RodriguesConversionAmazonrainforest2013] and beetle communities
 [@GordonSimplificationcoffeefoliagedwelling2009]. Forest management has also
 been shown to cause biotic homogenisation of forest communities, although the
-impacts have often been subtle
-[@KitchingDistancedrivenspeciesturnover2013;
-@IbarraBiotichomogenizationLoss2015;
-@MoriBiotichomogenizationdifferentiation2015]. Häkkilä et al. (2018) found signs
-of homogenization in protected areas surrounded by intensively managed forest,
-although the quality of the reserves played a more substantial role in determining species
-composition. However, it is important to note that some studies have shown no biotic
+impacts have often been subtle [@KitchingDistancedrivenspeciesturnover2013;
+@IbarraBiotichomogenizationLoss2015; @MoriBiotichomogenizationdifferentiation2015]. @HakkilaHabitatqualitymore2018 [-@HakkilaHabitatqualitymore2018] 
+found signs of homogenization in protected
+areas surrounded by intensively managed forest, although the quality of the
+reserves played a more substantial role in determining species composition.
+However, it is important to note that some studies have shown no biotic
 homogenisation in response to increased human pressure
-[@Lee-CruzImpactLoggingForest2013] or, similar to this study, even an increase in
-between-site diversity [@CatterallLongtermdynamicsbird2010].  
+[@Lee-CruzImpactLoggingForest2013] or, similar to this study, even an increase
+in between-site diversity [@CatterallLongtermdynamicsbird2010].  
 
 The result that increased human footprint appeared to increase functional
 diversity between sites is contrary to the results of many previous studies
 [@McKinneyUrbanizationmajorcause2006]. Human footprint clearly summarised 
 human pressures well since it was strongly correlated with total population, 
-density of roads and human land-use cover (Appendix 2). 
+density of roads and human land-use cover (Appendix 1). 
 A potential reason that beta diversity
 increases in response to increased human impact is likely related to the very
 nature of beta diversity. Between-site diversity (beta diversity), in both its
@@ -865,7 +863,7 @@ we calculated beta diversity as gamma diversity minus mean alpha diversity.
 Thus, beta diversity could increase in response to an increase in gamma
 diversity or a decrease in alpha diversity. Human footprint did not have a
 statistically significant impact on functional gamma or alpha diversity (see
-appendix 1 c & d) but the negative estimate for local diversity was more than an
+appendices 3 c & d) but the negative estimate for local diversity was more than an
 order of magnitude stronger than that for regional diversity, which may have
 been related to the positive impact on between-site diversity. The negative
 estimate for the impact of human footprint on functional alpha diversity
@@ -887,13 +885,13 @@ estblish themselves (additive heterogenisation). Beta diversity then begins to
 decrease as rarer species beging to disappear and invasive species start to
 dominate. Since we only used relatively forested units in our analyse the level
 of human pressure in these units was clearly lower than that of units left out
-of analyses (`r figRefApp('hfi_comparison_hist')`). Therefore, it is possible 
+of analyses (Appendix 7). Therefore, it is possible 
 that human pressure in our study was so low that it increased diversity between 
 MNBBA sites.  
 
 Forest change and human footprint were clearly spatially segragated in the state 
 of Minnesota (Appendices 8 a & b), and thus captured different facets of 
-human pressure in the state (Appendix 2). However, similar to human footprint, 
+human pressure in the state (Appendix 1). However, similar to human footprint, 
 forest change did not appear to cause biotic 
 homogenisation in any of the responses studied here even though it has been
 shown to homogenise biological communities, especially in the tropics
@@ -929,7 +927,7 @@ production and average temperature [@QianEnvironmentrichnessrelationships2010].
 Habitat diversity had a clear positive relation with taxonomic beta diversity,
 meaning that units with a higher diversity of land classes tended to have bird
 communities that were different from each other. This influence was due to an
-increase in total taxonomic diversity (Appendix 1 b). Net primary productivity
+increase in total taxonomic diversity (Appendix 3 b). Net primary productivity
 and average temperature did not influence taxonomic beta diversity but both had
 a negative association with functional and phylogenetic beta diversity. In the
 case of functional beta diversity, both variables appeared to negatively
@@ -971,7 +969,34 @@ diversity. Our results suggest that increased human footprint and forest change
 are not a cause of biotic homogenisation in our study site.  
 
 # Appendix  
-## 1. Results of alpha and gamma diversities
+## 1. Correlations between human footprint and variables describing human influence
+```{r hfp_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('hfp_plots', "Distributions of human footprint and other variables describing human influence, and Spearman's rank correlations between variables")}
+knitr::include_graphics('../figures/human_impact_plots.png')
+print("Distributions of human footprint and other variables describing human influence, and Spearman's rank correlations between variables")
+```
+
+## 2. Spatial distribution of response variables and species richness
+### a) Taxonomic beta diversity
+```{r tax_div_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.height = 10, fig.width = 10, fig.cap = figRefApp('tax_div_plot', 'Map showing the spatial distribution of taxonomic beta diversity in the state of Minnesota')}
+knitr::include_graphics('../figures/tax_beta_map.png')
+```
+  
+### b) Functional beta diversity
+```{r func_div_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.height = 2, fig.width = 2, fig.cap = figRefApp('func_div_plot', 'Map showing the spatial distribution of functional beta diversity in the state of Minnesota')}
+knitr::include_graphics('../figures/func_beta_map.png')
+```
+  
+### c) Phylogenetic beta diversity
+```{r phyl_div_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('phyl_div_plot', 'Map showing the spatial distribution of phylogenetic beta diversity in the state of Minnesota')}
+knitr::include_graphics('../figures/phyl_beta_map.png')
+```
+  
+### d) Forest species richness
+```{r spp_richness_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('spp_richness_plot', 'Map showing the spatial distribution of species richness in the state of Minnesota')}
+knitr::include_graphics('../figures/spp_rich_map.png')
+```
+
+## 3. Results of alpha and gamma diversities
 ### a) Taxonomic alpha diversity results
 ```{r tax_alpha_div, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
 pander::set.caption(tabRefApp('tax_alpha_model_summary', 'Summary of spatial error model explaining taxonomic alpha diversity'))
@@ -1007,18 +1032,13 @@ pander::pander(phyl_alpha_model_coef)
 pander::set.caption(tabRefApp('phyl_gamma_model_summary', 'Summary of spatial error model explaining phylogenetic gamma diversity'))
 pander::pander(phyl_gamma_model_coef)
 ```
-
-## 2. Correlations between human footprint and variables describing human influence
-```{r hfp_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('hfp_plots', "Distributions of human footprint and other variables describing human influence, and Spearman's rank correlations between variables")}
-knitr::include_graphics('../figures/human_impact_plots.png')
-```
   
-## 3. Correlations between explanatory variables, and their distributions
+## 4. Correlations between explanatory variables, and their distributions
 ```{r explanatory_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('explanatory_plots', "Distributions of explanatory variables, and Spearman's rank correlations between variables")}
 knitr::include_graphics('../figures/explanatory_plots.png')
 ```
   
-## 4. Variance inflation factors from models  
+## 5. Variance inflation factors from models  
 ```{r vif, echo = FALSE, message = FALSE, warning = FALSE, results = 'asis'}
 pander::set.caption(tabRefApp('vif', 'Variance inflation factors of explanatory variables in models explaining taxonomic, functional, and phylogenetic beta diversity'))
 vif_table <- as.data.frame(rbind(t(tax_beta_model_vif), t(func_beta_model_vif), t(phyl_beta_model_vif)))
@@ -1027,35 +1047,16 @@ colnames(vif_table) <- expl_names[2:7]
 pander::pander(vif_table)
 ```
   
-## 5. Histogram of number of forest MNBBA points per unit
-```{r for_point_hist, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('for_point_hist', 'Histogram of the number of forested MNBBA points per unit')}
-knitr::include_graphics('../figures/for_point_hist.png')
+## 6. List of used R packages and their versions  
+```{r list_packages, echo = FALSE, comment = NA}
+for (package in sort(.packages())) {
+  message(package, ' ', packageVersion(package))
+}
 ```
   
-## 6. Comparison of human footprint index values in units used in analyses and units not used in analyses
+## 7. Comparison of human footprint index values in units used in analyses and units not used in analyses
 ```{r hfi_comparison_hist, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('hfi_comparison_hist', 'Comparison of human footprint index values in units used in analyses and units not used in analyses')}
 knitr::include_graphics('../figures/hfi_boxplot.png')
-```
-
-## 7. Spatial distribution of response variables and species richness
-### a) Taxonomic beta diversity
-```{r tax_div_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.height = 10, fig.width = 10, fig.cap = figRefApp('tax_div_plot', 'Map showing the spatial distribution of taxonomic beta diversity in the state of Minnesota')}
-knitr::include_graphics('../figures/tax_beta_map.png')
-```
-  
-### b) Functional beta diversity
-```{r func_div_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.height = 2, fig.width = 2, fig.cap = figRefApp('func_div_plot', 'Map showing the spatial distribution of functional beta diversity in the state of Minnesota')}
-knitr::include_graphics('../figures/func_beta_map.png')
-```
-  
-### c) Phylogenetic beta diversity
-```{r phyl_div_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('phyl_div_plot', 'Map showing the spatial distribution of phylogenetic beta diversity in the state of Minnesota')}
-knitr::include_graphics('../figures/phyl_beta_map.png')
-```
-  
-### d) Forest species richness
-```{r spp_richness_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('spp_richness_plot', 'Map showing the spatial distribution of species richness in the state of Minnesota')}
-knitr::include_graphics('../figures/spp_rich_map.png')
 ```
   
 ## 8. Spatial distribution of explanatory variables  
@@ -1082,13 +1083,6 @@ knitr::include_graphics('../figures/npp_map.png')
 ### e) Mean temperature  
 ```{r mean_temp_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('mean_temp_plot', 'Map showing the spatial distribution of mean temperature values in the state of Minnesota')}
 knitr::include_graphics('../figures/mean_temp_map.png')
-```
-  
-## 9. List of used R packages and their versions  
-```{r list_packages, echo = FALSE, comment = NA}
-for (package in sort(.packages())) {
-  message(package, ' ', packageVersion(package))
-}
 ```
   
 # References
