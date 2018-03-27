@@ -643,8 +643,8 @@ Lake (2007), and Pagami Creek (2011) fires). Since the results from models run
 with and without the affected units did not change significantly, we decided
 to keep these units in the analyses.
 
-In addition to variables describing human-caused changes in the environment, we
-also took into account abiotic variables also known to impact biological
+In addition to variables describing human-caused changes in the environment, we 
+also took into account abiotic variables known to impact biological
 diversity [@QianEnvironmentrichnessrelationships2010]. Habitat diversity for
 each unit was quantified by calculating the mean alpha diversity of habitat
 classes within units. Habitat classes were derived from the LANDFIRE
@@ -950,13 +950,14 @@ communities host different species could actually minimize species persistence
 in the long run because each species would be represented by a single or only a
 few local populations, resulting in higher rates of regional extinctions. In
 addition, it would be difficult to argue for increasing between-site diversity
-at the expense of decreasing local diversity (Socolar et al. 2016) because
-targeting high average local diversity is a cost-efficient conservation strategy
-particularly when nestedness in community composition is marked. Our results
-indeed suggests that increasing functional beta-diversity with increasing human
-footprint can be due to a loss of functional diversity from local communities,
-i.e nestedness. This highlights the importance of critically considering the use
-of beta diversity in a conservation setting.  
+at the expense of decreasing local diversity
+[@SocolarHowShouldBetaDiversity2016] because targeting high average local
+diversity is a cost-efficient conservation strategy particularly when nestedness
+in community composition is marked. Our results indeed suggest that increasing
+functional beta-diversity with increasing human footprint can be due to a loss
+of functional diversity from local communities, i.e nestedness. This highlights
+the importance of critically considering the use of beta diversity in a
+conservation setting.  
 
 # Conclusion  
 Our study supports earlier findings (e.g.
