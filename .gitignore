@@ -14,8 +14,6 @@
 *.jpeg
 *.tiff
 *.svg
-*.bib
-*.csl
 *.xls
 *.xlsx
 *.dbf

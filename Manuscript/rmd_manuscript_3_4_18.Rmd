@@ -193,28 +193,28 @@ summary_fun <- function(x,...){
 ```
 
 ```{r load_data, echo = FALSE, message = FALSE, warning = FALSE, results = 'hide'}
-attach(here('results', 'units_merged_beta_subset.rda'))
-attach(here('results', 'min_points_radius.rda'))
-attach(here('results', 'bba_forest_point_count.rda'))
-attach(here('results', 'forest_unit_count.rda'))
-attach(here('results', 'tax_beta_model_summary.rda'))
-attach(here('results', 'tax_alpha_model_summary.rda'))
-attach(here('results', 'tax_gamma_model_summary.rda'))
-attach(here('results', 'func_beta_model_summary.rda'))
-attach(here('results', 'func_alpha_model_summary.rda'))
-attach(here('results', 'func_gamma_model_summary.rda'))
-attach(here('results', 'phyl_beta_model_summary.rda'))
-attach(here('results', 'phyl_alpha_model_summary.rda'))
-attach(here('results', 'phyl_gamma_model_summary.rda'))
-attach(here('results', 'tax_beta_model_vif.rda'))
-attach(here('results', 'tax_alpha_model_vif.rda'))
-attach(here('results', 'tax_gamma_model_vif.rda'))
-attach(here('results', 'func_beta_model_vif.rda'))
-attach(here('results', 'func_alpha_model_vif.rda'))
-attach(here('results', 'func_gamma_model_vif.rda'))
-attach(here('results', 'phyl_beta_model_vif.rda'))
-attach(here('results', 'phyl_alpha_model_vif.rda'))
-attach(here('results', 'phyl_gamma_model_vif.rda'))
+attach(here('Results', 'units_merged_beta_subset.rda'))
+attach(here('Results', 'min_points_radius.rda'))
+attach(here('Results', 'bba_forest_point_count.rda'))
+attach(here('Results', 'forest_unit_count.rda'))
+attach(here('Results', 'tax_beta_model_summary.rda'))
+attach(here('Results', 'tax_alpha_model_summary.rda'))
+attach(here('Results', 'tax_gamma_model_summary.rda'))
+attach(here('Results', 'func_beta_model_summary.rda'))
+attach(here('Results', 'func_alpha_model_summary.rda'))
+attach(here('Results', 'func_gamma_model_summary.rda'))
+attach(here('Results', 'phyl_beta_model_summary.rda'))
+attach(here('Results', 'phyl_alpha_model_summary.rda'))
+attach(here('Results', 'phyl_gamma_model_summary.rda'))
+attach(here('Results', 'tax_beta_model_vif.rda'))
+attach(here('Results', 'tax_alpha_model_vif.rda'))
+attach(here('Results', 'tax_gamma_model_vif.rda'))
+attach(here('Results', 'func_beta_model_vif.rda'))
+attach(here('Results', 'func_alpha_model_vif.rda'))
+attach(here('Results', 'func_gamma_model_vif.rda'))
+attach(here('Results', 'phyl_beta_model_vif.rda'))
+attach(here('Results', 'phyl_alpha_model_vif.rda'))
+attach(here('Results', 'phyl_gamma_model_vif.rda'))
 ```
 
 ```{r set_variables, echo = FALSE, message = FALSE, warning = FALSE, results = 'hide'}
@@ -727,7 +727,7 @@ reflecting the more limited set of ecological functions and phylogenetic
 backgrounds in comparison to the number of species present.  
 
 ```{r beta_div_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRef('div_plots', 'Distributions of taxonomic, functional and phylogenetic beta diversity, and forest species richness, and Pearson correlations between the diversity measures')}
-knitr::include_graphics('../figures/beta_div_plots.png')
+knitr::include_graphics('../Figures/beta_div_plots.png')
 ```
   
 All three beta diversity measures were clearly correlated with each
@@ -981,28 +981,28 @@ are not a cause of biotic homogenisation in our study site.
 # Appendix  
 ## 1. Correlations between human footprint and variables describing human influence
 ```{r hfp_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('hfp_plots', "Distributions of human footprint and other variables describing human influence, and Spearman's rank correlations between variables")}
-knitr::include_graphics('../figures/human_impact_plots.png')
+knitr::include_graphics('../Figures/human_impact_plots.png')
 ```
 
 ## 2. Spatial distribution of response variables and species richness
 ### a) Taxonomic beta diversity
 ```{r tax_div_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.height = 10, fig.width = 10, fig.cap = figRefApp('tax_div_plot', 'Map showing the spatial distribution of taxonomic beta diversity in the state of Minnesota')}
-knitr::include_graphics('../figures/tax_beta_map.png')
+knitr::include_graphics('../Figures/tax_beta_map.png')
 ```
   
 ### b) Functional beta diversity
 ```{r func_div_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.height = 2, fig.width = 2, fig.cap = figRefApp('func_div_plot', 'Map showing the spatial distribution of functional beta diversity in the state of Minnesota')}
-knitr::include_graphics('../figures/func_beta_map.png')
+knitr::include_graphics('../Figures/func_beta_map.png')
 ```
   
 ### c) Phylogenetic beta diversity
 ```{r phyl_div_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('phyl_div_plot', 'Map showing the spatial distribution of phylogenetic beta diversity in the state of Minnesota')}
-knitr::include_graphics('../figures/phyl_beta_map.png')
+knitr::include_graphics('../Figures/phyl_beta_map.png')
 ```
   
 ### d) Forest species richness
 ```{r spp_richness_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('spp_richness_plot', 'Map showing the spatial distribution of species richness in the state of Minnesota')}
-knitr::include_graphics('../figures/spp_rich_map.png')
+knitr::include_graphics('../Figures/spp_rich_map.png')
 ```
 
 ## 3. Results of alpha and gamma diversities
@@ -1044,7 +1044,7 @@ pander::pander(phyl_gamma_model_coef)
   
 ## 4. Correlations between explanatory variables, and their distributions
 ```{r explanatory_plots, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('explanatory_plots', "Distributions of explanatory variables, and Spearman's rank correlations between variables")}
-knitr::include_graphics('../figures/explanatory_plots.png')
+knitr::include_graphics('../Figures/explanatory_plots.png')
 ```
   
 ## 5. Variance inflation factors from models  
@@ -1065,33 +1065,33 @@ for (package in sort(.packages())) {
   
 ## 7. Comparison of human footprint index values in units used in analyses and units not used in analyses
 ```{r hfi_comparison_hist, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('hfi_comparison_hist', 'Comparison of human footprint index values in units used in analyses and units not used in analyses')}
-knitr::include_graphics('../figures/hfi_boxplot.png')
+knitr::include_graphics('../Figures/hfi_boxplot.png')
 ```
   
 ## 8. Spatial distribution of explanatory variables  
 ### a) Human footprint  
 ```{r hfp_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('hfp_plot', 'Map showing the spatial distribution of human footprint values in the state of Minnesota')}
-knitr::include_graphics('../figures/hfp_map.png')
+knitr::include_graphics('../Figures/hfp_map.png')
 ```
   
 ### b) Forest change  
 ```{r for_loss_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('for_loss_plot', 'Map showing the spatial distribution of forest change values in the state of Minnesota')}
-knitr::include_graphics('../figures/f_loss_map.png')
+knitr::include_graphics('../Figures/f_loss_map.png')
 ```
   
 ### c) Habitat diversity  
 ```{r hab_div_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('hab_div_plot', 'Map showing the spatial distribution of habitat diversity values in the state of Minnesota')}
-knitr::include_graphics('../figures/hab_div_map.png')
+knitr::include_graphics('../Figures/hab_div_map.png')
 ```
   
 ### d) Net primary production  
 ```{r npp_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('npp_plot', 'Map showing the spatial distribution of net primary productivity values in the state of Minnesota')}
-knitr::include_graphics('../figures/npp_map.png')
+knitr::include_graphics('../Figures/npp_map.png')
 ```
    
 ### e) Mean temperature  
 ```{r mean_temp_plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = figRefApp('mean_temp_plot', 'Map showing the spatial distribution of mean temperature values in the state of Minnesota')}
-knitr::include_graphics('../figures/mean_temp_map.png')
+knitr::include_graphics('../Figures/mean_temp_map.png')
 ```
   
 # References
