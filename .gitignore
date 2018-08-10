@@ -16,7 +16,13 @@
 *.svg
 *.bib
 *.csl
+*.xls
+*.xlsx
+*.dbf
+*.prj
+*.shp
+*.shx
 
-/data
-/figures
-/results
+/Data/
+/Code_bkp/
+/Manuscript_bkp/
